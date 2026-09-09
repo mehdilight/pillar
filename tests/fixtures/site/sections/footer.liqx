@@ -1,0 +1,4 @@
+<footer class="site-footer">{section.settings.note}</footer>
+<schema>
+  { "name": "Footer", "settings": [ { "id": "note", "type": "text", "label": "Note" } ] }
+</schema>

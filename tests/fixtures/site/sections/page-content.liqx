@@ -1,0 +1,13 @@
+<article class="prose">
+  <h1>{page.title}</h1>
+  {section.settings.show_date && page.date ? <time datetime={page.date}>{page.date}</time> : ''}
+  <div class="body">{page.content}</div>
+</article>
+<schema>
+  {
+    "name": "Page content",
+    "settings": [
+      { "id": "show_date", "type": "checkbox", "label": "Show the date", "default": true }
+    ]
+  }
+</schema>

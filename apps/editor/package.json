@@ -1,0 +1,25 @@
+{
+  "name": "pillar-editor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "esbuild src/lib/blocks.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/blocks.test.mjs --log-level=error && node --test .test/blocks.test.mjs"
+  },
+  "dependencies": {
+    "lucide-solid": "^0.544.0",
+    "solid-js": "^1.9.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^24.9.1",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0",
+    "vite-plugin-solid": "^2.11.0"
+  }
+}

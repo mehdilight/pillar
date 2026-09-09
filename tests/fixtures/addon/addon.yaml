@@ -1,0 +1,5 @@
+slug: blog-pack
+name: Blog pack
+version: 0.1.0
+provides:
+  sections: [related-posts, hero]

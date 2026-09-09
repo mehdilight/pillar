@@ -1,0 +1,463 @@
+<?php
+declare( strict_types=1 );
+
+namespace Pillar\Dev;
+
+use Pillar\Build\Builder;
+use Pillar\Content\ContentStore;
+use Pillar\Content\MarkdownFile;
+use Pillar\Git\LocalGit;
+use Pillar\Pillar;
+use Pillar\PillarException;
+use Pillar\Schema\ContentSchema;
+use Pillar\Schema\SchemaException;
+use Pillar\Schema\SectionSchema;
+use Pillar\Schema\Setting;
+use Pillar\Site\PathPolicy;
+use Pillar\Template\PageTemplate;
+use Pillar\Template\SectionInstance;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Yaml\Yaml;
+
+/**
+ * The JSON API the dashboard drives, over the working tree.
+ *
+ * The contract is the editor's own `api/client.ts` — written first, so this is
+ * a passthrough rather than a translation layer. Every route reads or writes a
+ * file: there is no database, and "saving" is `file_put_contents`.
+ */
+final class Api {
+
+	public function __construct(
+		private readonly string $root,
+		private readonly LocalGit $git,
+	) {}
+
+	public function handle( Request $request, string $path ): Response {
+		$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
+		$method   = $request->getMethod();
+
+		try {
+			return match ( true ) {
+				[ 'health' ] === $segments => $this->json( [ 'ok' => true, 'site' => $this->pillar()->site->name ] ),
+
+				[ 'templates' ] === $segments => $this->json( $this->templates() ),
+				'templates' === ( $segments[0] ?? '' ) && isset( $segments[1] ) && 'GET' === $method
+					=> $this->json( $this->template( $segments[1] ) ),
+				'templates' === ( $segments[0] ?? '' ) && isset( $segments[1] ) && 'PUT' === $method
+					=> $this->saveTemplate( $segments[1], $this->body( $request ) ),
+
+				[ 'layout' ] === $segments && 'PUT' === $method => $this->saveTemplate( 'layout', $this->body( $request ) ),
+
+				[ 'settings', 'schema' ] === $segments => $this->json( $this->settingsSchema() ),
+				[ 'settings' ] === $segments && 'GET' === $method => $this->json( $this->settings() ),
+				[ 'settings' ] === $segments && 'PUT' === $method => $this->saveSettings( $this->body( $request ) ),
+
+				[ 'content' ] === $segments => $this->json( $this->collections() ),
+				'content' === ( $segments[0] ?? '' ) && 2 === count( $segments )
+					=> $this->json( $this->items( $segments[1] ) ),
+				'content' === ( $segments[0] ?? '' ) && 3 === count( $segments ) && 'PUT' === $method
+					=> $this->saveItem( $segments[1], $segments[2], $this->body( $request ) ),
+				'content' === ( $segments[0] ?? '' ) && 3 === count( $segments ) && 'DELETE' === $method
+					=> $this->deleteItem( $segments[1], $segments[2] ),
+
+				[ 'status' ] === $segments => $this->json( $this->status() ),
+				[ 'history' ] === $segments => $this->json( $this->git->history() ),
+				[ 'publish' ] === $segments && 'POST' === $method => $this->publish( $this->body( $request ) ),
+				[ 'discard' ] === $segments && 'POST' === $method => $this->discard(),
+				[ 'build' ] === $segments && 'POST' === $method => $this->json( $this->build() ),
+
+				default => $this->json( [ 'error' => 'No such endpoint.' ], 404 ),
+			};
+		} catch ( PillarException $error ) {
+			return $this->json( [ 'error' => $error->getMessage() ], 422 );
+		} catch ( \Throwable $error ) {
+			return $this->json( [ 'error' => $error->getMessage(), 'type' => $error::class ], 500 );
+		}
+	}
+
+	/* ── Templates ───────────────────────────────────────────────────── */
+
+	/** @return list<array{name: string, label: string, route: string, group: string}> */
+	private function templates(): array {
+		$pillar   = $this->pillar();
+		$content  = $pillar->content->collectionNames();
+		$out      = [];
+
+		foreach ( array_keys( $pillar->site->layers()->listing( 'templates', 'json' ) ) as $name ) {
+			if ( 'layout' === $name ) {
+				continue;
+			}
+
+			$isContent = in_array( $name . 's', $content, true ) || 'page' === $name;
+
+			$out[] = [
+				'name'  => $name,
+				'label' => ucfirst( str_replace( [ '-', '_' ], ' ', 'index' === $name ? 'Home page' : $name ) ),
+				'route' => $this->routeFor( $name, $isContent, $pillar->content ),
+				'group' => $isContent ? 'Content' : 'Pages',
+			];
+		}
+
+		return $out;
+	}
+
+	private function routeFor( string $name, bool $isContent, ContentStore $content ): string {
+		if ( $isContent ) {
+			// A content template has no page of its own: previewing it means
+			// previewing a real item, so the first one stands in.
+			$collection = 'page' === $name ? 'pages' : $name . 's';
+			$first      = ( $content->files()[ $collection ] ?? [] )[0] ?? null;
+
+			return $first instanceof MarkdownFile ? $first->url() : '/';
+		}
+
+		return match ( $name ) {
+			'index' => '/',
+			'404'   => '/404.html',
+			default => '/' . $name . '/',
+		};
+	}
+
+	/** @return array<string, mixed> */
+	private function template( string $name ): array {
+		$pillar = $this->pillar();
+		$errors = [];
+		$schemas = $pillar->schemas->allSections( $errors );
+
+		$available = [];
+
+		foreach ( $schemas as $type => $schema ) {
+			$available[] = $schema->toArray();
+		}
+
+		$blocks = [];
+
+		foreach ( $pillar->schemas->allBlocks( $errors ) as $type => $schema ) {
+			$blocks[] = $schema->toArray();
+		}
+
+		return [
+			'name'              => $name,
+			'sections'          => $this->sectionsOf( $name, $schemas ),
+			'layout'            => $this->sectionsOf( 'layout', $schemas, isLayout: true ),
+			'availableSections' => $available,
+			'availableBlocks'   => $blocks,
+			'allTemplates'      => $this->templates(),
+			// A section whose schema is broken is reported, not hidden: the
+			// dashboard shows it rather than silently offering fewer sections.
+			'schemaErrors'      => $errors,
+		];
+	}
+
+	/**
+	 * @param array<string, SectionSchema> $schemas
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	private function sectionsOf( string $name, array $schemas, bool $isLayout = false ): array {
+		$path = $this->pillar()->site->layers()->resolve( 'templates/' . $name . '.json' );
+
+		if ( null === $path ) {
+			return [];
+		}
+
+		$out = [];
+
+		foreach ( PageTemplate::fromFile( $path, $name )->sections as $index => $section ) {
+			$schema = $schemas[ $section->type ] ?? null;
+
+			$out[] = [
+				'section_id'   => $section->id,
+				'section_type' => $section->type,
+				'settings'     => (object) $section->settings,
+				'blocks'       => $section->blocks,
+				'order'        => $index,
+				'enabled'      => $section->enabled,
+				'is_layout'    => $isLayout || $section->isLayout,
+				'custom_css'   => $section->customCss,
+				'schema'       => null === $schema ? null : [
+					'name'       => $schema->name,
+					'settings'   => array_map( static fn ( Setting $s ): array => $s->toArray(), $schema->settings ),
+					'blocks'     => array_map( static fn ( $b ): array => $b->toArray(), $schema->blocks ),
+					'max_blocks' => $schema->maxBlocks,
+				],
+			];
+		}
+
+		return $out;
+	}
+
+	/** @param array<string, mixed> $body */
+	private function saveTemplate( string $name, array $body ): Response {
+		$sections = [];
+		$order    = [];
+
+		foreach ( (array) ( $body['sections'] ?? [] ) as $index => $raw ) {
+			if ( ! is_array( $raw ) ) {
+				continue;
+			}
+
+			$id = (string) ( $raw['section_id'] ?? '' );
+
+			if ( '' === $id ) {
+				continue;
+			}
+
+			$entry = [
+				'section_type' => (string) ( $raw['section_type'] ?? '' ),
+				'settings'     => (object) ( (array) ( $raw['settings'] ?? [] ) ),
+				'order'        => (int) ( $raw['order'] ?? $index ),
+				'enabled'      => (bool) ( $raw['enabled'] ?? true ),
+			];
+
+			if ( [] !== (array) ( $raw['blocks'] ?? [] ) ) {
+				$entry['blocks'] = $raw['blocks'];
+			}
+
+			if ( '' !== (string) ( $raw['custom_css'] ?? '' ) ) {
+				$entry['custom_css'] = (string) $raw['custom_css'];
+			}
+
+			if ( true === ( $raw['is_layout'] ?? false ) ) {
+				$entry['is_layout'] = true;
+			}
+
+			$sections[ $id ] = $entry;
+			$order[]         = $id;
+		}
+
+		$this->write(
+			'templates/' . $name . '.json',
+			(string) json_encode( [ 'sections' => (object) $sections, 'order' => $order ], self::JSON )
+		);
+
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	/* ── Settings ────────────────────────────────────────────────────── */
+
+	/** @return list<array<string, mixed>> */
+	private function settingsSchema(): array {
+		$path = $this->pillar()->site->layers()->resolve( 'config/settings_schema.json' );
+
+		if ( null === $path ) {
+			return [];
+		}
+
+		$raw = json_decode( (string) file_get_contents( $path ), true );
+
+		if ( ! is_array( $raw ) ) {
+			throw new SchemaException( 'config/settings_schema.json is not valid JSON.' );
+		}
+
+		$panels = [];
+
+		foreach ( $raw as $panel ) {
+			if ( ! is_array( $panel ) ) {
+				continue;
+			}
+
+			$settings = [];
+
+			foreach ( (array) ( $panel['settings'] ?? [] ) as $setting ) {
+				if ( is_array( $setting ) ) {
+					$settings[] = Setting::fromArray( $setting )->toArray();
+				}
+			}
+
+			$panels[] = [ 'name' => (string) ( $panel['name'] ?? 'Settings' ), 'settings' => $settings ];
+		}
+
+		return $panels;
+	}
+
+	/** @return array<string, mixed> */
+	private function settings(): array {
+		$path = $this->pillar()->site->layers()->resolve( 'config/settings_data.json' );
+		$raw  = null === $path ? [] : json_decode( (string) file_get_contents( $path ), true );
+
+		return is_array( $raw ) ? $raw : [];
+	}
+
+	/** @param array<string, mixed> $body */
+	private function saveSettings( array $body ): Response {
+		$settings = (array) ( $body['settings'] ?? $body );
+
+		$this->write( 'config/settings_data.json', (string) json_encode( (object) $settings, self::JSON ) );
+
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	/* ── Content ─────────────────────────────────────────────────────── */
+
+	/** @return list<array<string, mixed>> */
+	private function collections(): array {
+		$pillar  = $this->pillar( drafts: true );
+		$schemas = ContentSchema::all( $pillar->site->layers() );
+		$out     = [];
+
+		foreach ( $pillar->content->files() as $collection => $files ) {
+			$schema = $schemas[ $collection ] ?? null;
+
+			$out[] = [
+				'name'   => $collection,
+				'label'  => $schema?->label ?? ucfirst( $collection ),
+				'count'  => count( $files ),
+				// A collection with no `schemas/<name>.json` still lists and
+				// still edits — it simply has no declared fields.
+				'fields' => null === $schema
+					? []
+					: array_map( static fn ( Setting $f ): array => $f->toArray(), $schema->fields ),
+			];
+		}
+
+		return $out;
+	}
+
+	/** @return list<array<string, mixed>> */
+	private function items( string $collection ): array {
+		$out = [];
+
+		foreach ( $this->pillar( drafts: true )->content->files()[ $collection ] ?? [] as $file ) {
+			$out[] = [
+				'collection'  => $file->collection,
+				'slug'        => $file->slug,
+				'title'       => $file->title(),
+				'frontmatter' => (object) $file->frontmatter,
+				'body'        => $file->body,
+				'updated_at'  => date( DATE_ATOM, (int) filemtime( $file->path ) ),
+			];
+		}
+
+		return $out;
+	}
+
+	/** @param array<string, mixed> $body */
+	private function saveItem( string $collection, string $slug, array $body ): Response {
+		$frontmatter = (array) ( $body['frontmatter'] ?? [] );
+		$content     = (string) ( $body['body'] ?? '' );
+
+		// Written back as YAML frontmatter plus body: the file stays a normal
+		// markdown file that a developer can edit in an editor, which is the
+		// whole point of content living in the repo.
+		$yaml = trim( Yaml::dump( $frontmatter, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK ) );
+		$file = "---\n" . $yaml . "\n---\n" . ltrim( $content, "\n" );
+
+		$this->write( 'content/' . $this->safe( $collection ) . '/' . $this->safe( $slug ) . '.md', $file );
+
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	private function deleteItem( string $collection, string $slug ): Response {
+		$path = $this->root . '/content/' . $this->safe( $collection ) . '/' . $this->safe( $slug ) . '.md';
+
+		if ( is_file( $path ) ) {
+			unlink( $path );
+		}
+
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	/* ── Git ─────────────────────────────────────────────────────────── */
+
+	/** @return array<string, mixed> */
+	private function status(): array {
+		if ( ! $this->git->isRepository() ) {
+			// Not a repository is a normal state for a new site, not an error:
+			// the dashboard simply has nothing to publish.
+			return [ 'count' => 0, 'files' => [], 'has_remote' => false, 'branch' => 'no repository' ];
+		}
+
+		$files = $this->git->changedFiles();
+
+		return [
+			'count'      => count( $files ),
+			'files'      => $files,
+			'has_remote' => $this->git->hasRemote(),
+			'branch'     => $this->git->branch(),
+		];
+	}
+
+	/** @param array<string, mixed> $body */
+	private function publish( array $body ): Response {
+		if ( ! $this->git->isRepository() ) {
+			return $this->json( [ 'error' => 'This site is not a git repository, so there is nothing to publish to.' ], 422 );
+		}
+
+		$result = $this->git->commit( (string) ( $body['message'] ?? 'Update site content' ), push: true );
+
+		return $this->json( [ 'message' => $result['message'] ], $result['ok'] ? 200 : 422 );
+	}
+
+	private function discard(): Response {
+		if ( ! $this->git->isRepository() ) {
+			return $this->json( [ 'error' => 'This site is not a git repository, so there is nothing to discard to.' ], 422 );
+		}
+
+		$this->git->discard();
+
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	/** @return array<string, mixed> */
+	private function build(): array {
+		$pillar = $this->pillar();
+		$result = ( new Builder( $pillar ) )->build();
+
+		return [
+			'pages'  => $result['written'] + $result['skipped'],
+			'ms'     => $result['ms'],
+			'errors' => array_map(
+				static fn ( array $failure ): array => [
+					'route'   => $failure['route'],
+					'section' => $failure['section'],
+					'message' => $failure['error']->getMessage(),
+				],
+				$pillar->errors->all()
+			),
+		];
+	}
+
+	/* ── Plumbing ────────────────────────────────────────────────────── */
+
+	private const JSON = JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE;
+
+	/**
+	 * A fresh Pillar per request.
+	 *
+	 * The dashboard's whole model is that files on disk are the truth, and it
+	 * changes them between requests — a cached site would answer with what was
+	 * true when the server booted.
+	 */
+	private function pillar( bool $drafts = true ): Pillar {
+		return Pillar::forSite( $this->root, editor: true, drafts: $drafts, compile: false );
+	}
+
+	/** @return array<string, mixed> */
+	private function body( Request $request ): array {
+		$decoded = json_decode( (string) $request->getContent(), true );
+
+		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	private function write( string $relative, string $contents ): void {
+		$path = $this->root . '/' . PathPolicy::normalise( $relative );
+
+		@mkdir( dirname( $path ), 0777, true );
+
+		if ( false === file_put_contents( $path, $contents ) ) {
+			throw new PillarException( sprintf( 'Could not write %s', $relative ) );
+		}
+	}
+
+	private function safe( string $segment ): string {
+		return (string) preg_replace( '/[^a-z0-9_-]/i', '', $segment );
+	}
+
+	private function json( mixed $data, int $status = 200 ): JsonResponse {
+		return new JsonResponse( $data, $status, [], false );
+	}
+}

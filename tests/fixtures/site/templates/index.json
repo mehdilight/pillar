@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "hero_a1": {
+      "section_type": "hero",
+      "settings": { "heading": "Build sites that outlive their tools", "subheading": "Markdown in, HTML out.", "padding": 120 },
+      "order": 0
+    },
+    "features_b2": {
+      "section_type": "feature-grid",
+      "settings": {},
+      "blocks": [
+        { "id": "f1", "type": "feature", "settings": { "title": "Local first" } },
+        { "id": "f2", "type": "feature", "settings": { "title": "Schema driven" } },
+        { "id": "f3", "type": "feature", "settings": { "title": "Git is the store" }, "disabled": true }
+      ],
+      "order": 1
+    },
+    "posts_c3": { "section_type": "post-list", "settings": {}, "order": 2 },
+    "hidden_d4": { "section_type": "hero", "settings": { "heading": "Not rendered" }, "order": 3, "enabled": false }
+  },
+  "order": ["hero_a1", "features_b2", "posts_c3", "hidden_d4"]
+}

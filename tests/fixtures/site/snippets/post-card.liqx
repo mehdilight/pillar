@@ -1,0 +1,4 @@
+<li class="post-card">
+  <a href={props.post.url}>{props.post.title}</a>
+  <time>{props.post.date}</time>
+</li>

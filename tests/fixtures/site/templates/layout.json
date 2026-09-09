@@ -1,0 +1,7 @@
+{
+  "sections": {
+    "header": { "section_type": "header", "settings": { "tagline": "Static, but not static" }, "is_layout": true, "order": 0 },
+    "footer": { "section_type": "footer", "settings": { "note": "© Fixture" }, "is_layout": true, "order": 1 }
+  },
+  "order": ["header", "footer"]
+}

@@ -1,0 +1,6 @@
+{
+  "sections": {
+    "body": { "section_type": "page-content", "settings": { "show_date": true }, "order": 0 }
+  },
+  "order": ["body"]
+}

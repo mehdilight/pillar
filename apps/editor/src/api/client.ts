@@ -1,0 +1,213 @@
+import * as fixtures from './fixtures';
+import type {
+  ContentCollection,
+  ContentItem,
+  DraftStatus,
+  HistoryEntry,
+  PageSection,
+  SettingsPanelSchema,
+  TemplatePayload,
+  TemplateSummary,
+} from '../types';
+
+/**
+ * The editor's data layer.
+ *
+ * `pillar dev` injects `window.PillarEditor` and serves `/api/*` over the
+ * working tree. With no backend up, every call falls through to the in-memory
+ * fixtures instead — so `npm run dev` alone gives a working editor, and the
+ * same code paths run either way.
+ */
+
+export interface EditorConfig {
+  /** Where the JSON API lives. */
+  root: string;
+  /** Where the rendered site is served for the preview iframe. */
+  previewRoot: string;
+  siteName: string;
+  /** Set by `pillar dev`; absent when the SPA is opened on its own. */
+  live: boolean;
+}
+
+declare global {
+  interface Window {
+    PillarEditor?: Partial<EditorConfig>;
+  }
+}
+
+const injected = typeof window === 'undefined' ? undefined : window.PillarEditor;
+
+export const editorConfig: EditorConfig = {
+  root: injected?.root ?? '/api',
+  previewRoot: injected?.previewRoot ?? '/preview',
+  siteName: injected?.siteName ?? 'Pillar site',
+  live: injected?.live ?? false,
+};
+
+/**
+ * Whether a real backend answered.
+ *
+ * Probed once, lazily. `null` until the first call resolves it — every request
+ * awaits the same probe, so a cold start does not fan out into one probe per
+ * query.
+ */
+let backend: Promise<boolean> | null = null;
+
+const probe = (): Promise<boolean> => {
+  backend ??= fetch(`${editorConfig.root}/health`, { method: 'GET' })
+    .then((response) => response.ok)
+    .catch(() => false);
+
+  return backend;
+};
+
+async function request<T>(path: string, init: RequestInit | undefined, offline: () => T): Promise<T> {
+  if (!(await probe())) return offline();
+
+  const response = await fetch(`${editorConfig.root}${path}`, {
+    ...init,
+    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+  });
+
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+
+    throw new Error(detail || `${response.status} ${response.statusText}`);
+  }
+
+  return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
+}
+
+const json = (body: unknown): RequestInit => ({ method: 'PUT', body: JSON.stringify(body) });
+
+/* ── The fixture store ──────────────────────────────────────────────────
+   Mutable on purpose: with no backend, edits still have to survive a tab
+   switch, or the UI cannot be evaluated at all. */
+
+const store = {
+  pages: structuredClone(fixtures.pages) as Record<string, PageSection[]>,
+  layout: structuredClone(fixtures.layout) as PageSection[],
+  settings: structuredClone(fixtures.settingsData) as Record<string, any>,
+  content: structuredClone(fixtures.content) as ContentItem[],
+  dirty: new Set<string>(),
+};
+
+const touch = (file: string) => store.dirty.add(file);
+
+export const api = {
+  templates: (): Promise<TemplateSummary[]> =>
+    request('/templates', undefined, () => fixtures.templates),
+
+  template: (name: string): Promise<TemplatePayload> =>
+    request(`/templates/${encodeURIComponent(name)}`, undefined, () => ({
+      name,
+      sections: store.pages[name] ?? [],
+      layout: store.layout,
+      availableSections: fixtures.availableSections,
+      availableBlocks: fixtures.availableBlocks,
+      allTemplates: fixtures.templates,
+    })),
+
+  saveTemplate: (name: string, sections: PageSection[]): Promise<void> =>
+    request(`/templates/${encodeURIComponent(name)}`, json({ sections }), () => {
+      store.pages[name] = sections;
+      touch(`templates/${name}.json`);
+    }),
+
+  saveLayout: (sections: PageSection[]): Promise<void> =>
+    request('/layout', json({ sections }), () => {
+      store.layout = sections;
+      touch('templates/layout.json');
+    }),
+
+  settingsSchema: (): Promise<SettingsPanelSchema[]> =>
+    request('/settings/schema', undefined, () => fixtures.settingsSchema),
+
+  settings: (): Promise<Record<string, any>> =>
+    request('/settings', undefined, () => store.settings),
+
+  saveSettings: (settings: Record<string, any>): Promise<void> =>
+    request('/settings', json({ settings }), () => {
+      store.settings = settings;
+      touch('config/settings_data.json');
+    }),
+
+  collections: (): Promise<ContentCollection[]> =>
+    request('/content', undefined, () =>
+      fixtures.collections.map((collection) => ({
+        ...collection,
+        count: store.content.filter((item) => item.collection === collection.name).length,
+      }))
+    ),
+
+  items: (collection: string): Promise<ContentItem[]> =>
+    request(`/content/${encodeURIComponent(collection)}`, undefined, () =>
+      store.content.filter((item) => item.collection === collection)
+    ),
+
+  saveItem: (item: ContentItem): Promise<void> =>
+    request(`/content/${encodeURIComponent(item.collection)}/${encodeURIComponent(item.slug)}`, json(item), () => {
+      const index = store.content.findIndex(
+        (candidate) => candidate.collection === item.collection && candidate.slug === item.slug
+      );
+
+      index === -1 ? store.content.push(item) : (store.content[index] = item);
+      touch(`content/${item.collection}/${item.slug}.md`);
+    }),
+
+  deleteItem: (collection: string, slug: string): Promise<void> =>
+    request(
+      `/content/${encodeURIComponent(collection)}/${encodeURIComponent(slug)}`,
+      { method: 'DELETE' },
+      () => {
+        store.content = store.content.filter(
+          (item) => !(item.collection === collection && item.slug === slug)
+        );
+        touch(`content/${collection}/${slug}.md`);
+      }
+    ),
+
+  draftStatus: (): Promise<DraftStatus> =>
+    request('/status', undefined, () => ({
+      ...fixtures.draftStatus,
+      count: store.dirty.size,
+      files: [...store.dirty],
+    })),
+
+  history: (): Promise<HistoryEntry[]> =>
+    request('/history', undefined, () => fixtures.history),
+
+  publish: (message: string): Promise<{ message: string }> =>
+    request('/publish', { method: 'POST', body: JSON.stringify({ message }) }, () => {
+      const count = store.dirty.size;
+
+      store.dirty.clear();
+      fixtures.history.unshift({
+        hash: Math.random().toString(16).slice(2, 10),
+        short: Math.random().toString(16).slice(2, 9),
+        message: message || 'Publish from the editor',
+        author: 'you',
+        date: new Date().toISOString(),
+      });
+
+      return { message: `Committed ${count} file${count === 1 ? '' : 's'}` };
+    }),
+
+  discard: (): Promise<void> =>
+    request('/discard', { method: 'POST' }, () => {
+      store.pages = structuredClone(fixtures.pages);
+      store.layout = structuredClone(fixtures.layout);
+      store.settings = structuredClone(fixtures.settingsData);
+      store.content = structuredClone(fixtures.content);
+      store.dirty.clear();
+    }),
+
+  build: (): Promise<{ pages: number; ms: number }> =>
+    request('/build', { method: 'POST' }, () => ({
+      pages: Object.keys(store.pages).length + store.content.length,
+      ms: 120,
+    })),
+};
+
+/** Whether the fixture store is in play — the UI says so rather than pretending. */
+export const isOffline = async (): Promise<boolean> => !(await probe());

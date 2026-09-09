@@ -1,0 +1,11 @@
+{
+  "label": "Posts",
+  "fields": [
+    { "id": "title", "type": "text", "label": "Title" },
+    { "id": "date", "type": "date", "label": "Date" },
+    { "id": "tags", "type": "tags", "label": "Tags" },
+    { "id": "layout", "type": "select", "label": "Layout", "default": "post",
+      "options": [ { "value": "post", "label": "Post" }, { "value": "wide", "label": "Wide" } ] },
+    { "id": "draft", "type": "checkbox", "label": "Draft", "default": false }
+  ]
+}

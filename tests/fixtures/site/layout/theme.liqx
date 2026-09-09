@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{site.title}</title>
+  <link rel="stylesheet" href={'base.css' | asset_url}>
+</head>
+<body class={`template-${template}`}>
+  {section('header')}
+  <main>{content_for_layout}</main>
+  {section('footer')}
+</body>
+</html>

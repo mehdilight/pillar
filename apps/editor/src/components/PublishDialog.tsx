@@ -1,0 +1,89 @@
+import { For, Show, createSignal } from 'solid-js';
+import Modal from './ui/Modal';
+import { showToast } from './ui/Toast';
+import * as editor from '../store/editor';
+
+/**
+ * Publishing is a commit.
+ *
+ * With a remote configured it pushes too, and the deploy runs wherever the
+ * site's adapter points — so this dialog is the last human step before the
+ * public site changes.
+ */
+export default function PublishDialog(props: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [message, setMessage] = createSignal('');
+  const [pending, setPending] = createSignal(false);
+
+  const files = () => editor.status()?.files ?? [];
+
+  const run = async () => {
+    setPending(true);
+
+    try {
+      const result = await editor.publish(message().trim() || 'Update site content');
+
+      showToast(result.message, 'success');
+      props.onOpenChange(false);
+      setMessage('');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Publish failed', 'error');
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Modal
+      open={props.open}
+      onOpenChange={props.onOpenChange}
+      title="Publish changes"
+      footer={
+        <>
+          <button type="button" class="sam-btn" onClick={() => props.onOpenChange(false)}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="sam-btn primary"
+            disabled={pending() || files().length === 0}
+            onClick={run}
+          >
+            {pending() ? 'Publishing…' : 'Commit & publish'}
+          </button>
+        </>
+      }
+    >
+      <Show
+        when={files().length}
+        fallback={<p class="text-[13px] text-gray-500">Nothing to publish — the tree is clean.</p>}
+      >
+        <p class="text-[13px] text-[#303030]">
+          {files().length} file{files().length === 1 ? '' : 's'} will be committed on{' '}
+          <code class="sam-mono">{editor.status()?.branch}</code>
+          <Show when={editor.status()?.has_remote}> and pushed.</Show>
+        </p>
+
+        <ul class="rounded-lg border border-[#e1e3e5] bg-[#f6f6f7] divide-y divide-[#e1e3e5] max-h-48 overflow-y-auto">
+          <For each={files()}>
+            {(file) => <li class="px-3 py-1.5 sam-mono text-[11px] text-gray-600">{file}</li>}
+          </For>
+        </ul>
+
+        <label class="sam-label" for="publish-message">
+          Commit message
+        </label>
+        <input
+          id="publish-message"
+          type="text"
+          class="sam-input"
+          placeholder="Update site content"
+          value={message()}
+          onInput={(event) => setMessage(event.currentTarget.value)}
+        />
+      </Show>
+    </Modal>
+  );
+}

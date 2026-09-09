@@ -1,0 +1,2 @@
+:root { --ink: #111827; }
+body { color: var(--ink); font-family: system-ui, sans-serif; }

@@ -1,0 +1,57 @@
+@import 'tailwindcss';
+@plugin "@tailwindcss/forms";
+
+/* Samsara design system — token-driven, carried over from bastet's editor
+   unchanged so both editors stay one visual language. */
+@import './samsara.css';
+/* Editor-specific controls built on samsara's tokens. */
+@import './editor.css';
+
+@source '../**/*.tsx';
+@source '../**/*.ts';
+
+@theme {
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans,
+                 Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+}
+
+:root {
+    --brand: #005bd3;
+    --brand-hover: #004bb5;
+    --brand-tint: rgba(0, 91, 211, 0.08);
+    --brand-deep: #003e99;
+}
+
+/* Map samsara tokens to Tailwind utilities (bg-surface, text-ink-muted, …) */
+@theme inline {
+    --color-deep: var(--bg-deep);
+    --color-base: var(--bg);
+    --color-surface: var(--bg-surface);
+    --color-surface-2: var(--bg-surface-2);
+    --color-surface-3: var(--bg-surface-3);
+    --color-hover: var(--bg-hover);
+    --color-selection: var(--bg-selection);
+
+    --color-edge: var(--border);
+    --color-edge-strong: var(--border-strong);
+
+    --color-ink: var(--text);
+    --color-ink-secondary: var(--text-secondary);
+    --color-ink-muted: var(--text-muted);
+    --color-ink-faint: var(--text-faint);
+
+    --color-brand: var(--brand);
+    --color-brand-hover: var(--brand-hover);
+    --color-brand-tint: var(--brand-tint);
+
+    --color-success: var(--success);
+    --color-success-tint: var(--success-tint);
+    --color-danger: var(--danger);
+    --color-danger-tint: var(--danger-tint);
+    --color-warning: var(--warning);
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}

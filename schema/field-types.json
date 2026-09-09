@@ -1,0 +1,28 @@
+{
+  "$comment": "The one list both sides are generated from. PHP's FieldType enum and the editor's TypeScript union are written by tools/generate-field-types.php — never edit either by hand. A type the editor offers and PHP rejects does not degrade: Setting::fromArray() throws and the whole section stops parsing.",
+  "types": [
+    { "name": "text",            "empty": "",     "cast": "string",  "editor": "TextInput" },
+    { "name": "textarea",        "empty": "",     "cast": "string",  "editor": "TextArea" },
+    { "name": "richtext",        "empty": "",     "cast": "string",  "editor": "TextArea" },
+    { "name": "markdown",        "empty": "",     "cast": "string",  "editor": "TextArea" },
+    { "name": "html",            "empty": "",     "cast": "string",  "editor": "CodeInput" },
+    { "name": "code",            "empty": "",     "cast": "string",  "editor": "CodeInput" },
+    { "name": "url",             "empty": "",     "cast": "string",  "editor": "TextInput" },
+    { "name": "number",          "empty": 0,      "cast": "number",  "editor": "NumberInput" },
+    { "name": "range",           "empty": 0,      "cast": "number",  "editor": "RangeInput" },
+    { "name": "checkbox",        "empty": false,  "cast": "bool",    "editor": "Checkbox" },
+    { "name": "select",          "empty": "",     "cast": "string",  "editor": "SelectInput", "options": true },
+    { "name": "radio",           "empty": "",     "cast": "string",  "editor": "RadioGroup",  "options": true },
+    { "name": "color",           "empty": "",     "cast": "string",  "editor": "ColorInput" },
+    { "name": "image",           "empty": null,   "cast": "string",  "editor": "ImagePicker" },
+    { "name": "video",           "empty": null,   "cast": "string",  "editor": "ImagePicker" },
+    { "name": "date",            "empty": "",     "cast": "string",  "editor": "DateInput" },
+    { "name": "tags",            "empty": [],     "cast": "list",    "editor": "TagsInput" },
+    { "name": "menu",            "empty": "",     "cast": "string",  "editor": "TextInput" },
+    { "name": "page",            "empty": "",     "cast": "string",  "editor": "TextInput" },
+    { "name": "collection",      "empty": "",     "cast": "string",  "editor": "TextInput" },
+    { "name": "collection_item", "empty": "",     "cast": "string",  "editor": "TextInput" },
+    { "name": "header",          "empty": null,   "cast": "none",    "editor": "GroupHeading", "decorative": true },
+    { "name": "paragraph",       "empty": null,   "cast": "none",    "editor": "GroupNote",    "decorative": true }
+  ]
+}

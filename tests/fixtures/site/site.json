@@ -1,0 +1,7 @@
+{
+  "name": "Fixture site",
+  "base_url": "https://example.test",
+  "output": "dist",
+  "addons": [],
+  "plugins": []
+}

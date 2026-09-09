@@ -1,0 +1,1390 @@
+/* Samsara design system — token-driven, dark and light. Laravel-red primaries
+   on warm neutral surfaces (layout system inspired by Supabase Studio).
+   Theme by overriding the :root custom properties in your own stylesheet.
+
+   Colour scheme resolves in this order:
+     1. `data-theme="light"` / `"dark"` on <html> — an explicit user choice
+     2. the OS preference, when no explicit choice has been made
+     3. dark, as the default
+   Every value that differs between schemes lives in a token below, so no
+   rule has to know which scheme is active. */
+:root,
+:root[data-theme='light'] {
+    --bg-deep: #f6f6f7;
+    --bg: #f1f2f4;
+    --bg-surface: #ffffff;
+    --bg-surface-2: #ffffff;
+    --bg-surface-3: #f6f6f7;
+    --bg-hover: #f1f2f4;
+    --bg-selection: #e0f0ff;
+    --bg-active: #e0f0ff;
+
+    --border: #e1e3e5;
+    --border-strong: #c9cccf;
+    --border-hover: #8c9196;
+
+    --text: #202223;
+    --text-main: #202223;
+    --text-secondary: #303030;
+    --text-muted: #6d7175;
+    --text-faint: #8c9196;
+
+    --brand: #005bd3;
+    --brand-contrast: #ffffff;
+    --brand-hover: #004bb5;
+    --brand-tint: rgba(0, 91, 211, 0.08);
+    --brand-deep: #003e99;
+    --primary: #005bd3;
+
+    --success: #008060;
+    --success-tint: rgba(0, 128, 96, 0.08);
+    --success-border: rgba(0, 128, 96, 0.3);
+
+    --danger: #d82c0d;
+    --danger-tint: rgba(216, 44, 13, 0.08);
+    --danger-border: rgba(216, 44, 13, 0.3);
+
+    --warning: #b98900;
+
+    --info: #005bd3;
+    --info-tint: rgba(0, 91, 211, 0.08);
+    --info-border: rgba(0, 91, 211, 0.3);
+
+    --overlay: rgba(0, 0, 0, 0.4);
+    --scrim: rgba(0, 0, 0, 0.4);
+    --scrim-gradient: rgba(0, 0, 0, 0.5);
+    --on-scrim: #ffffff;
+    --kbd-bg: rgba(0, 0, 0, 0.06);
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+    --shadow-panel: 0 4px 16px rgba(0, 0, 0, 0.08);
+    --shadow-rail: 4px 0 16px rgba(0, 0, 0, 0.05);
+    --shadow-drawer: -4px 0 16px rgba(0, 0, 0, 0.05);
+
+    --radius: 8px;
+    --radius-sm: 6px;
+
+    --panel-header-h: 48px;
+    --drawer-top: 48px;
+
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    color-scheme: light;
+}
+
+
+.sam-label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 5px;
+}
+
+
+.sam-mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+
+/* ── Controls ───────────────────────────────────────────────────────── */
+
+.sam-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 30px;
+    padding: 0 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: var(--bg-surface-3);
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.1s, border-color 0.1s;
+}
+
+
+.sam-btn:hover {
+    background: var(--bg-selection);
+    border-color: var(--border-hover);
+}
+
+
+.sam-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Keyboard focus, matching the treatment inputs and checkboxes already use.
+   Without this the browser paints its own blue ring, which belongs to no
+   scheme and reads as a bug next to the brand-tinted controls. */
+.sam-btn:focus-visible {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px var(--brand-tint);
+}
+
+
+/* Laravel-style primary: solid red fill, white text */
+.sam-btn.primary {
+    background: var(--brand);
+    border-color: var(--brand);
+    color: var(--brand-contrast);
+}
+
+
+.sam-btn.primary:hover {
+    background: var(--brand-hover);
+    border-color: var(--brand-hover);
+}
+
+
+.sam-btn.danger {
+    background: transparent;
+    border-color: var(--border-strong);
+    color: var(--danger);
+}
+
+
+.sam-btn.danger:hover {
+    background: var(--danger-tint);
+    border-color: var(--danger);
+}
+
+
+.sam-btn.ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--text-secondary);
+}
+
+
+.sam-btn.ghost:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+
+.sam-btn.sm {
+    height: 26px;
+    padding: 0 9px;
+    font-size: 12px;
+}
+
+
+.sam-btn.block {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+
+.sam-input,
+input[type="text"].sam-input,
+input[type="number"].sam-input,
+input[type="url"].sam-input,
+input[type="search"].sam-input,
+.sam-select,
+select.sam-select,
+.sam-textarea,
+textarea.sam-textarea {
+    width: 100%;
+    height: 32px;
+    padding: 0 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-strong);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    font-family: var(--font-sans);
+    outline: none;
+    transition: border-color 0.1s, box-shadow 0.1s;
+}
+
+
+.sam-input::placeholder,
+input[type="text"].sam-input::placeholder,
+input[type="number"].sam-input::placeholder,
+input[type="url"].sam-input::placeholder,
+input[type="search"].sam-input::placeholder,
+textarea.sam-textarea::placeholder {
+    color: var(--text-faint);
+}
+
+
+.sam-input:focus,
+.sam-select:focus,
+.sam-textarea:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px var(--brand-tint);
+}
+
+
+.sam-input.sm,
+.sam-select.sm {
+    height: 28px;
+    font-size: 12px;
+}
+
+
+.sam-textarea {
+    height: auto;
+    padding: 10px;
+    resize: vertical;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    line-height: 1.65;
+}
+
+
+.sam-select,
+select.sam-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1.5 1.5L6 6L10.5 1.5' stroke='%23333333' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 30px;
+    cursor: pointer;
+}
+
+
+/* Custom checkbox: native control replaced entirely, checkmark drawn in CSS
+   (inline SVG background) so it matches the panel tokens in every browser. */
+input[type='checkbox'].sam-check {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    margin: 0;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    background: var(--bg);
+    cursor: pointer;
+    display: inline-grid;
+    place-items: center;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+
+input[type='checkbox'].sam-check:hover {
+    border-color: var(--border-hover);
+}
+
+
+input[type='checkbox'].sam-check:focus-visible {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 2px var(--brand-tint);
+}
+
+
+input[type='checkbox'].sam-check:checked {
+    background-color: var(--brand);
+    border-color: var(--brand);
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 10' fill='none'%3E%3Cpath d='M1.5 5l3 3L10.5 1.5' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 9px 8px;
+}
+
+
+input[type='checkbox'].sam-check:checked:hover {
+    background-color: var(--brand-hover);
+    border-color: var(--brand-hover);
+}
+
+
+/* ── Tabs (Data / Definition, Results) ──────────────────────────────── */
+
+.sam-tabs {
+    display: flex;
+    gap: 2px;
+}
+
+
+.sam-tab {
+    height: 30px;
+    padding: 0 12px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    border-bottom: 2px solid transparent;
+}
+
+
+.sam-tab:hover {
+    color: var(--text);
+}
+
+
+.sam-tab.active {
+    color: var(--text);
+    border-bottom-color: var(--brand);
+}
+
+
+/* ── Tables (data grid) ─────────────────────────────────────────────── */
+
+.sam-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: auto;
+    background: var(--bg-surface);
+}
+
+
+table.sam-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+
+.sam-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-surface-2);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+    padding: 0 12px;
+    height: 34px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+
+.sam-table th .type {
+    color: var(--text-faint);
+    font-size: 10px;
+    margin-left: 6px;
+    font-family: var(--font-mono);
+}
+
+
+.sam-table td {
+    padding: 0 12px;
+    height: 36px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+
+.sam-table td.sans {
+    font-family: var(--font-sans);
+    font-size: 13px;
+}
+
+
+.sam-table tbody tr:hover td {
+    background: var(--bg-hover);
+}
+
+
+.sam-table tbody tr.selected td {
+    background: var(--brand-tint);
+}
+
+
+.sam-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+.sam-table td.null {
+    color: var(--text-faint);
+    font-style: italic;
+}
+
+
+.sam-table .check-col {
+    width: 36px;
+}
+
+
+/* ── Panels, badges, misc ───────────────────────────────────────────── */
+
+.sam-panel {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+}
+
+
+.sam-card-dashed {
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    padding: 16px;
+    background: transparent;
+}
+
+
+.sam-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--bg-surface-3);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-strong);
+    white-space: nowrap;
+}
+
+
+.sam-badge.green {
+    background: var(--success-tint);
+    color: var(--success);
+    border-color: var(--success-border);
+}
+
+
+.sam-badge.amber {
+    background: color-mix(in oklab, var(--warning) 14%, transparent);
+    color: var(--warning);
+    border-color: color-mix(in oklab, var(--warning) 40%, transparent);
+}
+
+.sam-badge .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    margin-right: 5px;
+    flex-shrink: 0;
+}
+
+.sam-badge.blue {
+    background: var(--info-tint);
+    color: var(--info);
+    border-color: var(--info-border);
+}
+
+.sam-badge.red {
+    background: var(--danger-tint);
+    color: var(--danger);
+    border-color: var(--danger-border);
+}
+
+
+.sam-error {
+    background: var(--danger-tint);
+    border: 1px solid var(--danger-border);
+    color: var(--danger);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 12px;
+    margin-bottom: 12px;
+}
+
+
+.sam-error .hint {
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+
+.sam-empty {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 48px 16px;
+    font-size: 13px;
+}
+
+
+.sam-empty .title {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 4px;
+}
+
+
+/* ── Modal ──────────────────────────────────────────────────────────── */
+
+.sam-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 50;
+}
+
+
+/* Radix Dialog.Content is a portal sibling of the overlay — center it itself. */
+.sam-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 51;
+    width: 480px;
+    max-width: calc(100vw - 32px);
+    max-height: 85vh;
+    overflow: auto;
+    background: var(--bg-surface-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    outline: none;
+}
+
+
+.sam-modal-header {
+    margin: 0;
+}
+
+
+/* ── Tooltip (Radix) ────────────────────────────────────────────────── */
+
+.sam-tooltip {
+    background: var(--bg-surface-3);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-size: 12px;
+    font-family: var(--font-sans);
+    padding: 4px 9px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    z-index: 60;
+    user-select: none;
+}
+
+
+.sam-tooltip-arrow {
+    fill: var(--border-strong);
+}
+
+
+/* ── Toast (Radix) ──────────────────────────────────────────────────── */
+
+.sam-toast-viewport {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    outline: none;
+}
+
+
+.sam-toast {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 9px;
+    padding: 10px 12px;
+    background: var(--bg-surface-3);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    font-family: var(--font-sans);
+}
+
+
+.sam-toast .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-faint);
+    margin-top: 5px;
+}
+
+
+.sam-toast.success .dot {
+    background: var(--success);
+}
+
+
+.sam-toast.danger .dot {
+    background: var(--danger);
+}
+
+
+.sam-toast-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+
+.sam-toast-desc {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+
+.sam-toast-close {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px 5px;
+    margin: -2px -5px 0 0;
+    border-radius: var(--radius-sm);
+}
+
+
+.sam-toast-close:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+
+
+.sam-toast[data-state='open'] {
+    animation: sam-toast-in 0.18s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+
+.sam-toast[data-state='closed'] {
+    animation: sam-toast-out 0.15s ease-in forwards;
+}
+
+
+.sam-toast[data-swipe='move'] {
+    transform: translateX(var(--radix-toast-swipe-move-x));
+}
+
+
+.sam-toast[data-swipe='cancel'] {
+    transform: translateX(0);
+    transition: transform 0.15s ease-out;
+}
+
+
+.sam-toast[data-swipe='end'] {
+    animation: sam-toast-out 0.12s ease-in forwards;
+}
+
+
+@keyframes sam-toast-in {
+    from { transform: translateX(16px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}
+
+
+@keyframes sam-toast-out {
+    from { transform: none; opacity: 1; }
+    to { transform: translateX(16px); opacity: 0; }
+}
+
+
+.sam-modal.wide {
+    width: 640px;
+}
+
+
+.sam-modal-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+.sam-modal-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.sam-modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+
+/* ── SQL editor ─────────────────────────────────────────────────────── */
+
+.sam-kbd {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    background: var(--kbd-bg);
+    border-radius: 3px;
+    padding: 1px 5px;
+    color: inherit;
+}
+
+
+.sam-copyrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 6px 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+/* ── App shell: rail, section panel, toolbars, drawer ─────────────── */
+
+
+
+/* The rail collapses to icons and expands over the content on hover,
+   revealing labels — same interaction as Supabase Studio. The wrap keeps a
+   fixed 56px slot in the layout so nothing shifts. */
+.sam-rail-wrap {
+    width: 56px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 40;
+}
+
+
+
+.sam-rail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 56px;
+    overflow: hidden;
+    background: var(--bg-deep);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 10px 8px;
+    gap: 4px;
+    transition: width 0.18s ease, box-shadow 0.18s ease;
+}
+
+
+
+/* :has(:focus-visible) instead of :focus-within so keyboard navigation
+   expands the rail but a mouse click doesn't leave it stuck open. */
+.sam-rail:hover,
+.sam-rail:has(:focus-visible) {
+    width: 212px;
+    box-shadow: var(--shadow-rail);
+}
+
+
+
+.sam-rail-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 30px;
+    flex-shrink: 0;
+    border-radius: var(--radius);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: none;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 0;
+    transition: background 0.1s, color 0.1s;
+}
+
+
+
+.sam-rail-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+
+
+.sam-rail-btn.active {
+    background: var(--bg-selection);
+    color: var(--text);
+}
+
+
+
+.sam-rail-icon {
+    width: 40px;
+    height: 38px;
+    flex: 0 0 40px;
+    display: grid;
+    place-items: center;
+}
+
+
+
+.sam-rail-btn svg {
+    width: 17px;
+    height: 17px;
+}
+
+
+
+.sam-rail-label {
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+
+
+.sam-rail:hover .sam-rail-label,
+.sam-rail:has(:focus-visible) .sam-rail-label {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+
+
+/* ── Rail submenus ── */
+
+/* Caret only appears once the rail is expanded, like the labels.
+   Spacing must be margin, not padding: the open state rotates this box,
+   and padding would swing the glyph off its vertical center. */
+.sam-rail-caret {
+    margin-left: auto;
+    margin-right: 9px;
+    display: grid;
+    place-items: center;
+    color: var(--text-faint);
+    opacity: 0;
+    transition: opacity 0.14s ease, transform 0.15s ease;
+}
+
+
+.sam-rail-btn .sam-rail-caret svg {
+    width: 12px;
+    height: 12px;
+}
+
+
+.sam-rail:hover .sam-rail-caret,
+.sam-rail:has(:focus-visible) .sam-rail-caret {
+    opacity: 1;
+}
+
+
+.sam-rail-group.open .sam-rail-caret {
+    transform: rotate(90deg);
+}
+
+
+/* Collapses to zero height (and out of the tab order via visibility)
+   whenever the group is closed or the rail itself is collapsed. */
+.sam-rail-sub {
+    display: grid;
+    grid-template-rows: 0fr;
+    visibility: hidden;
+    transition: grid-template-rows 0.18s ease, visibility 0s linear 0.18s;
+}
+
+
+.sam-rail:hover .sam-rail-group.open .sam-rail-sub,
+.sam-rail:has(:focus-visible) .sam-rail-group.open .sam-rail-sub {
+    grid-template-rows: 1fr;
+    visibility: visible;
+    transition: grid-template-rows 0.18s ease;
+}
+
+
+/* Guide line runs under the center of the 40px icon slot. */
+.sam-rail-sub-inner {
+    overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    margin-left: 19px;
+    border-left: 1px solid var(--border);
+    padding: 3px 0 5px 7px;
+}
+
+
+.sam-rail-subitem {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: 27px;
+    padding: 0 9px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 12.5px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    text-decoration: none;
+    text-align: left;
+    white-space: nowrap;
+    transition: background 0.1s, color 0.1s;
+}
+
+
+.sam-rail-subitem:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+
+.sam-rail-subitem.active {
+    background: var(--bg-selection);
+    color: var(--text);
+}
+
+
+.sam-rail-sep {
+    height: 1px;
+    background: var(--border);
+    margin: 6px 4px;
+    flex-shrink: 0;
+}
+
+
+
+.sam-rail .sam-rail-spacer {
+    margin-top: auto;
+}
+
+
+
+/* ── Section panel (contextual sidebar per section) ─────────────────── */
+
+.sam-section-panel {
+    width: 256px;
+    flex-shrink: 0;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+
+
+.sam-section-title {
+    height: var(--panel-header-h);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    border-bottom: 1px solid var(--border);
+}
+
+
+
+.sam-section-body {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+
+
+.sam-group-label {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    padding: 10px 6px 2px;
+}
+
+
+
+.sam-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+}
+
+
+
+.sam-list-item:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+}
+
+
+
+.sam-list-item.active {
+    background: var(--bg-selection);
+    color: var(--text);
+}
+
+
+
+.sam-list-item .count {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+}
+
+
+
+.sam-content-area {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+
+
+.sam-content-scroll {
+    flex: 1;
+    overflow: auto;
+    padding: 24px;
+}
+
+
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+
+.sam-page-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 4px;
+}
+
+
+
+.sam-page-sub {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0 0 20px;
+}
+
+
+
+/* ── Grid toolbar / footer ──────────────────────────────────────────── */
+
+.sam-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-surface);
+    flex-shrink: 0;
+    min-height: var(--panel-header-h);
+}
+
+
+
+.sam-toolbar .spacer {
+    flex: 1;
+}
+
+
+
+.sam-toolbar .title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+
+
+.sam-grid-scroll {
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
+}
+
+
+
+.sam-grid-scroll table.sam-table {
+    border: none;
+}
+
+
+
+.sam-footerbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 12px;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 12px;
+    background: var(--bg-surface);
+    flex-shrink: 0;
+}
+
+
+
+.sam-footerbar .spacer {
+    flex: 1;
+}
+
+
+
+/* ── Detail drawer (user panel etc.) ────────────────────────────────── */
+
+.sam-drawer {
+    position: fixed;
+    top: var(--drawer-top);
+    right: 0;
+    bottom: 0;
+    width: 400px;
+    max-width: calc(100vw - 72px);
+    background: var(--bg-surface-2);
+    border-left: 1px solid var(--border-strong);
+    box-shadow: var(--shadow-drawer);
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+.sam-drawer-header {
+    height: var(--panel-header-h);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+    font-size: 13px;
+}
+
+
+
+.sam-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+
+
+.sam-drawer-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ── Switch ─────────────────────────────────────────────────────────── */
+
+.sam-switch {
+    width: 34px;
+    height: 20px;
+    padding: 0;
+    background: var(--bg-surface-3);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.14s, border-color 0.14s;
+}
+
+.sam-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    transition: left 0.16s, background 0.14s;
+}
+
+.sam-switch.on {
+    background: var(--brand);
+    border-color: var(--brand);
+}
+
+.sam-switch.on::after {
+    left: 16px;
+    background: var(--brand-contrast);
+}
+
+.sam-switch:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--brand-tint);
+}
+
+.sam-switch:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ── Segmented control ──────────────────────────────────────────────── */
+
+.sam-segmented {
+    display: inline-flex;
+    background: var(--bg);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 2px;
+    gap: 2px;
+}
+
+.sam-segmented button {
+    padding: 4px 12px;
+    font-size: 12px;
+    font-family: var(--font-sans);
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: calc(var(--radius) - 2px);
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+
+.sam-segmented button:hover {
+    color: var(--text);
+}
+
+.sam-segmented button.active {
+    background: var(--bg-surface-3);
+    color: var(--text);
+}
+
+/* ── Chip (filter pill) ─────────────────────────────────────────────── */
+
+.sam-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-family: var(--font-sans);
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+
+.sam-chip:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+
+.sam-chip.active {
+    background: var(--bg-selection);
+    color: var(--text);
+}
+
+.sam-chip .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* ── Card (panel with header) ───────────────────────────────────────── */
+
+.sam-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.sam-card-head {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+}
+
+.sam-card-head .spacer {
+    flex: 1;
+}
+
+.sam-card-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* ── Scrim + slide-over drawer ──────────────────────────────────────── */
+
+.sam-scrim {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    backdrop-filter: blur(3px);
+    z-index: 50;
+    animation: sam-fade 0.14s ease-out;
+}
+
+@keyframes sam-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.sam-drawer.slide-over {
+    top: 0;
+    width: var(--drawer-width, min(760px, 100vw));
+    max-width: 100vw;
+    z-index: 51;
+    animation: sam-slidein 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes sam-slidein {
+    from { transform: translateX(24px); opacity: 0; }
+    to { transform: none; opacity: 1; }
+}

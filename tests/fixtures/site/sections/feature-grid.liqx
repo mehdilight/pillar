@@ -1,0 +1,10 @@
+<div class="features">
+  {section.blocks.map((block) => <div class="feature"><h3>{block.settings.title}</h3></div>)}
+</div>
+<schema>
+  {
+    "name": "Feature grid",
+    "settings": [],
+    "blocks": [ { "type": "feature", "name": "Feature", "settings": [ { "id": "title", "type": "text", "label": "Title" } ] } ]
+  }
+</schema>
