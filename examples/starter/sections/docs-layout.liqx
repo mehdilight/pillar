@@ -1,0 +1,27 @@
+---
+const current = page.url;
+---
+<div class="wrap docs">
+  <aside class="docs-nav">
+    <p class="docs-nav-title">{section.settings.heading}</p>
+    <ul>
+      {collections.docs.items.map((entry) =>
+        <li><a href={entry.url} class:current={entry.url === current}>{entry.title}</a></li>
+      )}
+    </ul>
+  </aside>
+  <article class="prose docs-body">
+    <h1>{page.title}</h1>
+    {page.content}
+  </article>
+</div>
+<schema>
+{
+  "name": "Docs page",
+  "description": "A documentation page with a sidebar of every entry in the docs collection.",
+  "enabled_on": ["doc"],
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Sidebar heading", "default": "Documentation" }
+  ]
+}
+</schema>

@@ -5,7 +5,7 @@ import type { JSX } from 'solid-js';
  *
  * Carried over from bastet's theme editor, renamed into Pillar's vocabulary:
  * a *page* is composed of *sections*, each section declares its editable
- * surface in the `<schema>` block of its `.liqx` file, and the merchant's
+ * surface in the `<schema>` block of its `.liqx` file, and the editor's
  * choices live in `templates/<name>.json` — never in the template source.
  */
 

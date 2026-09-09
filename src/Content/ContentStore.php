@@ -62,17 +62,7 @@ final class ContentStore {
 		}
 
 		foreach ( $found as $collection => $files ) {
-			// Newest first when the collection is dated, by slug otherwise —
-			// so a blog reads as a blog without every theme sorting it again.
-			usort(
-				$files,
-				static function ( MarkdownFile $a, MarkdownFile $b ): int {
-					$dateA = (string) ( $a->frontmatter['date'] ?? '' );
-					$dateB = (string) ( $b->frontmatter['date'] ?? '' );
-
-					return '' !== $dateA || '' !== $dateB ? $dateB <=> $dateA : $a->slug <=> $b->slug;
-				}
-			);
+			usort( $files, self::order( ... ) );
 
 			$found[ $collection ] = $files;
 		}
@@ -80,6 +70,30 @@ final class ContentStore {
 		ksort( $found );
 
 		return $this->files = $found;
+	}
+
+	/**
+	 * The order a collection reads in, without every template sorting it again.
+	 *
+	 * An explicit `order:` wins — documentation is a sequence, and sorting it
+	 * alphabetically puts "Getting started" in the middle. Otherwise newest
+	 * first when the collection is dated, which is what a blog wants, and by
+	 * slug when it is neither.
+	 */
+	private static function order( MarkdownFile $a, MarkdownFile $b ): int {
+		$orderA = $a->frontmatter['order'] ?? null;
+		$orderB = $b->frontmatter['order'] ?? null;
+
+		if ( null !== $orderA || null !== $orderB ) {
+			// An entry with no position sorts after every entry that has one,
+			// rather than jumping to the front as a zero would.
+			return ( $orderA ?? PHP_INT_MAX ) <=> ( $orderB ?? PHP_INT_MAX );
+		}
+
+		$dateA = (string) ( $a->frontmatter['date'] ?? '' );
+		$dateB = (string) ( $b->frontmatter['date'] ?? '' );
+
+		return '' !== $dateA || '' !== $dateB ? $dateB <=> $dateA : $a->slug <=> $b->slug;
 	}
 
 	/** @return list<string> */

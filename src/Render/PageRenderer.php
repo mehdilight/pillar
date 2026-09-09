@@ -14,7 +14,7 @@ use Pillar\Template\PageTemplate;
 use Pillar\Template\SectionInstance;
 
 /**
- * A whole page: the merchant's template JSON, each section rendered, wrapped in
+ * A whole page: the page's template JSON, each section rendered, wrapped in
  * the theme's layout.
  *
  * `pillar build` and `pillar dev`'s preview are two callers of this one class.

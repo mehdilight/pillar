@@ -58,7 +58,7 @@ final class SectionRenderer {
 
 			return '' === $section->customCss ? $html : $this->withCustomCss( $section, $html );
 		} catch ( \Throwable $error ) {
-			// The merchant's other sections still have to ship.
+			// The editor's other sections still have to ship.
 			$this->errors->add( $route, $section->id, $section->type, $error );
 
 			return '';

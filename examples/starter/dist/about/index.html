@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>About — Pillar starter</title>
+  <meta name="description" content="A local-first static site generator" />
+  <link rel="stylesheet" href="/assets/base.784497b6.css" />
+  <style>
+    :root {
+      --accent: #005bd3;
+      --ink: #111827;
+      --measure: 720px;
+    }
+  </style>
+</head>
+<body>
+  <section id="pillar-section-header" class="pillar-section pillar-section--header" data-section-type="header"><div class="wrap header">
+  <a class="brand" href="/">Pillar starter</a>
+  <nav>
+    <a href="/docs/getting-started/">Docs</a><a href="/blog/">Writing</a><a href="/about/">About</a>
+  </nav>
+</div>
+
+</section>
+  <main id="main"><section id="pillar-section-body" class="pillar-section pillar-section--page-content" data-section-type="page-content"><article class="wrap prose">
+  <h1>About</h1>
+  
+  <p>Pillar is a static site generator with a visual editor, built on
+<a href="https://github.com/phpmystic/liqx">Liqx</a> — a JSX-flavoured template language
+for PHP that keeps the section/schema model but swaps <code>{{ }}</code> for real HTML
+and real expressions.</p>
+<p>The whole product is three commands:</p>
+<ul>
+<li><code>pillar dev</code> — a dashboard and a live preview, on your machine</li>
+<li><code>pillar build</code> — the site, as plain HTML files</li>
+<li><code>pillar deploy</code> — those files, on whichever host you use</li>
+</ul>
+<p>There is no database. A site is a directory: templates and content are files,
+saving is <code>file_put_contents</code>, and git is the store — draft is the working
+tree, publish is a commit, history is <code>git log</code>.</p>
+
+</article>
+
+</section></main>
+  <section id="pillar-section-footer" class="pillar-section pillar-section--footer" data-section-type="footer"><div class="wrap footer">
+  <p>© Pillar — a local-first static site generator</p>
+  <p class="built">Built with Pillar</p>
+</div>
+
+</section>
+</body>
+</html>

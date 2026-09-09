@@ -5,6 +5,10 @@ with a **visual dashboard** you run on your own machine, schema-driven editing,
 GitHub as the source of data, and pluggable **deploy adapters** (Vercel,
 Netlify, Cloudflare, GitHub Pages).
 
+General purpose: a blog, a documentation site, a landing page, a portfolio, a
+changelog. The section/schema model comes from storefront theming, but nothing
+here is about commerce — a section is a section.
+
 The whole product in one line: `pillar dev` opens a dashboard, you edit,
 `pillar build` writes `dist/` — plain HTML files, no server on the public path.
 

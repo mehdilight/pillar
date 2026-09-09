@@ -1,0 +1,17 @@
+<div class="wrap posts">
+  <if {section.settings.heading}><h2>{section.settings.heading}</h2></if>
+  <ul class="post-list">
+    {collections.posts.items.slice(0, section.settings.limit).map((post) => <PostCard post={post} excerpt={section.settings.show_excerpt} />)}
+  </ul>
+</div>
+<schema>
+{
+  "name": "Post list",
+  "description": "The latest entries from the posts collection.",
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "Writing" },
+    { "id": "limit", "type": "number", "label": "How many", "default": 5, "min": 1, "max": 50 },
+    { "id": "show_excerpt", "type": "checkbox", "label": "Show excerpts", "default": true }
+  ]
+}
+</schema>

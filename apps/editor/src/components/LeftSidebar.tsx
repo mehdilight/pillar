@@ -9,10 +9,10 @@ import type { BlockInstance, PageSection } from '../types';
 /**
  * The page tree.
  *
- * Layout sections (header, footer) bracket the template's own, which are the
- * only ones that reorder — the layout decides where a header goes, not the
- * merchant. Drag uses the platform's own DnD rather than a library: one list,
- * one axis, and the row markup stays identical to bastet's.
+ * Layout sections (header, footer) bracket the page's own, which are the only
+ * ones that reorder — the layout decides where a header goes. Drag uses the
+ * platform's own DnD rather than a library: one list, one axis, and the row
+ * markup stays identical to bastet's.
  */
 export default function LeftSidebar() {
   const [addOpen, setAddOpen] = createSignal(false);

@@ -1,0 +1,4 @@
+<article class="feature">
+  <h3>{props.block.settings.title}</h3>
+  <p>{props.block.settings.body}</p>
+</article>

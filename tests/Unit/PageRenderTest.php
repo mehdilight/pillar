@@ -70,6 +70,25 @@ final class PageRenderTest extends SiteTestCase {
 		self::assertStringContainsString( 'Why static', $html );
 	}
 
+	public function test_an_explicit_order_beats_the_date(): void {
+		// Documentation is a sequence; alphabetical puts "Getting started" in
+		// the middle of it.
+		foreach ( [ 'zebra' => 1, 'alpha' => 2 ] as $slug => $order ) {
+			file_put_contents(
+				$this->root . '/content/posts/' . $slug . '.md',
+				"---\ntitle: {$slug}\norder: {$order}\n---\nBody.\n"
+			);
+		}
+
+		$titles = array_map(
+			static fn ( $post ): mixed => $post->beforeMethod( 'title' ),
+			$this->pillar()->content->collection( 'posts' )->items()
+		);
+
+		self::assertSame( [ 'zebra', 'alpha' ], array_slice( $titles, 0, 2 ) );
+		self::assertContains( 'Hello world', $titles, 'entries with no position still appear, after' );
+	}
+
 	public function test_drafts_are_excluded_unless_asked_for(): void {
 		self::assertStringNotContainsString( 'Unfinished', $this->pillar()->render( 'index' ) );
 		self::assertStringContainsString( 'Unfinished', $this->pillar( drafts: true )->render( 'index' ) );

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Writing a section — Pillar starter</title>
+  <meta name="description" content="A local-first static site generator" />
+  <link rel="stylesheet" href="/assets/base.784497b6.css" />
+  <style>
+    :root {
+      --accent: #005bd3;
+      --ink: #111827;
+      --measure: 720px;
+    }
+  </style>
+</head>
+<body>
+  <section id="pillar-section-header" class="pillar-section pillar-section--header" data-section-type="header"><div class="wrap header">
+  <a class="brand" href="/">Pillar starter</a>
+  <nav>
+    <a href="/docs/getting-started/">Docs</a><a href="/blog/">Writing</a><a href="/about/">About</a>
+  </nav>
+</div>
+
+</section>
+  <main id="main"><section id="pillar-section-body" class="pillar-section pillar-section--docs-layout" data-section-type="docs-layout"><div class="wrap docs">
+  <aside class="docs-nav">
+    <p class="docs-nav-title">Documentation</p>
+    <ul>
+      <li><a href="/docs/content-collections/">Content collections</a></li><li><a href="/docs/getting-started/">Getting started</a></li><li><a href="/docs/layers/">Themes and addons</a></li><li><a href="/docs/writing-a-section/" class="current">Writing a section</a></li>
+    </ul>
+  </aside>
+  <article class="prose docs-body">
+    <h1>Writing a section</h1>
+    <p>A section is one <code>.liqx</code> file. Markup at the top, a <code>&lt;schema&gt;</code> block at the
+bottom saying what can be edited:</p>
+<pre><code class="language-liqx">&lt;div class=&quot;wrap hero&quot;&gt;
+  &lt;h1&gt;{section.settings.heading}&lt;/h1&gt;
+&lt;/div&gt;
+&lt;schema&gt;
+{
+  &quot;name&quot;: &quot;Hero&quot;,
+  &quot;settings&quot;: [
+    { &quot;id&quot;: &quot;heading&quot;, &quot;type&quot;: &quot;text&quot;, &quot;label&quot;: &quot;Heading&quot;, &quot;default&quot;: &quot;Hello&quot; }
+  ]
+}
+&lt;/schema&gt;
+</code></pre>
+<p>Drop it in <code>sections/</code>, and it appears in the dashboard's <em>Add section</em> list
+with a text field labelled Heading. There is no registration step.</p>
+<p>Values are cast to what their type promises before the template sees them, so
+<code>{section.settings.padding + 8}</code> is arithmetic, not string concatenation, even
+though JSON round-tripped it through a form.</p>
+
+  </article>
+</div>
+
+</section></main>
+  <section id="pillar-section-footer" class="pillar-section pillar-section--footer" data-section-type="footer"><div class="wrap footer">
+  <p>© Pillar — a local-first static site generator</p>
+  <p class="built">Built with Pillar</p>
+</div>
+
+</section>
+</body>
+</html>

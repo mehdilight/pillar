@@ -1,0 +1,7 @@
+{
+  "label": "Docs",
+  "fields": [
+    { "id": "title", "type": "text", "label": "Title" },
+    { "id": "order", "type": "number", "label": "Sidebar position", "default": 10 }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "header": {
+      "section_type": "header",
+      "settings": {
+        "links": "Docs | /docs/getting-started/, Writing | /blog/, About | /about/"
+      },
+      "is_layout": true,
+      "order": 0
+    },
+    "footer": {
+      "section_type": "footer",
+      "settings": {
+        "note": "\u00a9 Pillar \u2014 a local-first static site generator"
+      },
+      "is_layout": true,
+      "order": 1
+    }
+  },
+  "order": [
+    "header",
+    "footer"
+  ]
+}

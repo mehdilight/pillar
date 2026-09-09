@@ -47,7 +47,10 @@ final class RouteTable {
 			}
 		}
 
-		foreach ( array_keys( $templates ) as $name ) {
+		foreach ( array_keys( $templates ) as $key ) {
+			// Cast: a `404` template comes back as an integer key (see Layers).
+			$name = (string) $key;
+
 			// `layout.json` is the layout's own sections, not a page; a content
 			// template is rendered per item above, never on its own.
 			if ( 'layout' === $name || $this->isContentTemplate( $name ) ) {

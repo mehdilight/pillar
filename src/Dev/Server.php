@@ -82,7 +82,7 @@ final class Server {
 			$html = $pillar->render( $route->template, $route->url, $route->data );
 
 			// A section that threw rendered as empty; the editor should say so
-			// rather than leave a hole the merchant cannot explain.
+			// rather than leave a hole the editor cannot explain.
 			if ( ! $pillar->errors->isEmpty() ) {
 				$html .= $this->errorOverlay( $pillar->errors->all() );
 			}

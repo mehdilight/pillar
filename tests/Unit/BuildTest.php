@@ -94,6 +94,21 @@ final class BuildTest extends SiteTestCase {
 		self::assertSame( [ 'written' => 1, 'skipped' => 3 ], $this->counts( $this->build() ) );
 	}
 
+	public function test_a_template_named_404_does_not_crash_the_build(): void {
+		// PHP coerces the array key "404" to an integer, and everything that
+		// passed a listing key on as a name crashed on a site with a 404 page —
+		// which is most sites.
+		file_put_contents(
+			$this->root . '/templates/404.json',
+			(string) json_encode( [ 'sections' => [ 'body' => [ 'section_type' => 'hero', 'settings' => [ 'heading' => 'Not found' ] ] ] ] )
+		);
+
+		$this->build();
+
+		self::assertFileExists( $this->root . '/dist/404.html' );
+		self::assertStringContainsString( 'Not found', (string) file_get_contents( $this->root . '/dist/404.html' ) );
+	}
+
 	public function test_force_rebuilds_everything(): void {
 		$this->build();
 

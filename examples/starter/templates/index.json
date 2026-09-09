@@ -1,0 +1,32 @@
+{
+  "sections": {
+    "hero_main": {
+      "section_type": "hero",
+      "settings": {
+        "heading": "Markdown in, HTML out.",
+        "subheading": "A local-first static site generator built on Liqx. Edit in the dashboard, commit with git, deploy anywhere.",
+        "cta_label": "Read the writing",
+        "cta_url": "/blog/",
+        "align": "center",
+        "padding": 120
+      },
+      "order": 0
+    },
+    "features": {
+      "section_type": "feature-grid",
+      "settings": { "heading": "Why Pillar", "columns": 3 },
+      "blocks": [
+        { "id": "f_local", "type": "feature", "settings": { "title": "Local first", "body": "No database, no service, no account. A site is a directory and saving is writing a file." } },
+        { "id": "f_schema", "type": "feature", "settings": { "title": "Schema driven", "body": "One <schema> block in a template becomes the whole editing surface — nothing else can be changed." } },
+        { "id": "f_git", "type": "feature", "settings": { "title": "Git is the store", "body": "Draft is the working tree, publish is a commit, history is git log, rollback is git revert." } }
+      ],
+      "order": 1
+    },
+    "latest": {
+      "section_type": "post-list",
+      "settings": { "heading": "Writing", "limit": 3, "show_excerpt": true },
+      "order": 2
+    }
+  },
+  "order": ["hero_main", "features", "latest"]
+}

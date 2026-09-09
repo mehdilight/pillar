@@ -1,0 +1,6 @@
+{
+  "label": "Pages",
+  "fields": [
+    { "id": "title", "type": "text", "label": "Title" }
+  ]
+}

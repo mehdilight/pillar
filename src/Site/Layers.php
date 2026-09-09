@@ -82,7 +82,13 @@ final class Layers {
 	 * extension — a higher layer's file shadowing a lower one's, as `resolve()`
 	 * would. This is what "every section this site has" means.
 	 *
-	 * @return array<string, string> name => absolute path
+	 * **Keys are not always strings.** PHP coerces a numeric-string array key
+	 * to an integer, so `templates/404.json` comes back keyed `404` as an int.
+	 * Callers that pass a key on as a name must cast it — a `404` template is
+	 * an ordinary thing for a site to have, and it crashed everything that
+	 * assumed otherwise.
+	 *
+	 * @return array<array-key, string> name => absolute path
 	 */
 	public function listing( string $folder, string $extension = 'liqx' ): array {
 		$found = [];

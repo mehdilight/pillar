@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{page.title ? `${page.title} — ${site.title}` : site.title}</title>
+  <meta name="description" content={site.tagline}>
+  <link rel="stylesheet" href={'base.css' | asset_url}>
+  <style>
+    :root {
+      --accent: {settings.color_accent};
+      --ink: {settings.color_ink};
+      --measure: {settings.measure}px;
+    }
+  </style>
+</head>
+<body>
+  {section('header')}
+  <main id="main">{content_for_layout}</main>
+  {section('footer')}
+</body>
+</html>

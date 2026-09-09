@@ -82,7 +82,9 @@ final class SchemaParser {
 	public function allSections( array &$errors = [] ): array {
 		$out = [];
 
-		foreach ( array_keys( $this->layers->listing( 'sections' ) ) as $type ) {
+		foreach ( array_keys( $this->layers->listing( 'sections' ) ) as $key ) {
+			$type = (string) $key;
+
 			try {
 				$schema = $this->forSection( $type );
 
@@ -105,7 +107,9 @@ final class SchemaParser {
 	public function allBlocks( array &$errors = [] ): array {
 		$out = [];
 
-		foreach ( array_keys( $this->layers->listing( 'blocks' ) ) as $type ) {
+		foreach ( array_keys( $this->layers->listing( 'blocks' ) ) as $key ) {
+			$type = (string) $key;
+
 			try {
 				$schema = $this->forBlock( $type );
 

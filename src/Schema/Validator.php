@@ -74,7 +74,9 @@ final class Validator {
 	private function checkTemplates( array $sections ): void {
 		$layers = $this->site->layers();
 
-		foreach ( $layers->listing( 'templates', 'json' ) as $name => $path ) {
+		foreach ( $layers->listing( 'templates', 'json' ) as $key => $path ) {
+			$name = (string) $key;
+
 			try {
 				$template = PageTemplate::fromFile( $path, $name );
 			} catch ( PillarException $error ) {

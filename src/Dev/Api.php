@@ -86,7 +86,9 @@ final class Api {
 		$content  = $pillar->content->collectionNames();
 		$out      = [];
 
-		foreach ( array_keys( $pillar->site->layers()->listing( 'templates', 'json' ) ) as $name ) {
+		foreach ( array_keys( $pillar->site->layers()->listing( 'templates', 'json' ) ) as $key ) {
+			$name = (string) $key;
+
 			if ( 'layout' === $name ) {
 				continue;
 			}

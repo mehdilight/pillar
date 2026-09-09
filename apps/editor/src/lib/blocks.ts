@@ -108,7 +108,7 @@ export function reorderChildren(
  *
  * One rule, applied everywhere: the dragged block becomes a **sibling of the
  * block it was dropped on**, at that block's position. Within one container
- * that is a reorder; across two it is a move, and the merchant did not have to
+ * that is a reorder; across two it is a move, and the editor did not have to
  * learn a second gesture for it.
  *
  * Returns the list unchanged when the move is impossible rather than throwing,
@@ -200,8 +200,8 @@ export interface FlatBlock {
 /**
  * The tree as a list, which is what a sidebar draws.
  *
- * Collapsed containers keep their children out of the list entirely, so a
- * merchant with a deep layout can fold it away.
+ * Collapsed containers keep their children out of the list entirely, so a deep
+ * layout can be folded away.
  */
 export function flattenBlocks(
   blocks: BlockInstance[] | undefined,

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Themes and addons — Pillar starter</title>
+  <meta name="description" content="A local-first static site generator" />
+  <link rel="stylesheet" href="/assets/base.784497b6.css" />
+  <style>
+    :root {
+      --accent: #005bd3;
+      --ink: #111827;
+      --measure: 720px;
+    }
+  </style>
+</head>
+<body>
+  <section id="pillar-section-header" class="pillar-section pillar-section--header" data-section-type="header"><div class="wrap header">
+  <a class="brand" href="/">Pillar starter</a>
+  <nav>
+    <a href="/docs/getting-started/">Docs</a><a href="/blog/">Writing</a><a href="/about/">About</a>
+  </nav>
+</div>
+
+</section>
+  <main id="main"><section id="pillar-section-body" class="pillar-section pillar-section--docs-layout" data-section-type="docs-layout"><div class="wrap docs">
+  <aside class="docs-nav">
+    <p class="docs-nav-title">Documentation</p>
+    <ul>
+      <li><a href="/docs/content-collections/">Content collections</a></li><li><a href="/docs/getting-started/">Getting started</a></li><li><a href="/docs/layers/" class="current">Themes and addons</a></li><li><a href="/docs/writing-a-section/">Writing a section</a></li>
+    </ul>
+  </aside>
+  <article class="prose docs-body">
+    <h1>Themes and addons</h1>
+    <p>Every lookup resolves through a cascade: your own files, then any addons you
+list in <code>site.json</code>, then the theme.</p>
+<pre><code>sections/hero.liqx        ← yours always wins
+addons/blog-pack/sections/hero.liqx
+themes/basic/sections/hero.liqx
+</code></pre>
+<p>So you can override one section of a theme by dropping a file of the same name
+into your own <code>sections/</code>, with nothing to fork and nothing to eject from.</p>
+<p>When it is not obvious which file won:</p>
+<pre><code class="language-bash">pillar why sections/hero.liqx
+# wins     site      ./sections/hero.liqx
+# shadowed addon:blog-pack  ./addons/blog-pack/sections/hero.liqx
+</code></pre>
+<p>An addon is inert data — templates, assets, schemas, locales, no PHP — so
+installing one is copying a directory.</p>
+
+  </article>
+</div>
+
+</section></main>
+  <section id="pillar-section-footer" class="pillar-section pillar-section--footer" data-section-type="footer"><div class="wrap footer">
+  <p>© Pillar — a local-first static site generator</p>
+  <p class="built">Built with Pillar</p>
+</div>
+
+</section>
+</body>
+</html>

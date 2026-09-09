@@ -1,0 +1,12 @@
+<div class="wrap footer">
+  <p>{section.settings.note}</p>
+  <p class="built">Built with Pillar</p>
+</div>
+<schema>
+{
+  "name": "Footer",
+  "settings": [
+    { "id": "note", "type": "text", "label": "Footer note", "default": "© Pillar" }
+  ]
+}
+</schema>

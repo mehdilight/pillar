@@ -1,0 +1,5 @@
+<li class="post-card">
+  <a href={props.post.url}>{props.post.title}</a>
+  <time datetime={props.post.date}>{props.post.date}</time>
+  <if {props.excerpt}><p>{props.post.excerpt}</p></if>
+</li>

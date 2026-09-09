@@ -1,0 +1,10 @@
+<div class="wrap prose">{section.settings.body | markdownify}</div>
+<schema>
+{
+  "name": "Rich text",
+  "description": "A block of prose, written in markdown.",
+  "settings": [
+    { "id": "body", "type": "markdown", "label": "Body", "default": "## A heading\n\nSome **markdown**." }
+  ]
+}
+</schema>

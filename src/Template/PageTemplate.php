@@ -6,7 +6,7 @@ namespace Pillar\Template;
 use Pillar\PillarException;
 
 /**
- * `templates/<name>.json` — the merchant's composition of a page.
+ * `templates/<name>.json` — the author's composition of a page.
  *
  * Editor-owned: the dashboard writes this file, never the `.liqx` sources. It
  * is deliberately the same shape the editor's `PageSection` type uses, so the

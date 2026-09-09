@@ -151,7 +151,7 @@ final class Builder {
 		}
 
 		foreach ( $this->pillar->site->layers()->listing( 'templates', 'json' ) as $name => $path ) {
-			$parts[] = 'templates/' . $name . ':' . FileHash::of( $path );
+			$parts[] = 'templates/' . (string) $name . ':' . FileHash::of( $path );
 		}
 
 		return md5( implode( '|', $parts ) );

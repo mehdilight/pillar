@@ -1,0 +1,16 @@
+<div class="wrap header">
+  <a class="brand" href="/">{site.title}</a>
+  <nav>
+    {section.settings.links.split(',').map((link) => <a href={link.split('|')[1].trim()}>{link.split('|')[0].trim()}</a>)}
+  </nav>
+</div>
+<schema>
+{
+  "name": "Header",
+  "settings": [
+    { "id": "links", "type": "text", "label": "Links",
+      "default": "Writing | /blog/, About | /about/",
+      "info": "Comma separated, each as \"Label | /url/\"." }
+  ]
+}
+</schema>

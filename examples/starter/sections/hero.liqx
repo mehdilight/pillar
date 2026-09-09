@@ -1,0 +1,26 @@
+<div class="wrap hero" style={`padding-block:${section.settings.padding}px;text-align:${section.settings.align}`}>
+  <h1>{section.settings.heading}</h1>
+  <p class="lede">{section.settings.subheading}</p>
+  <if {section.settings.cta_label}>
+    <a class="button" href={section.settings.cta_url}>{section.settings.cta_label}</a>
+  </if>
+</div>
+<schema>
+{
+  "name": "Hero",
+  "description": "A heading, a line of copy and a call to action.",
+  "settings": [
+    { "id": "content_head", "type": "header", "content": "Content" },
+    { "id": "heading", "type": "text", "label": "Heading", "default": "Markdown in, HTML out." },
+    { "id": "subheading", "type": "textarea", "label": "Subheading",
+      "default": "A local-first static site generator. Edit here, deploy anywhere." },
+    { "id": "cta_label", "type": "text", "label": "Button label", "default": "Read the writing" },
+    { "id": "cta_url", "type": "url", "label": "Button link", "default": "/blog/" },
+    { "id": "style_head", "type": "header", "content": "Appearance" },
+    { "id": "align", "type": "radio", "label": "Alignment", "default": "center",
+      "options": [ { "value": "left", "label": "Left" }, { "value": "center", "label": "Center" } ] },
+    { "id": "padding", "type": "range", "label": "Vertical padding", "min": 32, "max": 200, "step": 8, "unit": "px", "default": 120 }
+  ],
+  "presets": [ { "name": "Hero" } ]
+}
+</schema>

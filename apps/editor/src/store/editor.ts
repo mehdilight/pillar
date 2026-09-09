@@ -127,7 +127,7 @@ export async function load(name: string = templateName()) {
     setTemplates(list.length ? list : payload.allTemplates);
     setStatus(draft);
     // A different page is a different set of edits: its history is not the one
-    // the merchant would expect ⌘Z to step back through.
+    // you would expect ⌘Z to step back through.
     setPast([]);
     setFuture([]);
     setLoading(false);
@@ -182,7 +182,7 @@ function apply(next: PageSection[]) {
   }, SAVE_DEBOUNCE_MS);
 }
 
-/** Every merchant edit goes through here — which is what makes one undo stack enough. */
+/** Every edit goes through here — which is what makes one undo stack enough. */
 export function updateSections(next: PageSection[]) {
   const current = allSections();
 

@@ -48,8 +48,9 @@ final class ContentSchema {
 	public static function all( Layers $layers, array &$errors = [] ): array {
 		$out = [];
 
-		foreach ( $layers->listing( 'schemas', 'json' ) as $collection => $path ) {
-			$raw = json_decode( (string) file_get_contents( $path ), true );
+		foreach ( $layers->listing( 'schemas', 'json' ) as $key => $path ) {
+			$collection = (string) $key;
+			$raw        = json_decode( (string) file_get_contents( $path ), true );
 
 			if ( ! is_array( $raw ) ) {
 				$errors[ $collection ] = sprintf( 'schemas/%s.json is not valid JSON.', $collection );

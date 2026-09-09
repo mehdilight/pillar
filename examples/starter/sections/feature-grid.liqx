@@ -1,0 +1,23 @@
+<div class="wrap features">
+  <if {section.settings.heading}><h2>{section.settings.heading}</h2></if>
+  <div class="grid" style={`--columns:${section.settings.columns}`}>
+    {section.blocks.map((block) => <Feature block={block} />)}
+  </div>
+</div>
+<schema>
+{
+  "name": "Feature grid",
+  "description": "Repeatable cards, three across.",
+  "max_blocks": 6,
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "Why Pillar" },
+    { "id": "columns", "type": "range", "label": "Columns", "min": 2, "max": 4, "step": 1, "default": 3 }
+  ],
+  "blocks": [
+    { "type": "feature", "name": "Feature", "settings": [
+      { "id": "title", "type": "text", "label": "Title", "default": "Fast" },
+      { "id": "body", "type": "textarea", "label": "Body", "default": "" }
+    ] }
+  ]
+}
+</schema>

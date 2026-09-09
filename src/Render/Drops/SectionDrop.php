@@ -6,8 +6,8 @@ namespace Pillar\Render\Drops;
 /**
  * `{section.settings.heading}` — what a section knows about itself.
  *
- * `settings` and `blocks` are plain arrays on purpose: they are data the
- * merchant typed, and Liqx reads arrays natively.
+ * `settings` and `blocks` are plain arrays on purpose: they are data someone
+ * typed into the dashboard, and Liqx reads arrays natively.
  */
 final class SectionDrop extends Drop {
 

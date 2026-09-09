@@ -1,0 +1,15 @@
+<article class="wrap prose">
+  <h1>{page.title}</h1>
+  <if {section.settings.show_date && page.date}>
+    <time datetime={page.date}>{page.date}</time>
+  </if>
+  {page.content}
+</article>
+<schema>
+{
+  "name": "Page content",
+  "settings": [
+    { "id": "show_date", "type": "checkbox", "label": "Show the date", "default": true }
+  ]
+}
+</schema>

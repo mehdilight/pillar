@@ -1,0 +1,8 @@
+{
+  "name": "Pillar starter",
+  "base_url": "https://example.com",
+  "output": "dist",
+  "deploy": "static",
+  "addons": [],
+  "plugins": []
+}

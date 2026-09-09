@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Getting started — Pillar starter</title>
+  <meta name="description" content="A local-first static site generator" />
+  <link rel="stylesheet" href="/assets/base.784497b6.css" />
+  <style>
+    :root {
+      --accent: #005bd3;
+      --ink: #111827;
+      --measure: 720px;
+    }
+  </style>
+</head>
+<body>
+  <section id="pillar-section-header" class="pillar-section pillar-section--header" data-section-type="header"><div class="wrap header">
+  <a class="brand" href="/">Pillar starter</a>
+  <nav>
+    <a href="/docs/getting-started/">Docs</a><a href="/blog/">Writing</a><a href="/about/">About</a>
+  </nav>
+</div>
+
+</section>
+  <main id="main"><section id="pillar-section-body" class="pillar-section pillar-section--docs-layout" data-section-type="docs-layout"><div class="wrap docs">
+  <aside class="docs-nav">
+    <p class="docs-nav-title">Documentation</p>
+    <ul>
+      <li><a href="/docs/content-collections/">Content collections</a></li><li><a href="/docs/getting-started/" class="current">Getting started</a></li><li><a href="/docs/layers/">Themes and addons</a></li><li><a href="/docs/writing-a-section/">Writing a section</a></li>
+    </ul>
+  </aside>
+  <article class="prose docs-body">
+    <h1>Getting started</h1>
+    <p>Install the package, then work on a directory:</p>
+<pre><code class="language-bash">composer require pillar/pillar
+pillar dev --site ./my-site
+</code></pre>
+<p><code>pillar dev</code> serves three things on one port: the dashboard at <code>/</code>, a JSON API
+over the working tree at <code>/api</code>, and the site itself at <code>/preview</code>. The preview
+renders through the same code <code>pillar build</code> uses, so what you see is what gets
+written.</p>
+<p>When you are ready:</p>
+<pre><code class="language-bash">pillar build          # → dist/, plain HTML files
+pillar build --force  # ignore the incremental manifest
+</code></pre>
+
+  </article>
+</div>
+
+</section></main>
+  <section id="pillar-section-footer" class="pillar-section pillar-section--footer" data-section-type="footer"><div class="wrap footer">
+  <p>© Pillar — a local-first static site generator</p>
+  <p class="built">Built with Pillar</p>
+</div>
+
+</section>
+</body>
+</html>

@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Brand",
+    "settings": [
+      { "id": "site_title", "type": "text", "label": "Site title", "default": "Pillar starter" },
+      { "id": "tagline", "type": "text", "label": "Tagline", "default": "A local-first static site generator" }
+    ]
+  },
+  {
+    "name": "Colors",
+    "settings": [
+      { "id": "color_accent", "type": "color", "label": "Accent", "default": "#005bd3", "css_var": "--accent" },
+      { "id": "color_ink", "type": "color", "label": "Text", "default": "#111827", "css_var": "--ink" }
+    ]
+  },
+  {
+    "name": "Layout",
+    "settings": [
+      { "id": "measure", "type": "range", "label": "Content width", "min": 560, "max": 1100, "step": 20, "unit": "px", "default": 720 },
+      { "id": "note", "type": "paragraph", "content": "Applied as a CSS custom property the theme reads." }
+    ]
+  }
+]
