@@ -45,9 +45,9 @@ final class Api {
 
 				[ 'templates' ] === $segments => $this->json( $this->templates() ),
 				'templates' === ( $segments[0] ?? '' ) && isset( $segments[1] ) && 'GET' === $method
-					=> $this->json( $this->template( $segments[1] ) ),
+					=> $this->json( $this->template( $this->safeName( $segments[1] ) ) ),
 				'templates' === ( $segments[0] ?? '' ) && isset( $segments[1] ) && 'PUT' === $method
-					=> $this->saveTemplate( $segments[1], $this->body( $request ) ),
+					=> $this->saveTemplate( $this->safeName( $segments[1] ), $this->body( $request ) ),
 
 				[ 'layout' ] === $segments && 'PUT' === $method => $this->saveTemplate( 'layout', $this->body( $request ) ),
 
@@ -304,7 +304,7 @@ final class Api {
 
 			$out[] = [
 				'name'   => $collection,
-				'label'  => $schema?->label ?? ucfirst( $collection ),
+				'label'  => null === $schema ? ucfirst( $collection ) : $schema->label,
 				'count'  => count( $files ),
 				// A collection with no `schemas/<name>.json` still lists and
 				// still edits — it simply has no declared fields.
@@ -453,8 +453,27 @@ final class Api {
 		}
 	}
 
+	/**
+	 * A name that may become a file name.
+	 *
+	 * Checked here rather than relying on `PathPolicy` alone: the policy
+	 * refuses a path that escapes the site, but `templates/` + `..` + `.json`
+	 * is `templates/...json` — inside the site, allowed by the policy, and
+	 * still nonsense. A name has to be a name.
+	 *
+	 * Dots are allowed between segments so a specialised template
+	 * (`product.landing`) still works; a bare `..` is not a name.
+	 */
+	private function safeName( string $name ): string {
+		if ( ! preg_match( '/^[a-z0-9][a-z0-9_-]*(\.[a-z0-9][a-z0-9_-]*)*$/i', $name ) ) {
+			throw new PillarException( sprintf( 'Not a usable name: "%s".', $name ) );
+		}
+
+		return $name;
+	}
+
 	private function safe( string $segment ): string {
-		return (string) preg_replace( '/[^a-z0-9_-]/i', '', $segment );
+		return $this->safeName( $segment );
 	}
 
 	private function json( mixed $data, int $status = 200 ): JsonResponse {

@@ -1,0 +1,151 @@
+<?php
+declare( strict_types=1 );
+
+namespace Pillar\Tests\Unit;
+
+use Pillar\Dev\Server;
+use Pillar\Tests\SiteTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * B4: the dashboard's API, over the working tree.
+ *
+ * `Server` takes a Request and returns a Response, so the whole surface is
+ * testable without starting a server — which is why the router script is four
+ * lines and holds no logic.
+ */
+final class DevApiTest extends SiteTestCase {
+
+	public function test_health_answers_with_the_site(): void {
+		$body = $this->json( 'GET', '/api/health' );
+
+		self::assertTrue( $body['ok'] );
+		self::assertSame( 'Fixture site', $body['site'] );
+	}
+
+	public function test_templates_lists_pages_with_the_route_each_previews(): void {
+		$templates = $this->json( 'GET', '/api/templates' );
+		$byName    = array_column( $templates, null, 'name' );
+
+		self::assertSame( '/', $byName['index']['route'] );
+		// A content template has no page of its own, so it previews a real item.
+		self::assertSame( '/posts/unfinished/', $byName['post']['route'] );
+		self::assertSame( 'Content', $byName['post']['group'] );
+	}
+
+	public function test_a_template_carries_its_sections_and_their_schemas(): void {
+		$payload = $this->json( 'GET', '/api/templates/index' );
+		$hero    = $payload['sections'][0];
+
+		self::assertSame( 'hero_a1', $hero['section_id'] );
+		self::assertSame( 'Build sites that outlive their tools', $hero['settings']['heading'] );
+		self::assertSame( 'Hero', $hero['schema']['name'] );
+		self::assertSame( [ 'heading', 'subheading', 'padding' ], array_column( $hero['schema']['settings'], 'id' ) );
+
+		// Layout sections travel with the page: the sidebar shows one list.
+		self::assertSame( [ 'header', 'footer' ], array_column( $payload['layout'], 'section_type' ) );
+		self::assertContains( 'hero', array_column( $payload['availableSections'], 'type' ) );
+	}
+
+	public function test_saving_a_template_writes_the_file(): void {
+		$payload  = $this->json( 'GET', '/api/templates/index' );
+		$sections = $payload['sections'];
+
+		$sections[0]['settings']['heading'] = 'Written by the dashboard';
+
+		$this->request( 'PUT', '/api/templates/index', [ 'sections' => $sections ] );
+
+		$written = json_decode( (string) file_get_contents( $this->root . '/templates/index.json' ), true );
+
+		self::assertSame( 'Written by the dashboard', $written['sections']['hero_a1']['settings']['heading'] );
+		self::assertSame( [ 'hero_a1', 'features_b2', 'posts_c3', 'hidden_d4' ], $written['order'], 'order is preserved' );
+	}
+
+	public function test_content_is_listed_with_the_fields_its_schema_declares(): void {
+		$collections = array_column( $this->json( 'GET', '/api/content' ), null, 'name' );
+
+		self::assertSame( 3, $collections['posts']['count'], 'drafts included — the editor edits them' );
+		self::assertSame( [ 'title', 'date', 'tags', 'layout', 'draft' ], array_column( $collections['posts']['fields'], 'id' ) );
+		self::assertSame( [], $collections['pages']['fields'], 'a collection with no schema still lists' );
+	}
+
+	public function test_saving_content_writes_a_normal_markdown_file(): void {
+		$this->request( 'PUT', '/api/content/posts/hello-world', [
+			'frontmatter' => [ 'title' => 'Renamed', 'date' => '2026-08-01', 'tags' => [ 'meta' ] ],
+			'body'        => "# Renamed\n\nEdited.\n",
+		] );
+
+		$file = (string) file_get_contents( $this->root . '/content/posts/hello-world.md' );
+
+		self::assertStringStartsWith( "---\n", $file );
+		self::assertStringContainsString( 'title: Renamed', $file );
+		self::assertStringContainsString( "# Renamed", $file );
+		// It has to stay a file a developer can open in an editor.
+		self::assertSame( 'Renamed', $this->pillar( drafts: true )->content->find( 'posts', 'hello-world' )?->title() );
+	}
+
+	public function test_deleting_content_removes_the_file(): void {
+		$this->request( 'DELETE', '/api/content/posts/why-static' );
+
+		self::assertFileDoesNotExist( $this->root . '/content/posts/why-static.md' );
+	}
+
+	public function test_a_path_that_tries_to_escape_the_site_is_refused(): void {
+		$response = $this->request( 'PUT', '/api/templates/..%2F..%2Fescaped', [ 'sections' => [] ] );
+
+		self::assertSame( 422, $response->getStatusCode() );
+		self::assertFileDoesNotExist( dirname( $this->root ) . '/escaped.json' );
+	}
+
+	public function test_status_is_honest_when_the_site_is_not_a_repository(): void {
+		$status = $this->json( 'GET', '/api/status' );
+
+		self::assertSame( 0, $status['count'] );
+		self::assertSame( 'no repository', $status['branch'] );
+	}
+
+	public function test_the_preview_renders_with_the_editor_attributes(): void {
+		$response = $this->request( 'GET', '/preview/' );
+
+		self::assertSame( 200, $response->getStatusCode() );
+		self::assertStringContainsString( 'data-pillar-section-id="hero_a1"', (string) $response->getContent() );
+	}
+
+	public function test_the_preview_names_the_routes_it_has_when_asked_for_one_it_does_not(): void {
+		$response = $this->request( 'GET', '/preview/nope/' );
+
+		self::assertSame( 404, $response->getStatusCode() );
+		self::assertStringContainsString( '/posts/hello-world/', (string) $response->getContent() );
+	}
+
+	public function test_a_broken_section_surfaces_in_the_preview_rather_than_leaving_a_hole(): void {
+		file_put_contents( $this->root . '/sections/hero.liqx', '<div>{ broken' );
+
+		$html = (string) $this->request( 'GET', '/preview/' )->getContent();
+
+		self::assertStringContainsString( 'section(s) failed to render', $html );
+		self::assertStringContainsString( '© Fixture', $html, 'the rest of the page still renders' );
+	}
+
+	public function test_site_assets_are_served_with_their_real_content_type(): void {
+		$response = $this->request( 'GET', '/assets/base.css' );
+
+		self::assertSame( 200, $response->getStatusCode() );
+		// A module script served as text/html is refused outright by the
+		// browser, with a blank page and nothing in the console as the symptom.
+		self::assertSame( 'text/css; charset=utf-8', $response->headers->get( 'Content-Type' ) );
+	}
+
+	/** @param array<string, mixed>|null $body */
+	private function request( string $method, string $uri, ?array $body = null ): Response {
+		$request = Request::create( $uri, $method, [], [], [], [], null === $body ? null : (string) json_encode( $body ) );
+
+		return ( new Server( $this->root, $this->root . '/no-dashboard' ) )->handle( $request );
+	}
+
+	/** @return array<mixed> */
+	private function json( string $method, string $uri ): array {
+		return (array) json_decode( (string) $this->request( $method, $uri )->getContent(), true );
+	}
+}

@@ -381,8 +381,8 @@ to point people at. A plugin is for when PHP is genuinely required.
 | **B1** | `Pillar\Render` — `LayeredFileSystem`, `EnvironmentFactory`, drops, `SectionRenderer`, `PageRenderer` | one `.liqx` plus one `.md` render to correct HTML in a unit test | **done** |
 | **B2** | `Pillar\Schema` + generated field types + `pillar check` | catches a bad field type, an unknown section in a template JSON, a content file violating its schema | **done** |
 | **B3** | `Pillar\Build` — routes, incremental, assets, images; `pillar build` / `serve` | a 500-page site builds; an unchanged rebuild is near-instant | **done** (images and `serve` outstanding) |
-| **B4** | `Pillar\Dev` — the §8 API and `/preview` | the editor drops its fixtures and drives real files | next |
-| **B5** | `Pillar\Plugin` + the registries; core's sitemap/feed/search rewritten onto them; **the SEO plugin ported from bastet** | removing the sitemap plugin removes the sitemap, and nothing else changes | |
+| **B4** | `Pillar\Dev` — the §8 API and `/preview` | the editor drops its fixtures and drives real files | **done** |
+| **B5** | `Pillar\Plugin` + the registries; core's sitemap/feed/search rewritten onto them; **the SEO plugin ported from bastet** | removing the sitemap plugin removes the sitemap, and nothing else changes | next |
 | **B6** | Theme addons — the cascade, `addon.yaml`, `--why` | an addon adds a section, the site overrides it, and `--why` explains both | cascade + `why` done in B1 |
 | **B7** | `Pillar\Git` + `Pillar\Deploy` | `pillar deploy` puts the same `dist/` on Vercel and on Pages | |
 
@@ -398,11 +398,19 @@ avoids reworking the render path later.
 ## 12. Decisions to make now
 
 - **Field types must be generated, not hand-kept** (§5). First commit of B2.
-- **`pillar dev`'s server model.** PHP's built-in server is single-threaded,
-  and the dashboard's iframe issues a second request while the first is still
-  in flight — that deadlocks. Either run `php -S` with
-  `PHP_CLI_SERVER_WORKERS`, or bind the API and the preview to two ports.
-  Decide before B4, or debug it later as a mystery hang.
+- ~~**`pillar dev`'s server model.**~~ Settled: `PHP_CLI_SERVER_WORKERS=4`,
+  set by `DevCommand` when it spawns the server. Two further things bit while
+  building it, both worth knowing before touching `Dev\Server`:
+  - **Take the path from `REQUEST_URI`, not `getPathInfo()`.** PHP's built-in
+    server rewrites `SCRIPT_NAME` to the requested file whenever that file
+    exists under the document root, and Symfony derives its base URL from
+    `SCRIPT_NAME` — so `/assets/base.css` arrived as a path info of `/` and
+    the dashboard's HTML was served in place of the stylesheet. Only paths
+    that exist on disk were affected, which is exactly the set that looks
+    like it must work.
+  - **Set content types explicitly.** A module script served as `text/html`
+    is refused by the browser's strict MIME check for modules, and the only
+    symptom is a blank page with an empty console.
 - **Where the sandbox line sits.** liqx's frontmatter is already sandboxed —
   no loops, no `new`, forbidden globals — and `PathPolicy` keeps `.php` out of
   a site or an addon. That is enough for a local tool where plugins are
