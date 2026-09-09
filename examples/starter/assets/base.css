@@ -112,3 +112,14 @@ h3 { font-size: 1.05rem; }
 .docs-nav a:hover { background: var(--bg-soft); color: var(--ink); text-decoration: none; }
 .docs-nav a.current { background: var(--bg-soft); color: var(--ink); font-weight: 600; }
 .docs-body { padding-top: 56px; }
+
+/* Pagination --------------------------------------------------------- */
+.pagination { display: flex; gap: 6px; align-items: center; justify-content: center; margin-top: 40px; }
+.page {
+  min-width: 34px; padding: 6px 10px; border-radius: 8px; text-align: center;
+  font-size: 14px; color: var(--muted); border: 1px solid transparent;
+}
+a.page:hover { background: var(--bg-soft); color: var(--ink); text-decoration: none; }
+.page.current { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.page.gap { color: var(--edge); }
+.page.disabled { opacity: 0.4; }

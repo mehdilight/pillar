@@ -18,6 +18,8 @@ final class PageTemplate {
 	private function __construct(
 		public readonly string $name,
 		public readonly array $sections,
+		/** Set when the template declares `"paginate"`. */
+		public readonly ?Pagination $paginate = null,
 	) {}
 
 	public static function fromArray( string $name, array $raw ): self {
@@ -49,7 +51,7 @@ final class PageTemplate {
 			usort( $sections, static fn ( SectionInstance $a, SectionInstance $b ): int => $a->order <=> $b->order );
 		}
 
-		return new self( $name, $sections );
+		return new self( $name, $sections, Pagination::fromArray( (array) ( $raw['paginate'] ?? [] ) ) );
 	}
 
 	public static function fromFile( string $path, string $name ): self {

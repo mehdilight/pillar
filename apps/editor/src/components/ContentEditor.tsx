@@ -1,5 +1,6 @@
 import { For, Show, createEffect, createResource, createSignal, on } from 'solid-js';
 import SettingInput from './SettingInput';
+import MarkdownEditor from './ui/MarkdownEditor';
 import { showToast } from './ui/Toast';
 import { api } from '../api/client';
 import * as editor from '../store/editor';
@@ -67,11 +68,11 @@ export default function ContentEditor(props: { item: ContentItem }) {
             </button>
           </div>
 
-          <textarea
-            class="w-full flex-1 min-h-[60vh] text-[13px] font-mono leading-relaxed p-4 rounded-xl border border-[#e1e3e5] bg-white outline-none focus:border-[#005bd3] resize-none shadow-sm"
-            spellcheck={false}
+          <MarkdownEditor
             value={body()}
-            onInput={(event) => setBody(event.currentTarget.value)}
+            onValue={setBody}
+            minHeight={520}
+            placeholder="Write in markdown…"
           />
         </div>
       </div>

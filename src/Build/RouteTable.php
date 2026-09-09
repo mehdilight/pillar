@@ -5,7 +5,9 @@ namespace Pillar\Build;
 
 use Pillar\Content\ContentStore;
 use Pillar\Content\MarkdownFile;
+use Pillar\Render\Drops\PaginateDrop;
 use Pillar\Site\Site;
+use Pillar\Template\PageTemplate;
 
 /**
  * Every page the site has: its static templates, plus one route per content
@@ -57,10 +59,56 @@ final class RouteTable {
 				continue;
 			}
 
-			$routes[] = new Route( url: $this->urlFor( $name ), template: $name );
+			$paginate = $this->paginationOf( $name );
+
+			if ( null === $paginate ) {
+				$routes[] = new Route( url: $this->urlFor( $name ), template: $name );
+
+				continue;
+			}
+
+			// A paginated template is not one page but N, and the build has to
+			// know N before rendering any of them.
+			foreach ( $this->pagesOf( $name, $paginate ) as $route ) {
+				$routes[] = $route;
+			}
 		}
 
 		return $routes;
+	}
+
+	/** @return list<Route> */
+	private function pagesOf( string $template, \Pillar\Template\Pagination $paginate ): array {
+		$items = $this->content->collection( $paginate->collection )->items();
+		$total = count( $items );
+		$pages = max( 1, (int) ceil( $total / $paginate->perPage ) );
+		$base  = $this->urlFor( $template );
+		$out   = [];
+
+		for ( $page = 1; $page <= $pages; $page++ ) {
+			$drop = new PaginateDrop(
+				array_slice( $items, ( $page - 1 ) * $paginate->perPage, $paginate->perPage ),
+				$page,
+				$pages,
+				$total,
+				$paginate->perPage,
+				$base
+			);
+
+			$out[] = new Route(
+				url: $drop->urlFor( $page ),
+				template: $template,
+				data: [ 'paginate' => $drop ],
+			);
+		}
+
+		return $out;
+	}
+
+	private function paginationOf( string $template ): ?\Pillar\Template\Pagination {
+		$path = $this->site->layers()->resolve( 'templates/' . $template . '.json' );
+
+		return null === $path ? null : PageTemplate::fromFile( $path, $template )->paginate;
 	}
 
 	/** @param array<string, string> $templates */

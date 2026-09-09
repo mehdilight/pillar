@@ -15,6 +15,7 @@ final class Application {
 
 		$application->add( new CheckCommand() );
 		$application->add( new DevCommand() );
+		$application->add( new MakeCollectionCommand() );
 		$application->add( new BuildCommand() );
 		$application->add( new WhyCommand() );
 

@@ -18,6 +18,9 @@ export default function Edit() {
     await editor.load(location.hash.replace(/^#\/?/, '') || 'index');
   });
 
+  // Clicking a section in the canvas selects it here, and vice versa.
+  onMount(() => onCleanup(editor.listenToPreview()));
+
   onMount(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const meta = event.metaKey || event.ctrlKey;

@@ -40,6 +40,7 @@ export default function Canvas() {
           }
         >
           <iframe
+            ref={(frame) => editor.registerPreview(frame)}
             src={editor.previewUrl()}
             class="w-full h-full border-0 overflow-hidden"
             title="Preview"

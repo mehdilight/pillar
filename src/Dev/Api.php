@@ -3,8 +3,10 @@ declare( strict_types=1 );
 
 namespace Pillar\Dev;
 
+use League\CommonMark\CommonMarkConverter;
 use Pillar\Build\Builder;
 use Pillar\Content\ContentStore;
+use Pillar\Content\ContentType;
 use Pillar\Content\MarkdownFile;
 use Pillar\Git\LocalGit;
 use Pillar\Pillar;
@@ -55,6 +57,13 @@ final class Api {
 				[ 'settings' ] === $segments && 'GET' === $method => $this->json( $this->settings() ),
 				[ 'settings' ] === $segments && 'PUT' === $method => $this->saveSettings( $this->body( $request ) ),
 
+				[ 'content-types' ] === $segments && 'GET' === $method => $this->json( $this->collections() ),
+				[ 'content-types' ] === $segments && 'POST' === $method
+					=> $this->createCollection( $this->body( $request ) ),
+				'content-types' === ( $segments[0] ?? '' ) && 2 === count( $segments ) && 'PUT' === $method
+					=> $this->updateCollection( $segments[1], $this->body( $request ) ),
+				[ 'content-types', 'presets' ] === $segments => $this->json( $this->presets() ),
+
 				[ 'content' ] === $segments => $this->json( $this->collections() ),
 				'content' === ( $segments[0] ?? '' ) && 2 === count( $segments )
 					=> $this->json( $this->items( $segments[1] ) ),
@@ -68,6 +77,8 @@ final class Api {
 				[ 'publish' ] === $segments && 'POST' === $method => $this->publish( $this->body( $request ) ),
 				[ 'discard' ] === $segments && 'POST' === $method => $this->discard(),
 				[ 'build' ] === $segments && 'POST' === $method => $this->json( $this->build() ),
+				[ 'markdown' ] === $segments && 'POST' === $method
+					=> $this->json( [ 'html' => $this->markdown( (string) ( $this->body( $request )['body'] ?? '' ) ) ] ),
 
 				default => $this->json( [ 'error' => 'No such endpoint.' ], 404 ),
 			};
@@ -297,26 +308,99 @@ final class Api {
 
 	/** @return list<array<string, mixed>> */
 	private function collections(): array {
-		$pillar  = $this->pillar( drafts: true );
-		$schemas = ContentSchema::all( $pillar->site->layers() );
-		$out     = [];
+		$pillar = $this->pillar( drafts: true );
+		$types  = ( new ContentType( $pillar->site ) )->all( $pillar->content );
+		$out    = [];
 
-		foreach ( $pillar->content->files() as $collection => $files ) {
-			$schema = $schemas[ $collection ] ?? null;
+		foreach ( $types as $name => $type ) {
+			$schema = $type['schema'];
 
 			$out[] = [
-				'name'   => $collection,
-				'label'  => null === $schema ? ucfirst( $collection ) : $schema->label,
-				'count'  => count( $files ),
+				'name'     => $name,
+				'label'    => $type['label'],
+				'count'    => $type['count'],
+				'template' => ContentType::singular( $name ),
 				// A collection with no `schemas/<name>.json` still lists and
 				// still edits — it simply has no declared fields.
-				'fields' => null === $schema
+				'fields'   => null === $schema
 					? []
 					: array_map( static fn ( Setting $f ): array => $f->toArray(), $schema->fields ),
 			];
 		}
 
 		return $out;
+	}
+
+	/** The field presets the dashboard offers when creating a type. */
+	private function presets(): array {
+		$out = [];
+
+		foreach ( ContentType::PRESETS as $key => $field ) {
+			$out[] = [ 'key' => $key, 'default' => in_array( $key, ContentType::DEFAULT_FIELDS, true ) ] + $field;
+		}
+
+		return $out;
+	}
+
+	/** @param array<string, mixed> $body */
+	private function createCollection( array $body ): Response {
+		$fields = $this->fieldsFrom( $body );
+
+		$result = ( new ContentType( $this->pillar()->site ) )->create(
+			(string) ( $body['name'] ?? '' ),
+			(string) ( $body['label'] ?? '' ),
+			$fields,
+			(bool) ( $body['template'] ?? true )
+		);
+
+		return $this->json( $result, 201 );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function updateCollection( string $name, array $body ): Response {
+		$written = ( new ContentType( $this->pillar()->site ) )->update(
+			$name,
+			(string) ( $body['label'] ?? ucfirst( $name ) ),
+			$this->fieldsFrom( $body ) ?? []
+		);
+
+		return $this->json( [ 'ok' => true, 'file' => $written ] );
+	}
+
+	/**
+	 * Fields as given, or resolved from preset keys.
+	 *
+	 * The dashboard sends `["title","date"]`; a script may send whole field
+	 * definitions. Both mean the same thing here.
+	 *
+	 * @param array<string, mixed> $body
+	 *
+	 * @return list<array<string, mixed>>|null
+	 */
+	private function fieldsFrom( array $body ): ?array {
+		if ( ! isset( $body['fields'] ) || ! is_array( $body['fields'] ) ) {
+			return null;
+		}
+
+		$fields = [];
+
+		foreach ( $body['fields'] as $field ) {
+			if ( is_string( $field ) ) {
+				if ( ! isset( ContentType::PRESETS[ $field ] ) ) {
+					throw new PillarException( sprintf( 'No such field preset: "%s".', $field ) );
+				}
+
+				$fields[] = ContentType::PRESETS[ $field ];
+
+				continue;
+			}
+
+			if ( is_array( $field ) ) {
+				$fields[] = $field;
+			}
+		}
+
+		return $fields;
 	}
 
 	/** @return list<array<string, mixed>> */
@@ -402,6 +486,19 @@ final class Api {
 		$this->git->discard();
 
 		return $this->json( [ 'ok' => true ] );
+	}
+
+	/**
+	 * Markdown, rendered for the editor's preview.
+	 *
+	 * Through the site's own converter rather than a copy in the browser: the
+	 * point of a preview is that it matches what the build will write, and two
+	 * markdown implementations do not agree about enough to promise that.
+	 */
+	private function markdown( string $body ): string {
+		return ( new CommonMarkConverter( [ 'html_input' => 'allow', 'allow_unsafe_links' => false ] ) )
+			->convert( $body )
+			->getContent();
 	}
 
 	/** @return array<string, mixed> */

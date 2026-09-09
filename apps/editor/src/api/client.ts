@@ -132,6 +132,34 @@ export const api = {
       touch('config/settings_data.json');
     }),
 
+  createCollection: (body: {
+    name: string;
+    label?: string;
+    fields?: string[];
+  }): Promise<{ name: string; singular: string; files: string[]; notes: string[] }> =>
+    request('/content-types', { method: 'POST', body: JSON.stringify(body) }, () => {
+      const name = body.name.trim();
+
+      if (fixtures.collections.some((collection) => collection.name === name)) {
+        throw new Error(`A "${name}" collection already exists.`);
+      }
+
+      fixtures.collections.push({
+        name,
+        label: body.label || name,
+        count: 0,
+        fields: (body.fields ?? ['title']).map((key) => ({
+          id: key,
+          type: key === 'date' ? 'date' : key === 'tags' ? 'tags' : key === 'draft' ? 'checkbox' : 'text',
+          label: key[0].toUpperCase() + key.slice(1),
+        })),
+      });
+
+      const singular = name.endsWith('s') ? name.slice(0, -1) : name;
+
+      return { name, singular, files: [], notes: [] };
+    }),
+
   collections: (): Promise<ContentCollection[]> =>
     request('/content', undefined, () =>
       fixtures.collections.map((collection) => ({
@@ -200,6 +228,12 @@ export const api = {
       store.settings = structuredClone(fixtures.settingsData);
       store.content = structuredClone(fixtures.content);
       store.dirty.clear();
+    }),
+
+  /** Rendered by the site's own converter, so the preview matches the build. */
+  markdown: (body: string): Promise<{ html: string }> =>
+    request('/markdown', { method: 'POST', body: JSON.stringify({ body }) }, () => {
+      throw new Error('no backend');
     }),
 
   build: (): Promise<{ pages: number; ms: number }> =>

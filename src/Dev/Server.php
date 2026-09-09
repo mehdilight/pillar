@@ -82,10 +82,12 @@ final class Server {
 			$html = $pillar->render( $route->template, $route->url, $route->data );
 
 			// A section that threw rendered as empty; the editor should say so
-			// rather than leave a hole the editor cannot explain.
+			// rather than leave a hole nobody can explain.
 			if ( ! $pillar->errors->isEmpty() ) {
 				$html .= $this->errorOverlay( $pillar->errors->all() );
 			}
+
+			$html .= $this->bridge();
 
 			return new Response( $html, 200, [ 'Content-Type' => 'text/html; charset=utf-8' ] );
 		} catch ( PillarException $error ) {
@@ -133,6 +135,22 @@ final class Server {
 		$response->headers->set( 'Cache-Control', 'no-store' );
 
 		return $response;
+	}
+
+	/**
+	 * The script that makes the canvas clickable.
+	 *
+	 * Appended to the preview's HTML rather than served as a file: it belongs
+	 * to this response, and a theme should never have to include anything for
+	 * the editor to work. Inlined for the same reason the attributes are
+	 * emitted by the renderer — a theme author cannot forget it, and cannot
+	 * ship it to production by accident, because a built page never goes
+	 * through here.
+	 */
+	private function bridge(): string {
+		$script = @file_get_contents( __DIR__ . '/editor-bridge.js' );
+
+		return false === $script ? '' : '<script>' . $script . '</script>';
 	}
 
 	/** Theme assets, straight off disk — the build's hashing is a build concern. */

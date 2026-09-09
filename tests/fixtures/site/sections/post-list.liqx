@@ -1,5 +1,8 @@
+---
+const entries = paginate ? paginate.items : collections.posts.items;
+---
 <ul class="post-list">
-  {collections.posts.items.map((post) => <PostCard post={post} />)}
+  {entries.map((post) => <PostCard post={post} />)}
 </ul>
 <schema>
   { "name": "Post list", "settings": [] }

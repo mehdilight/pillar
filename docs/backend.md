@@ -178,6 +178,26 @@ plugin contribute items into a collection from anywhere — a CSV, a JSON dump,
 an API pulled at build time. The store merges sources by collection; a
 file-backed item wins over a contributed one with the same slug.
 
+**Creating a type** is `Content\ContentType`, used by both `pillar
+make:collection` and the dashboard's *New type*. It writes the three files a
+person would write by hand — `schemas/<name>.json`, `content/<name>/`, and
+`templates/<singular>.json` copied from `page.json` — so a type made either way
+is the same thing, and either can be edited the other way. A declared type with
+no entries still lists, or creating one and adding its first entry would be
+impossible.
+
+**Pagination** is declared by the template, not by a section:
+
+```json
+{ "paginate": { "collection": "posts", "per_page": 10 }, "sections": … }
+```
+
+It has to live there because the route table must know how many pages exist
+*before* anything renders — a route table cannot be discovered by rendering.
+`RouteTable` emits `/blog/`, `/blog/page/2/`, … and hands each route a
+`PaginateDrop` carrying that page's slice, the URLs, and windowed `parts` so a
+two-hundred-page collection does not draw two hundred links.
+
 ## 7. Build
 
 `RouteTable` = static templates + one route per content item per collection +

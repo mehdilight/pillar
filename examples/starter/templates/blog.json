@@ -1,7 +1,28 @@
 {
-  "sections": {
-    "intro": { "section_type": "rich-text", "settings": { "body": "## Writing\n\nEverything published here, newest first." }, "order": 0 },
-    "list": { "section_type": "post-list", "settings": { "heading": "", "limit": 50, "show_excerpt": true }, "order": 1 }
+  "paginate": {
+    "collection": "posts",
+    "per_page": 2
   },
-  "order": ["intro", "list"]
+  "sections": {
+    "intro": {
+      "section_type": "rich-text",
+      "settings": {
+        "body": "## Writing\n\nEverything published here, newest first."
+      },
+      "order": 0
+    },
+    "list": {
+      "section_type": "post-list",
+      "settings": {
+        "heading": "",
+        "limit": 50,
+        "show_excerpt": true
+      },
+      "order": 1
+    }
+  },
+  "order": [
+    "intro",
+    "list"
+  ]
 }

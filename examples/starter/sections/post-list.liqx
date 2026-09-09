@@ -1,16 +1,25 @@
+---
+const source = section.settings.source || 'posts';
+const entries = paginate ? paginate.items : collections[source].items.slice(0, section.settings.limit);
+---
 <div class="wrap posts">
   <if {section.settings.heading}><h2>{section.settings.heading}</h2></if>
   <ul class="post-list">
-    {collections.posts.items.slice(0, section.settings.limit).map((post) => <PostCard post={post} excerpt={section.settings.show_excerpt} />)}
+    {entries.map((post) => <PostCard post={post} excerpt={section.settings.show_excerpt} />)}
   </ul>
+  <if {paginate}>
+    <Pagination paginate={paginate} />
+  </if>
 </div>
 <schema>
 {
   "name": "Post list",
-  "description": "The latest entries from the posts collection.",
+  "description": "Entries from a content collection. Paginates automatically when its template declares pagination.",
   "settings": [
     { "id": "heading", "type": "text", "label": "Heading", "default": "Writing" },
-    { "id": "limit", "type": "number", "label": "How many", "default": 5, "min": 1, "max": 50 },
+    { "id": "source", "type": "collection", "label": "Collection", "default": "posts" },
+    { "id": "limit", "type": "number", "label": "How many", "default": 5, "min": 1, "max": 50,
+      "info": "Ignored when the template paginates — the page size wins." },
     { "id": "show_excerpt", "type": "checkbox", "label": "Show excerpts", "default": true }
   ]
 }

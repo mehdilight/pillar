@@ -89,11 +89,35 @@ export {
   templates,
 };
 
-export const setActive = (id: string | null) => {
+/** The preview iframe, registered by the canvas so selection can reach it. */
+let previewFrame: HTMLIFrameElement | undefined;
+
+export const registerPreview = (frame: HTMLIFrameElement | undefined) => {
+  previewFrame = frame;
+};
+
+/**
+ * Tell the preview what is selected.
+ *
+ * `'*'` as the target origin: the preview is served by the same `pillar dev`
+ * process on the same origin, and in `npm run dev` it is proxied through Vite,
+ * where pinning the origin would break the one case the fallback exists for.
+ * Nothing secret travels this channel — it carries a section id.
+ */
+const tellPreview = (message: Record<string, unknown>) => {
+  previewFrame?.contentWindow?.postMessage(message, '*');
+};
+
+export const setActive = (id: string | null, fromPreview = false) => {
   batch(() => {
     setActiveSectionId(id);
     setShowSettings(id !== null);
   });
+
+  // A click that came *from* the canvas is already outlined there; echoing it
+  // back would fight the preview's own state and scroll the page under the
+  // cursor.
+  if (!fromPreview) tellPreview({ type: 'PILLAR_SELECT_SECTION', sectionId: id });
 };
 
 export const closeSettings = () => {
@@ -101,7 +125,38 @@ export const closeSettings = () => {
     setActiveSectionId(null);
     setShowSettings(false);
   });
+
+  tellPreview({ type: 'PILLAR_SELECT_SECTION', sectionId: null });
 };
+
+/**
+ * Listen for the preview's own selections.
+ *
+ * Started once by the editor screen. The message channel is deliberately
+ * one-way per direction: the preview reports what was clicked, the dashboard
+ * reports what is selected, and neither echoes the other.
+ */
+export function listenToPreview(): () => void {
+  const onMessage = (event: MessageEvent) => {
+    const data = event.data as { type?: string; sectionId?: string } | null;
+
+    if (!data) return;
+
+    if (data.type === 'PILLAR_SECTION_SELECTED' && data.sectionId) {
+      setActive(data.sectionId, true);
+    }
+
+    // A preview that has just (re)loaded knows nothing about the current
+    // selection — after a settings save reloads it, the outline would vanish.
+    if (data.type === 'PILLAR_PREVIEW_READY' && activeSectionId()) {
+      tellPreview({ type: 'PILLAR_SELECT_SECTION', sectionId: activeSectionId() });
+    }
+  };
+
+  window.addEventListener('message', onMessage);
+
+  return () => window.removeEventListener('message', onMessage);
+}
 
 export { setDevice, setTab };
 

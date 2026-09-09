@@ -12,6 +12,7 @@ import CodeInput from './ui/CodeInput';
 import TagsInput from './ui/TagsInput';
 import ImagePicker from './ui/ImagePicker';
 import Field, { controlClass } from './ui/Field';
+import MarkdownEditor from './ui/MarkdownEditor';
 
 interface SettingInputProps {
   setting: SchemaSetting;
@@ -86,14 +87,14 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'markdown' || setting().type === 'richtext'}>
-        <TextArea
-          label={setting().label}
-          info={setting().info ?? 'Markdown.'}
-          value={value() ?? ''}
-          rows={8}
-          class="font-mono text-xs"
-          onValue={props.onChange}
-        />
+        <Field label={setting().label} info={setting().info}>
+          <MarkdownEditor
+            value={value() ?? ''}
+            onValue={props.onChange}
+            minHeight={200}
+            placeholder="Markdown…"
+          />
+        </Field>
       </Match>
 
       <Match when={setting().type === 'html' || setting().type === 'code'}>
