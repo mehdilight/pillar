@@ -1,6 +1,8 @@
 /vendor
 /.phpunit.cache
-/.pillar
-/dist
 /public/editor
 node_modules
+
+# Build artefacts, at any depth — examples/starter has its own.
+dist/
+.pillar/
