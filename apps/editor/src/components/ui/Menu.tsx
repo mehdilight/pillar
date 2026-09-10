@@ -2,7 +2,7 @@ import { createSignal, type JSX } from 'solid-js';
 import { DropdownMenu } from '@kobalte/core';
 
 interface MenuProps {
-  trigger: JSX.Element;
+  trigger: () => JSX.Element;
   children: (close: () => void) => JSX.Element;
   align?: 'left' | 'right';
 }
@@ -12,7 +12,7 @@ export function Menu(props: MenuProps) {
 
   return (
     <DropdownMenu.Root open={open()} onOpenChange={setOpen} placement={props.align === 'left' ? 'bottom-start' : 'bottom-end'} gutter={6} fitViewport overflowPadding={12}>
-      <DropdownMenu.Trigger asChild>{props.trigger}</DropdownMenu.Trigger>
+      <DropdownMenu.Trigger asChild>{props.trigger()}</DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content class="ed-menu z-[100] w-56 overflow-hidden rounded-xl border border-[#e1e3e5] bg-white py-1 shadow-[0_12px_32px_rgba(0,0,0,0.14)]">
           {props.children(() => setOpen(false))}
