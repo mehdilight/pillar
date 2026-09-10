@@ -163,6 +163,7 @@ export interface ContentItem {
 /** One panel of `config/settings_schema.json`. */
 export interface SettingsPanelSchema {
   name: string;
+  plugin?: string;
   settings: SchemaSetting[];
 }
 
@@ -185,7 +186,16 @@ export interface HistoryEntry {
 
 export type DevicePreview = 'desktop' | 'mobile';
 
-export type EditorTab = 'sections' | 'settings' | 'content';
+export type EditorTab = 'sections' | 'settings' | 'content' | 'media';
+
+export interface MediaItem {
+  name: string;
+  url: string;
+  size: number;
+  width: number | null;
+  height: number | null;
+  readonly: boolean;
+}
 
 export interface IconProps {
   size?: number;

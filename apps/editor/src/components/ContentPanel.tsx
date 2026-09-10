@@ -1,8 +1,9 @@
 import { For, Show, createMemo, createResource, createSignal } from 'solid-js';
 import { ChevronLeft, ChevronRight, FileText, FolderPlus, Plus, Search } from 'lucide-solid';
 import NewCollectionModal from './NewCollectionModal';
+import NewEntryModal from './NewEntryModal';
 import { api } from '../api/client';
-import type { ContentItem } from '../types';
+import type { ContentCollection, ContentItem } from '../types';
 
 /**
  * The content collections — markdown files with a schema-driven frontmatter
@@ -29,6 +30,7 @@ export default function ContentPanel(props: {
   const [query, setQuery] = createSignal('');
   const [page, setPage] = createSignal(1);
   const [creating, setCreating] = createSignal(false);
+  const [newEntry, setNewEntry] = createSignal<ContentCollection | null>(null);
 
   const matching = createMemo(() => {
     const term = query().trim().toLowerCase();
@@ -61,6 +63,13 @@ export default function ContentPanel(props: {
 
   return (
     <>
+      <NewEntryModal collection={newEntry()} onClose={() => setNewEntry(null)} onCreated={async (item) => {
+        setOpenCollection(item.collection);
+        setQuery(''); setPage(1);
+        props.onSelect(item);
+        await refetch();
+        await refetchCollections();
+      }} />
       <NewCollectionModal
         open={creating()}
         onOpenChange={setCreating}
@@ -176,21 +185,7 @@ export default function ContentPanel(props: {
 
                     <button
                       type="button"
-                      onClick={async () => {
-                        const slug = window.prompt('New entry slug');
-
-                        if (!slug) return;
-
-                        await api.saveItem({
-                          collection: collection.name,
-                          slug,
-                          title: slug,
-                          frontmatter: { title: slug },
-                          body: '',
-                        });
-                        await refetch();
-                        await refetchCollections();
-                      }}
+                      onClick={() => setNewEntry(collection)}
                       class="flex items-center gap-1.5 px-4 py-1.5 mt-1 text-[11px] text-[#005bd3] hover:bg-blue-50/60 w-full transition-colors"
                     >
                       <Plus size={11} />

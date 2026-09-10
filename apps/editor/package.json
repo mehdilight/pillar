@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
-    "test": "esbuild src/lib/blocks.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/blocks.test.mjs --log-level=error && node --test .test/blocks.test.mjs"
+    "test": "esbuild src/lib/blocks.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/blocks.test.mjs --log-level=error && node --test .test/blocks.test.mjs",
+    "test:seo": "esbuild ../../plugins/seo/frontend/src/analysis.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/seo.test.mjs --log-level=error && node --test .test/seo.test.mjs"
   },
   "dependencies": {
     "lucide-solid": "^0.544.0",

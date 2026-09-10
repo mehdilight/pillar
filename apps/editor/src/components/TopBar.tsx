@@ -7,6 +7,7 @@ import {
   Hammer,
   History,
   Layers,
+  Images,
   MoreHorizontal,
   Palette,
   Redo2,
@@ -30,6 +31,7 @@ const TABS: Array<{ id: EditorTab; label: string; shortcut: string; icon: () => 
   { id: 'sections', label: 'Sections', shortcut: '⌘ 1', icon: () => <Layers size={18} /> },
   { id: 'settings', label: 'Site settings', shortcut: '⌘ 2', icon: () => <Palette size={18} /> },
   { id: 'content', label: 'Content', shortcut: '⌘ 3', icon: () => <FileText size={18} /> },
+  { id: 'media', label: 'Media library', shortcut: '⌘ 4', icon: () => <Images size={18} /> },
 ];
 
 export default function TopBar() {
@@ -56,7 +58,7 @@ export default function TopBar() {
 
   return (
     <header class="bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 flex items-center justify-between flex-shrink-0 text-sm h-14 select-none z-30 text-white">
-      {/* Left: exit and the three panels */}
+      {/* Left: exit and the panels */}
       <div class="flex items-center gap-2">
         <Tooltip content="Exit">
           <a

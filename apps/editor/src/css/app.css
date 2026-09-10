@@ -9,6 +9,7 @@
 
 @source '../**/*.tsx';
 @source '../**/*.ts';
+@source '../../../../plugins/seo/frontend/src/**/*.tsx';
 
 @theme {
     --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans,

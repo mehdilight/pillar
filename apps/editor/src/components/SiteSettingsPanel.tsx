@@ -1,6 +1,8 @@
 import { For, Show, createResource, createSignal } from 'solid-js';
 import { ChevronDown } from 'lucide-solid';
 import SettingInput from './SettingInput';
+import SeoSettingsPanel from '../../../../plugins/seo/frontend/src/SeoSettingsPanel';
+import { showToast } from './ui/Toast';
 import { api } from '../api/client';
 import * as editor from '../store/editor';
 
@@ -24,9 +26,13 @@ export default function SiteSettingsPanel() {
     setValues(next);
     window.clearTimeout(timer);
     timer = window.setTimeout(async () => {
-      await api.saveSettings(next);
-      await editor.refreshStatus();
-      editor.reloadPreview();
+      try {
+        await api.saveSettings(next);
+        await editor.refreshStatus();
+        editor.reloadPreview();
+      } catch (error) {
+        showToast(error instanceof Error ? error.message : 'Could not save settings', 'error');
+      }
     }, 400);
   };
 
@@ -53,6 +59,7 @@ export default function SiteSettingsPanel() {
 
               <Show when={open() === panel.name}>
                 <div class="px-3 pb-3">
+                  <Show when={panel.plugin === 'seo'} fallback={
                   <For each={panel.settings}>
                     {(setting) => (
                       <SettingInput
@@ -62,6 +69,9 @@ export default function SiteSettingsPanel() {
                       />
                     )}
                   </For>
+                  }>
+                    <SeoSettingsPanel fields={panel.settings} values={current()} onChange={change} />
+                  </Show>
                 </div>
               </Show>
             </div>

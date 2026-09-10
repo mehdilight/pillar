@@ -5,6 +5,7 @@ import SiteSettingsPanel from '../components/SiteSettingsPanel';
 import ContentPanel from '../components/ContentPanel';
 import ContentEditor from '../components/ContentEditor';
 import Canvas from '../components/Canvas';
+import MediaLibrary from '../components/MediaLibrary';
 import Toast from '../components/ui/Toast';
 import * as editor from '../store/editor';
 import { isOffline } from '../api/client';
@@ -43,6 +44,7 @@ export default function Edit() {
       if (event.key === '1') editor.setTab('sections');
       if (event.key === '2') editor.setTab('settings');
       if (event.key === '3') editor.setTab('content');
+      if (event.key === '4') editor.setTab('media');
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -62,6 +64,7 @@ export default function Edit() {
           </div>
         }
       >
+        <Show when={editor.tab() === 'media'} fallback={
         <div class="flex-1 grid grid-cols-[300px_1fr] overflow-hidden min-h-0">
           <Switch>
             <Match when={editor.tab() === 'sections'}>
@@ -81,6 +84,9 @@ export default function Edit() {
             </Show>
           </main>
         </div>
+        }>
+          <MediaLibrary />
+        </Show>
       </Show>
     </div>
   );

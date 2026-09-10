@@ -1,5 +1,6 @@
 import { For, Show, createEffect, createResource, createSignal, on } from 'solid-js';
 import SettingInput from './SettingInput';
+import SeoPanel from '../../../../plugins/seo/frontend/src/SeoPanel';
 import MarkdownEditor from './ui/MarkdownEditor';
 import { showToast } from './ui/Toast';
 import { api } from '../api/client';
@@ -14,6 +15,7 @@ import type { ContentItem } from '../types';
  */
 export default function ContentEditor(props: { item: ContentItem }) {
   const [collections] = createResource(api.collections);
+  const [panels] = createResource(api.editorPanels);
   const [frontmatter, setFrontmatter] = createSignal<Record<string, any>>({});
   const [body, setBody] = createSignal('');
   const [saving, setSaving] = createSignal(false);
@@ -100,6 +102,15 @@ export default function ContentEditor(props: { item: ContentItem }) {
             </For>
           </Show>
         </div>
+        <Show when={!fields().some((field) => field.id === 'draft')}>
+          <div class="px-3 pb-3"><SettingInput setting={{ id: 'content-draft', label: 'Draft', type: 'checkbox', info: 'Turn off when this entry is ready to appear in your built site.' }} value={frontmatter().draft ?? false} onChange={(draft) => setFrontmatter({ ...frontmatter(), draft })} /></div>
+        </Show>
+        <Show when={!panels.error && panels()?.seo}>
+          <SeoPanel collection={props.item.collection} slug={props.item.slug}
+            frontmatter={frontmatter()} body={body()}
+            onMeta={(seo) => setFrontmatter({ ...frontmatter(), seo })}
+            preview={(input) => api.pluginPreview('seo', input)} />
+        </Show>
       </aside>
     </div>
   );

@@ -1,6 +1,7 @@
 import * as fixtures from './fixtures';
 import type {
   ContentCollection,
+  MediaItem,
   ContentItem,
   DraftStatus,
   HistoryEntry,
@@ -72,7 +73,9 @@ async function request<T>(path: string, init: RequestInit | undefined, offline: 
   if (!response.ok) {
     const detail = await response.text().catch(() => '');
 
-    throw new Error(detail || `${response.status} ${response.statusText}`);
+    let message = detail;
+    try { message = JSON.parse(detail).error || detail; } catch { /* Plain-text responses also work. */ }
+    throw new Error(message || `${response.status} ${response.statusText}`);
   }
 
   return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
@@ -95,6 +98,20 @@ const store = {
 const touch = (file: string) => store.dirty.add(file);
 
 export const api = {
+  media: (): Promise<MediaItem[]> => request('/media', undefined, () => []),
+  uploadImage: (name: string, data: string): Promise<MediaItem> =>
+    request('/media', { method: 'POST', body: JSON.stringify({ name, data }) }, () => { throw new Error('Start the local server to upload an image.'); }),
+
+  deleteMedia: (url: string): Promise<void> => request('/media', { method: 'DELETE', body: JSON.stringify({ url }) }, () => { throw new Error('Start the local server to manage images.'); }),
+
+  editorPanels: (): Promise<Record<string, { name: string }>> =>
+    request('/editor/panels', undefined, () => ({})),
+
+  pluginPreview: (slug: string, input: Record<string, unknown>): Promise<import('../../../../plugins/seo/frontend/src/SeoPanel').SeoPreview> =>
+    request(`/editor/preview/${encodeURIComponent(slug)}`, { method: 'POST', body: JSON.stringify(input) }, () => {
+      throw new Error('Plugin preview needs the local server.');
+    }),
+
   templates: (): Promise<TemplateSummary[]> =>
     request('/templates', undefined, () => fixtures.templates),
 
@@ -172,6 +189,13 @@ export const api = {
     request(`/content/${encodeURIComponent(collection)}`, undefined, () =>
       store.content.filter((item) => item.collection === collection)
     ),
+
+  createItem: (item: ContentItem): Promise<void> =>
+    request(`/content/${encodeURIComponent(item.collection)}`, { method: 'POST', body: JSON.stringify(item) }, () => {
+      if (store.content.some((existing) => existing.collection === item.collection && existing.slug === item.slug)) throw new Error('An entry with this URL name already exists. Choose another.');
+      store.content.push(item);
+      touch(`content/${item.collection}/${item.slug}.md`);
+    }),
 
   saveItem: (item: ContentItem): Promise<void> =>
     request(`/content/${encodeURIComponent(item.collection)}/${encodeURIComponent(item.slug)}`, json(item), () => {
