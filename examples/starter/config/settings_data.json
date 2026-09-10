@@ -1,7 +1,13 @@
 {
-  "site_title": "Pillar starter",
-  "tagline": "A local-first static site generator",
-  "color_accent": "#005bd3",
-  "color_ink": "#111827",
-  "measure": 720
+    "site_title": "Pillar starter",
+    "tagline": "A local-first static site generator",
+    "color_ink": "#0a1217",
+    "color_paper": "#ffffff",
+    "color_surface": "#e4eff7",
+    "color_muted": "#85898b",
+    "color_accent": "#cdfe00",
+    "page_max": 1200,
+    "measure": 720,
+    "section_gap": 64,
+    "radius_cards": 24
 }

@@ -1,0 +1,23 @@
+{
+    "home_description": "",
+    "site_name": "",
+    "tagline": "",
+    "separator": "·",
+    "title_home": "%%sitename%% %%sep%% %%tagline%%",
+    "title_page": "%%title%% %%sep%% %%sitename%%",
+    "title_posts": "%%title%% %%sep%% %%sitename%%",
+    "title_docs": "%%title%% %%sep%% %%sitename%%",
+    "description_page": "%%excerpt%%",
+    "description_posts": "%%excerpt%%",
+    "description_docs": "%%excerpt%%",
+    "organization_name": "",
+    "organization_logo": "",
+    "social_image": "",
+    "twitter_site": "",
+    "organization_type": "Organization",
+    "schema_enabled": true,
+    "breadcrumbs_enabled": true,
+    "sitemap_enabled": true,
+    "sitemap_page_size": 1000,
+    "robots_extra": ""
+}

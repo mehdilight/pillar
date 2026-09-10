@@ -3,6 +3,9 @@
   <nav>
     {section.settings.links.split(',').map((link) => <a href={link.split('|')[1].trim()}>{link.split('|')[0].trim()}</a>)}
   </nav>
+  <if {section.settings.cta_label}>
+    <a class="button" href={section.settings.cta_url}>{section.settings.cta_label}</a>
+  </if>
 </div>
 <schema>
 {
@@ -10,7 +13,9 @@
   "settings": [
     { "id": "links", "type": "text", "label": "Links",
       "default": "Writing | /blog/, About | /about/",
-      "info": "Comma separated, each as \"Label | /url/\"." }
+      "info": "Comma separated, each as \"Label | /url/\"." },
+    { "id": "cta_label", "type": "text", "label": "Button label", "default": "Sign in" },
+    { "id": "cta_url", "type": "url", "label": "Button link", "default": "/about/" }
   ]
 }
 </schema>

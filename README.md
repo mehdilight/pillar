@@ -20,12 +20,31 @@ Markdown in, HTML out. Edit here, deploy anywhere.
 
 ```bash
 composer install
+npm --prefix apps/editor install
+npm --prefix apps/editor run build
 ./bin/pillar dev --site examples/starter
 ```
 
 `examples/starter` is a real site: a landing page, a blog, and a documentation
 section with a sidebar — three uses, one set of parts. Open the dashboard,
 click a section, change a setting, and watch the file on disk change with it.
+
+## Editing content and images
+
+**Content → New entry** opens a form for a title and URL name, then takes you to
+its editor. Entries start as drafts; turn off Draft when ready for the static build.
+
+**Media library** (image icon, ⌘/Ctrl+4) browses, searches and uploads images,
+shows dimensions and sizes, and deletes site-owned images after confirmation.
+Upload PNG, JPG, GIF, WebP or AVIF files up to 10 MB each; existing SVGs also list.
+You can upload several files or drop them onto the library. All image fields use
+this same picker. Uploads live in `assets/uploads/`; theme/addon images are
+selectable but read-only. Deleting an image does not rewrite pages using it.
+
+The starter includes the [SEO plugin](plugins/seo/README.md). **Site settings →
+Search & sharing** controls the website name, short description and default image.
+Content items have their own search preview and optional overrides. Technical
+options stay under Advanced; writing suggestions are optional.
 
 ## Three ideas
 
@@ -69,6 +88,8 @@ src/                  the PHP package (Pillar\)
   Dev/                the dashboard server and its JSON API
   Git/                the store
   Cli/                the `pillar` command
+  Plugin/             manifests, loading and editor integration
+plugins/seo/          SEO plugin ported from Bastet
 apps/editor/          the dashboard SPA (SolidJS)
 examples/starter/     a real site: landing page, blog, docs
 schema/               field-types.json — PHP and TypeScript are generated from it
@@ -93,5 +114,10 @@ the schema layer with `pillar check`, incremental builds, and `pillar dev` —
 the dashboard drives real files over a JSON API and previews through the same
 renderer the build uses.
 
-Next: plugins and theme addons ([`docs/backend.md`](docs/backend.md) §10), then
-deploy adapters for Vercel, Netlify, Cloudflare and Pages.
+The SEO port includes head tags, structured data, sitemap/robots output, image
+selection and content analysis. Plugins now register head contributors, Liqx
+extensions, file routes, build hooks, settings and editor previews; their theme
+addons join the layer cascade. See [the plugin guide](plugins/seo/README.md).
+
+Remaining plugin work: runtime-loaded editor extensions, Composer discovery,
+lifecycle commands and feed/search plugins. Deploy adapters follow.

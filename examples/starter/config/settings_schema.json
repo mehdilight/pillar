@@ -9,15 +9,22 @@
   {
     "name": "Colors",
     "settings": [
-      { "id": "color_accent", "type": "color", "label": "Accent", "default": "#005bd3", "css_var": "--accent" },
-      { "id": "color_ink", "type": "color", "label": "Text", "default": "#111827", "css_var": "--ink" }
+      { "id": "color_ink", "type": "color", "label": "Text", "default": "#0a1217", "css_var": "--color-ink-black" },
+      { "id": "color_paper", "type": "color", "label": "Background", "default": "#ffffff", "css_var": "--color-paper-white" },
+      { "id": "color_surface", "type": "color", "label": "Cards and panels", "default": "#e4eff7", "css_var": "--color-frost-wash" },
+      { "id": "color_muted", "type": "color", "label": "Secondary text", "default": "#85898b", "css_var": "--color-stone-gray" },
+      { "id": "color_accent", "type": "color", "label": "Accent", "default": "#cdfe00", "css_var": "--color-electric-lime",
+        "info": "Accent buttons and text selection." }
     ]
   },
   {
     "name": "Layout",
     "settings": [
-      { "id": "measure", "type": "range", "label": "Content width", "min": 560, "max": 1100, "step": 20, "unit": "px", "default": 720 },
-      { "id": "note", "type": "paragraph", "content": "Applied as a CSS custom property the theme reads." }
+      { "id": "page_max", "type": "range", "label": "Page width", "min": 960, "max": 1440, "step": 20, "unit": "px", "default": 1200 },
+      { "id": "measure", "type": "range", "label": "Reading width", "min": 560, "max": 900, "step": 20, "unit": "px", "default": 720,
+        "info": "Posts, pages and docs." },
+      { "id": "section_gap", "type": "range", "label": "Space between sections", "min": 32, "max": 128, "step": 8, "unit": "px", "default": 64 },
+      { "id": "radius_cards", "type": "range", "label": "Card corners", "min": 0, "max": 40, "step": 2, "unit": "px", "default": 24 }
     ]
   }
 ]

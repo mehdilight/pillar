@@ -1,6 +1,7 @@
 <div class="wrap hero" style={`padding-block:${section.settings.padding}px;text-align:${section.settings.align}`}>
-  <h1>{section.settings.heading}</h1>
-  <p class="lede">{section.settings.subheading}</p>
+  <h1 class="display">{section.settings.heading}</h1>
+  <if {section.settings.label}><p class="label">{section.settings.label}</p></if>
+  <if {section.settings.subheading}><p class="lede">{section.settings.subheading}</p></if>
   <if {section.settings.cta_label}>
     <a class="button" href={section.settings.cta_url}>{section.settings.cta_label}</a>
   </if>
@@ -12,6 +13,7 @@
   "settings": [
     { "id": "content_head", "type": "header", "content": "Content" },
     { "id": "heading", "type": "text", "label": "Heading", "default": "Markdown in, HTML out." },
+    { "id": "label", "type": "text", "label": "Section label", "default": "Our products" },
     { "id": "subheading", "type": "textarea", "label": "Subheading",
       "default": "A local-first static site generator. Edit here, deploy anywhere." },
     { "id": "cta_label", "type": "text", "label": "Button label", "default": "Read the writing" },

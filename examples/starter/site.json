@@ -4,5 +4,7 @@
   "output": "dist",
   "deploy": "static",
   "addons": [],
-  "plugins": []
+  "plugins": [
+    "seo"
+  ]
 }

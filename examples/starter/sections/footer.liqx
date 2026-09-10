@@ -1,12 +1,57 @@
-<div class="wrap footer">
-  <p>{section.settings.note}</p>
-  <p class="built">Built with Pillar</p>
-</div>
+<footer class="site-footer">
+  <div class="wrap footer">
+    <div class="footer-brand">
+      <a class="brand" href="/">{site.title}</a>
+      <p class="note">{section.settings.note}</p>
+    </div>
+    <nav class="footer-cols">
+      <div class="footer-col">
+        <h4>{section.settings.products_title}</h4>
+        <if {section.settings.products_links}>
+          <ul>
+            {section.settings.products_links.split(',').map((link) =>
+              <li><a href={link.split('|')[1].trim()}>{link.split('|')[0].trim()}</a></li>
+            )}
+          </ul>
+        </if>
+      </div>
+      <div class="footer-col">
+        <h4>{section.settings.company_title}</h4>
+        <if {section.settings.company_links}>
+          <ul>
+            {section.settings.company_links.split(',').map((link) =>
+              <li><a href={link.split('|')[1].trim()}>{link.split('|')[0].trim()}</a></li>
+            )}
+          </ul>
+        </if>
+      </div>
+      <div class="footer-col">
+        <h4>{section.settings.resources_title}</h4>
+        <if {section.settings.resources_links}>
+          <ul>
+            {section.settings.resources_links.split(',').map((link) =>
+              <li><a href={link.split('|')[1].trim()}>{link.split('|')[0].trim()}</a></li>
+            )}
+          </ul>
+        </if>
+      </div>
+    </nav>
+  </div>
+</footer>
 <schema>
 {
   "name": "Footer",
   "settings": [
-    { "id": "note", "type": "text", "label": "Footer note", "default": "© Pillar" }
+    { "id": "note", "type": "text", "label": "Footer note", "default": "© Pillar" },
+    { "id": "products_title", "type": "text", "label": "Products column heading", "default": "Products" },
+    { "id": "products_links", "type": "textarea", "label": "Products links",
+      "default": "Writing | /blog/, About | /about/" },
+    { "id": "company_title", "type": "text", "label": "Company column heading", "default": "Company" },
+    { "id": "company_links", "type": "textarea", "label": "Company links",
+      "default": "Getting started | /docs/getting-started/, Themes and addons | /docs/layers/" },
+    { "id": "resources_title", "type": "text", "label": "Resources column heading", "default": "Resources" },
+    { "id": "resources_links", "type": "textarea", "label": "Resources links",
+      "default": "Writing a section | /docs/writing-a-section/, Content collections | /docs/content-collections/" }
   ]
 }
 </schema>

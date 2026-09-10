@@ -1,5 +1,8 @@
 <div class="wrap features">
-  <if {section.settings.heading}><h2>{section.settings.heading}</h2></if>
+  <header class="section-head">
+    <if {section.settings.label}><p class="label">{section.settings.label}</p></if>
+    <if {section.settings.heading}><h2>{section.settings.heading}</h2></if>
+  </header>
   <div class="grid" style={`--columns:${section.settings.columns}`}>
     {section.blocks.map((block) => <Feature block={block} />)}
   </div>
@@ -10,6 +13,7 @@
   "description": "Repeatable cards, three across.",
   "max_blocks": 6,
   "settings": [
+    { "id": "label", "type": "text", "label": "Section label", "default": "" },
     { "id": "heading", "type": "text", "label": "Heading", "default": "Why Pillar" },
     { "id": "columns", "type": "range", "label": "Columns", "min": 2, "max": 4, "step": 1, "default": 3 }
   ],
