@@ -29,6 +29,7 @@ interface LinkPickerProps {
 export default function LinkPicker(props: LinkPickerProps) {
   const [open, setOpen] = createSignal(false);
   const [query, setQuery] = createSignal('');
+  let searchInput: HTMLInputElement | undefined;
   const [data] = createResource(open, async () => {
     const templates = await api.templates();
     const collections = await api.collections();
@@ -59,7 +60,7 @@ export default function LinkPicker(props: LinkPickerProps) {
   };
 
   const control = (
-    <Popover.Root open={open()} onOpenChange={setOpen} placement="bottom-start" gutter={6} sameWidth fitViewport overflowPadding={12}>
+    <Popover.Root open={open()} onOpenChange={setOpen} placement="bottom-start" flip="top-start bottom-start" slide gutter={6} sameWidth fitViewport overflowPadding={12}>
       <Popover.Anchor class="flex">
         <input type="text" class={`${pickerControlClass} ${props.compact ? 'h-8' : 'h-9'} rounded-e-none border-e-0`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
         <Popover.Trigger
@@ -69,14 +70,14 @@ export default function LinkPicker(props: LinkPickerProps) {
         ><Link2 size={14} /> Browse <ChevronDown size={14} /></Popover.Trigger>
       </Popover.Anchor>
       <Popover.Portal>
-        <Popover.Content class="z-[100] overflow-hidden rounded-ds border border-border-strong bg-surface shadow-ds-lg" onOpenAutoFocus={(event) => event.preventDefault()}>
-          <div class="border-b border-border p-2">
+        <Popover.Content class="z-[100] flex min-h-0 flex-col overflow-hidden rounded-ds border border-border-strong bg-surface shadow-ds-lg" style={{ 'max-height': 'min(24rem, var(--kb-popper-content-available-height, calc(100dvh - 24px)))' }} onOpenAutoFocus={(event) => { event.preventDefault(); searchInput?.focus({ preventScroll: true }); }}>
+          <div class="shrink-0 border-b border-border p-2">
             <div class="flex items-center gap-2 rounded border border-border-strong bg-surface px-2 text-text-muted focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
               <Search size={14} />
-              <input autofocus type="search" class="h-8 min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] text-text shadow-none outline-none ring-0 placeholder:text-text-faint focus:border-0 focus:shadow-none focus:outline-none focus:ring-0" placeholder="Search pages and content" value={query()} onInput={(event) => setQuery(event.currentTarget.value)} />
+              <input ref={searchInput} type="search" class="h-8 min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] text-text shadow-none outline-none ring-0 placeholder:text-text-faint focus:border-0 focus:shadow-none focus:outline-none focus:ring-0" placeholder="Search pages and content" value={query()} onInput={(event) => setQuery(event.currentTarget.value)} />
             </div>
           </div>
-          <div class="max-h-64 overflow-y-auto py-1">
+          <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
             <Show when={!data.loading} fallback={<p class="px-3 py-4 text-xs text-text-muted">Loading destinations…</p>}>
               <Show when={matches().length} fallback={<p class="px-3 py-4 text-xs text-text-muted">No matching pages or entries. Paste a URL above instead.</p>}>
                 <For each={matches()}>
@@ -90,7 +91,7 @@ export default function LinkPicker(props: LinkPickerProps) {
               </Show>
             </Show>
           </div>
-          <div class="flex gap-1 border-t border-border bg-surface-muted/50 px-2 py-1.5">
+          <div class="flex shrink-0 flex-wrap gap-1 border-t border-border bg-surface-muted/50 px-2 py-1.5">
             <button type="button" class="rounded px-2 py-1 text-[11px] text-text-muted hover:bg-surface hover:text-text" onClick={() => select('#main')}>Link to main content</button>
             <button type="button" class="rounded px-2 py-1 text-[11px] text-text-muted hover:bg-surface hover:text-text" onClick={() => select('#top')}>Link to page top</button>
           </div>
