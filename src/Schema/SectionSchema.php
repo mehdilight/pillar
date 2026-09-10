@@ -60,6 +60,8 @@ final class SectionSchema {
 			$settings[] = $setting;
 		}
 
+		Setting::checkConditions( $settings );
+
 		$blocks = [];
 
 		foreach ( (array) ( $raw['blocks'] ?? [] ) as $entry ) {

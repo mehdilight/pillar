@@ -13,6 +13,15 @@ import FieldEditor from './FieldEditor';
  * repeater's — each list owns its own picker and editor drawers, so a field
  * three levels down opens over the one that holds it.
  */
+/** Point a field's conditions at a renamed sibling, or drop those on a removed one. */
+function retarget(field: SchemaSetting, from: string, to: string | null): SchemaSetting {
+  if (!field.visible_if?.some((rule) => rule.field === from)) return field;
+
+  const rules = field.visible_if.flatMap((rule) => (rule.field !== from ? [rule] : to ? [{ ...rule, field: to }] : []));
+
+  return { ...field, visible_if: rules.length ? rules : undefined };
+}
+
 export default function FieldList(props: {
   fields: SchemaSetting[];
   onChange: (fields: SchemaSetting[]) => void;
@@ -39,7 +48,13 @@ export default function FieldList(props: {
     props.onChange(next);
   };
 
-  const remove = (index: number) => props.onChange(props.fields.filter((_, i) => i !== index));
+  // A removed field takes the conditions that depended on it along — a rule
+  // naming a field that is gone would hide its field for good.
+  const remove = (index: number) => {
+    const gone = props.fields[index].id;
+
+    props.onChange(props.fields.filter((_, i) => i !== index).map((field) => retarget(field, gone, null)));
+  };
 
   const summary = (field: SchemaSetting) => {
     if (holdsFields(field.type)) return `${field.fields?.length ?? 0} field${field.fields?.length === 1 ? '' : 's'}`;
@@ -165,7 +180,7 @@ export default function FieldList(props: {
 
       <button
         type="button"
-        class="mt-2 inline-flex items-center gap-1.5 rounded-ds px-2 py-1.5 text-[13px] font-medium text-brand hover:bg-brand-tint"
+        class="mt-2 -ml-2 inline-flex items-center gap-1.5 rounded-ds px-2 py-1.5 text-[13px] font-medium text-brand hover:bg-brand-tint"
         onClick={() => setPicking(true)}
       >
         <Plus size={14} />
@@ -188,12 +203,18 @@ export default function FieldList(props: {
             field={current.field}
             isNew={current.index === null}
             taken={taken(current.index)}
+            siblings={props.fields.filter((_, index) => index !== current.index)}
             depth={props.depth ?? 0}
             onClose={() => setEditing(null)}
             onDone={(field) => {
-              const next = [...props.fields];
+              let next = [...props.fields];
+              const renamed = current.index === null ? null : props.fields[current.index].id;
 
               current.index === null ? next.push(field) : (next[current.index] = field);
+
+              // Conditions follow a renamed field, rather than pointing at a handle that is gone.
+              if (renamed && renamed !== field.id) next = next.map((sibling) => retarget(sibling, renamed, field.id));
+
               props.onChange(next);
               setEditing(null);
             }}

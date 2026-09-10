@@ -12,6 +12,8 @@ type Row = Record<string, unknown>;
  * scannable, and a new row opens ready to fill in.
  */
 export default function RepeaterInput(props: {
+  /** This repeater's path with a trailing dot: `faq.` — its rows are `faq.0.`, `faq.1.`. */
+  path?: string;
   label?: string;
   info?: string;
   fields: SchemaSetting[];
@@ -119,7 +121,7 @@ export default function RepeaterInput(props: {
               </div>
               <Show when={!folded()[index]}>
                 <div class="px-3 pb-0.5 pt-3">
-                  <SubFields fields={props.fields} value={row()} onValue={(next) => update(index, next)} />
+                  <SubFields path={`${props.path ?? ''}${index}.`} fields={props.fields} value={row()} onValue={(next) => update(index, next)} />
                 </div>
               </Show>
             </div>
@@ -129,7 +131,7 @@ export default function RepeaterInput(props: {
 
       <button
         type="button"
-        class="mt-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[#005bd3] hover:bg-[#e9eef7] disabled:cursor-not-allowed disabled:opacity-40"
+        class="mt-2 -ml-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-medium text-[#005bd3] hover:bg-[#e9eef7] disabled:cursor-not-allowed disabled:opacity-40"
         disabled={full()}
         onClick={add}
       >

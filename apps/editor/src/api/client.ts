@@ -268,8 +268,9 @@ export const api = {
   history: (): Promise<HistoryEntry[]> =>
     request('/history', undefined, () => fixtures.history),
 
-  publish: (message: string): Promise<{ message: string }> =>
-    request('/publish', { method: 'POST', body: JSON.stringify({ message }) }, () => {
+  /** Commit, and push unless `push` is false — a local commit to review or push later. */
+  publish: (message: string, push = true): Promise<{ message: string }> =>
+    request('/publish', { method: 'POST', body: JSON.stringify({ message, push }) }, () => {
       const count = store.dirty.size;
 
       store.dirty.clear();

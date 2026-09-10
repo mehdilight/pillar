@@ -21,6 +21,7 @@ export default function Publish() {
   const [message, setMessage] = createSignal('');
   const [pending, setPending] = createSignal(false);
   const [discarding, setDiscarding] = createSignal(false);
+  const [push, setPush] = createSignal(true);
 
   const files = () => status()?.files ?? [];
 
@@ -28,7 +29,7 @@ export default function Publish() {
     setPending(true);
 
     try {
-      const result = await api.publish(message().trim() || 'Update site content');
+      const result = await api.publish(message().trim() || 'Update site content', push());
 
       showToast(result.message, 'success');
       setMessage('');
@@ -107,13 +108,27 @@ export default function Publish() {
               value={message()}
               onInput={(event) => setMessage(event.currentTarget.value)}
             />
-            <p class="mt-1.5 text-[11.5px] text-text-faint">
-              Commits on <code class="font-mono">{status()?.branch ?? 'main'}</code>
-              {status()?.has_remote ? ' and pushes.' : '. No remote is configured, so nothing is pushed.'}
-            </p>
+            <Show
+              when={status()?.has_remote}
+              fallback={
+                <p class="mt-1.5 text-[11.5px] text-text-faint">
+                  Commits on <code class="font-mono">{status()?.branch ?? 'main'}</code>. No remote is configured, so nothing is pushed.
+                </p>
+              }
+            >
+              <label class="mt-3 flex cursor-pointer items-start gap-2 text-xs text-text-secondary">
+                <input type="checkbox" class="mt-0.5 size-4 rounded border-border-strong text-brand focus:ring-brand" checked={push()} onChange={(event) => setPush(event.currentTarget.checked)} />
+                <span>
+                  Push to the remote after committing
+                  <span class="mt-0.5 block text-[11.5px] text-text-faint">
+                    {push() ? 'Your host deploys from what is pushed.' : `Committed on ${status()?.branch ?? 'main'} only — push later with git, or publish again.`}
+                  </span>
+                </span>
+              </label>
+            </Show>
             <div class="mt-4 flex flex-wrap gap-2">
               <Button variant="primary" onClick={publish} disabled={pending() || files().length === 0}>
-                {pending() ? 'Publishing…' : 'Commit & publish'}
+                {pending() ? 'Publishing…' : status()?.has_remote && !push() ? 'Commit' : 'Commit & publish'}
               </Button>
             </div>
           </Postbox>

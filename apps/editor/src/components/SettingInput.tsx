@@ -24,11 +24,14 @@ import FilePicker from './fields/FilePicker';
 import GalleryInput from './fields/GalleryInput';
 import RelationshipInput from './fields/RelationshipInput';
 import CollectionPicker from './fields/CollectionPicker';
+import ButtonGroup from './fields/ButtonGroup';
 
 interface SettingInputProps {
   setting: SchemaSetting;
   value: any;
   onChange: (value: any) => void;
+  /** Where this field sits in the form — `faq.1.` — so errors inside groups and rows find their field. */
+  path?: string;
 }
 
 /**
@@ -42,6 +45,8 @@ interface SettingInputProps {
  */
 export default function SettingInput(props: SettingInputProps) {
   const setting = () => props.setting;
+  // A required field says so where it is labelled.
+  const label = () => (setting().required && setting().label ? `${setting().label} *` : setting().label);
   const value = () => props.value ?? setting().default;
   const options = () => setting().options ?? [];
   const firstOption = () => options()[0]?.value ?? '';
@@ -78,8 +83,9 @@ export default function SettingInput(props: SettingInputProps) {
       {/* ── Text ──────────────────────────────────────────────────────── */}
       <Match when={setting().type === 'text'}>
         <TextInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
+          type={setting().input_type ?? 'text'}
           value={value() ?? ''}
           placeholder={setting().placeholder ?? setting().default}
           onValue={props.onChange}
@@ -88,7 +94,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'url'}>
         <LinkPicker
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={value() ?? ''}
           placeholder={setting().placeholder ?? setting().default ?? '/'}
@@ -98,7 +104,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'textarea'}>
         <TextArea
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={value() ?? ''}
           placeholder={setting().placeholder ?? setting().default}
@@ -107,7 +113,7 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'markdown' || setting().type === 'richtext'}>
-        <Field label={setting().label} info={setting().info}>
+        <Field label={label()} info={setting().info}>
           <RichEditor
             value={value() ?? ''}
             onValue={props.onChange}
@@ -120,7 +126,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'html' || setting().type === 'code'}>
         <CodeInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           language={setting().type === 'html' ? 'html' : 'code'}
           value={value() ?? ''}
@@ -131,7 +137,7 @@ export default function SettingInput(props: SettingInputProps) {
       {/* ── Numbers ───────────────────────────────────────────────────── */}
       <Match when={setting().type === 'number'}>
         <NumberInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={value() ?? ''}
           min={setting().min}
@@ -143,7 +149,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'range'}>
         <RangeInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={Number(value() ?? setting().min ?? 0)}
           min={setting().min}
@@ -158,7 +164,7 @@ export default function SettingInput(props: SettingInputProps) {
       <Match when={setting().type === 'checkbox'}>
         <div class="ed-field">
           <Checkbox checked={Boolean(value() ?? false)} onValue={props.onChange}>
-            {setting().label}
+            {label()}
           </Checkbox>
           <Show when={setting().info}>
             <p class="ed-hint" style={{ 'margin-left': '23px' }}>
@@ -168,9 +174,13 @@ export default function SettingInput(props: SettingInputProps) {
         </div>
       </Match>
 
+      <Match when={setting().type === 'radio' && setting().display === 'buttons'}>
+        <ButtonGroup label={label()} info={setting().info} value={String(value() ?? firstOption())} options={options()} onValue={props.onChange} />
+      </Match>
+
       <Match when={setting().type === 'radio'}>
         <RadioGroup
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={String(value() ?? firstOption())}
           options={options()}
@@ -180,7 +190,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'checkboxes'}>
         <CheckboxGroup
-          label={setting().label}
+          label={label()}
           info={setting().info}
           options={options()}
           value={Array.isArray(value()) ? value() : []}
@@ -190,7 +200,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'select'}>
         <SelectInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={String(value() ?? firstOption())}
           options={options()}
@@ -201,7 +211,7 @@ export default function SettingInput(props: SettingInputProps) {
       {/* ── Appearance ────────────────────────────────────────────────── */}
       <Match when={setting().type === 'color'}>
         <ColorInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={String(value() ?? '#000000')}
           onValue={props.onChange}
@@ -209,21 +219,21 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'icon'}>
-        <IconPicker label={setting().label} info={setting().info} value={String(value() ?? '')} onValue={props.onChange} />
+        <IconPicker label={label()} info={setting().info} value={String(value() ?? '')} onValue={props.onChange} />
       </Match>
 
       {/* ── Assets & content references ───────────────────────────────── */}
       <Match when={setting().type === 'image' && setting().multiple}>
-        <GalleryInput label={setting().label} info={setting().info} value={Array.isArray(value()) ? value() : []} onValue={props.onChange} />
+        <GalleryInput label={label()} info={setting().info} value={Array.isArray(value()) ? value() : []} onValue={props.onChange} />
       </Match>
 
       <Match when={setting().type === 'file'}>
-        <FilePicker label={setting().label} info={setting().info} value={value() ?? null} onValue={props.onChange} />
+        <FilePicker label={label()} info={setting().info} value={value() ?? null} onValue={props.onChange} />
       </Match>
 
       <Match when={setting().type === 'image' || setting().type === 'video'}>
         <ImagePicker
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={value() ?? undefined}
           onValue={props.onChange}
@@ -232,7 +242,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'tags'}>
         <TagsInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={Array.isArray(value()) ? value() : []}
           onValue={props.onChange}
@@ -240,7 +250,7 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'date'}>
-        <Field label={setting().label} info={setting().info}>
+        <Field label={label()} info={setting().info}>
           <input
             type={setting().time ? 'datetime-local' : 'date'}
             class={controlClass}
@@ -258,7 +268,7 @@ export default function SettingInput(props: SettingInputProps) {
       */}
       <Match when={setting().type === 'menu'}>
         <SelectInput
-          label={setting().label}
+          label={label()}
           info={setting().info ?? 'Choose a navigation list. Manage lists under Navigation.'}
           value={String(value() ?? '')}
           options={menuOptions()}
@@ -269,7 +279,7 @@ export default function SettingInput(props: SettingInputProps) {
       {/* ── Relationships: linked by reference, read by templates as entries ─ */}
       <Match when={setting().type === 'collection_item' && setting().collections?.length}>
         <RelationshipInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           collections={setting().collections!}
           multiple={setting().multiple}
@@ -280,17 +290,18 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'page'}>
-        <RelationshipInput label={setting().label} info={setting().info} collections={['pages']} value={value()} onValue={props.onChange} />
+        <RelationshipInput label={label()} info={setting().info} collections={['pages']} value={value()} onValue={props.onChange} />
       </Match>
 
       <Match when={setting().type === 'collection'}>
-        <CollectionPicker label={setting().label} info={setting().info} value={String(value() ?? '')} onValue={props.onChange} />
+        <CollectionPicker label={label()} info={setting().info} value={String(value() ?? '')} onValue={props.onChange} />
       </Match>
 
       {/* ── Structure: fields inside fields ───────────────────────────── */}
       <Match when={setting().type === 'group'}>
         <GroupInput
-          label={setting().label}
+          path={`${props.path ?? setting().id}.`}
+          label={label()}
           info={setting().info}
           fields={setting().fields ?? []}
           value={value() && typeof value() === 'object' && !Array.isArray(value()) ? value() : {}}
@@ -300,7 +311,8 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'repeater'}>
         <RepeaterInput
-          label={setting().label}
+          path={`${props.path ?? setting().id}.`}
+          label={label()}
           info={setting().info}
           fields={setting().fields ?? []}
           max={setting().max}
@@ -311,7 +323,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'table'}>
         <TableInput
-          label={setting().label}
+          label={label()}
           info={setting().info}
           value={Array.isArray(value()) ? value().map((row: unknown) => (Array.isArray(row) ? row.map(String) : [])) : []}
           onValue={props.onChange}
@@ -320,7 +332,7 @@ export default function SettingInput(props: SettingInputProps) {
 
       <Match when={setting().type === 'collection' || setting().type === 'collection_item' || setting().type === 'page'}>
         <TextInput
-          label={setting().label}
+          label={label()}
           info={setting().info ?? `Handle of the ${setting().type.replace('_', ' ')}.`}
           value={value() ?? ''}
           placeholder={setting().placeholder ?? setting().default}

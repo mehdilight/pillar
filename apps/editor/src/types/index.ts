@@ -85,6 +85,26 @@ export interface SchemaSetting {
   collections?: string[];
   /** `date`: a time of day as well. */
   time?: boolean;
+  /** Must have a value when shown — enforced when an entry is published. */
+  required?: boolean;
+  /** Text fields: at most this many characters. */
+  character_limit?: number;
+  /** `text`: the keyboard and, for email, a check. */
+  input_type?: 'text' | 'email' | 'tel';
+  /** `radio`: `buttons` draws the options as a row of buttons. */
+  display?: 'buttons';
+  /** Kept in the file, never shown in the form. */
+  hidden?: boolean;
+  /** Shown only when every rule holds for its sibling field. */
+  visible_if?: VisibilityRule[];
+}
+
+export type VisibilityOperator = 'equals' | 'not_equals' | 'contains' | 'empty' | 'not_empty';
+
+export interface VisibilityRule {
+  field: string;
+  operator?: VisibilityOperator;
+  value?: unknown;
 }
 
 /** Generated from `schema/field-types.json` — the one list both sides are written from. */

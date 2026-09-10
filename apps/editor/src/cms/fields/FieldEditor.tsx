@@ -6,7 +6,7 @@ import SettingInput from '../../components/SettingInput';
 import { Button, Input, Label, Textarea } from '../ui/ds';
 import { collections } from '../../store/content';
 import { FIELD_TYPES, cleanField, handleFrom, holdsFields, isDecorative, needsOptions, validHandle } from '../../lib/fieldTypes';
-import type { FieldType, SchemaSetting } from '../../types';
+import type { FieldType, SchemaSetting, VisibilityOperator, VisibilityRule } from '../../types';
 import FieldList from './FieldList';
 
 /** Groups inside repeaters inside groups — as deep as the schema parser allows. */
@@ -26,6 +26,8 @@ export default function FieldEditor(props: {
   isNew: boolean;
   /** Handles already used by the field's siblings. */
   taken: string[];
+  /** The fields beside this one — what its conditions can depend on. */
+  siblings: SchemaSetting[];
   depth: number;
   onDone: (field: SchemaSetting) => void;
   onClose: () => void;
@@ -59,6 +61,7 @@ export default function FieldEditor(props: {
     }
 
     if (draft.type === 'collection_item' && !draft.collections?.length) out.push('Choose at least one collection its entries come from.');
+    if ((draft.visible_if ?? []).some((rule) => !rule.field)) out.push('Every condition needs a field.');
 
     return out;
   });
@@ -219,7 +222,7 @@ export default function FieldEditor(props: {
                   id="field-max-entries"
                   type="number"
                   min="1"
-                  class="max-w-[140px]"
+                  class="max-w-[140px]!"
                   value={draft.max ?? ''}
                   onInput={(event) => set('max', event.currentTarget.value === '' ? undefined : Number(event.currentTarget.value))}
                 />
@@ -254,7 +257,7 @@ export default function FieldEditor(props: {
                   id="field-max"
                   type="number"
                   min="1"
-                  class="max-w-[140px]"
+                  class="max-w-[140px]!"
                   value={draft.max ?? ''}
                   onInput={(event) => set('max', event.currentTarget.value === '' ? undefined : Number(event.currentTarget.value))}
                 />
@@ -263,14 +266,60 @@ export default function FieldEditor(props: {
           </Show>
         </Show>
 
+        <Show when={!decorative()}>
+          <Section title="Validation" hint="Checked when an entry is published — a draft may be saved incomplete.">
+            <Toggle checked={Boolean(draft.required)} onChange={(on) => set('required', on)} label="Required" hint="A published entry must fill it in. A toggle must be switched on." />
+            <Show when={['text', 'textarea', 'markdown', 'richtext'].includes(draft.type)}>
+              <Row label="Character limit" for="field-limit" hint="Leave empty for no limit. The form counts as you type.">
+                <Input
+                  id="field-limit"
+                  type="number"
+                  min="1"
+                  class="max-w-[140px]!"
+                  value={draft.character_limit ?? ''}
+                  onInput={(event) => set('character_limit', event.currentTarget.value === '' ? undefined : Math.max(1, Number(event.currentTarget.value)))}
+                />
+              </Row>
+            </Show>
+            <Show when={draft.type === 'text'}>
+              <Row label="Input type" for="field-input-type" hint="The keyboard on a phone — and an email address is checked.">
+                <select
+                  id="field-input-type"
+                  class="h-8 w-full max-w-[200px] rounded-ds border border-border-strong bg-surface px-2.5 py-0 text-[13px] text-text outline-none focus:border-brand focus:ring-2 focus:ring-brand-tint"
+                  value={draft.input_type ?? 'text'}
+                  onChange={(event) => set('input_type', event.currentTarget.value === 'text' ? undefined : (event.currentTarget.value as 'email' | 'tel'))}
+                >
+                  <option value="text">Text</option>
+                  <option value="email">Email address</option>
+                  <option value="tel">Phone number</option>
+                </select>
+              </Row>
+            </Show>
+          </Section>
+
+          <Section title="Appearance">
+            <Show when={draft.type === 'radio'}>
+              <Toggle checked={draft.display === 'buttons'} onChange={(on) => set('display', on ? 'buttons' : undefined)} label="Show as buttons" hint="A row of buttons instead of a list — for a few short options." />
+            </Show>
+            <Toggle checked={Boolean(draft.hidden)} onChange={(on) => set('hidden', on)} label="Hide from the form" hint="Kept in the file and read by templates, never shown — for data a script or plugin manages." />
+          </Section>
+
+          <Section title="Conditions" hint="Show this field only when every rule holds. A hidden field is never required, and keeps its value.">
+            <ConditionsEditor rules={draft.visible_if ?? []} siblings={props.siblings} onChange={(rules) => set('visible_if', rules)} />
+          </Section>
+        </Show>
+
         <Show when={DEFAULTABLE.includes(draft.type) && (!needsOptions(draft.type) || (draft.options ?? []).length > 0)}>
           <Section title="Default" hint="What a new entry starts with.">
-            <div class="rounded-ds border border-border bg-surface px-3 pt-3">
-              <SettingInput
-                setting={{ ...unwrap(draft), label: '', info: '', default: undefined } as SchemaSetting}
-                value={draft.default}
-                onChange={(value) => set('default', value === '' ? undefined : value)}
-              />
+            {/* The control brings its own bottom margin; the negative one evens the box's padding. */}
+            <div class="rounded-ds border border-border bg-surface p-3">
+              <div class="-mb-3.5">
+                <SettingInput
+                  setting={{ ...unwrap(draft), label: '', info: '', default: undefined } as SchemaSetting}
+                  value={draft.default}
+                  onChange={(value) => set('default', value === '' ? undefined : value)}
+                />
+              </div>
             </div>
             <Show when={draft.default !== undefined}>
               <button type="button" class="mt-1.5 text-[11.5px] text-text-muted hover:text-text hover:underline" onClick={() => set('default', undefined)}>
@@ -281,6 +330,80 @@ export default function FieldEditor(props: {
         </Show>
       </div>
     </Drawer>
+  );
+}
+
+const OPERATORS: Array<{ value: VisibilityOperator; label: string }> = [
+  { value: 'equals', label: 'is' },
+  { value: 'not_equals', label: 'is not' },
+  { value: 'contains', label: 'contains' },
+  { value: 'empty', label: 'is empty' },
+  { value: 'not_empty', label: 'is not empty' },
+];
+
+const selectClass =
+  'h-8 rounded-ds border border-border-strong bg-surface px-2.5 py-0 text-[13px] text-text outline-none focus:border-brand focus:ring-2 focus:ring-brand-tint';
+
+/** "Show when [kind] [is] [video]" — rules over the fields beside this one. */
+function ConditionsEditor(props: { rules: VisibilityRule[]; siblings: SchemaSetting[]; onChange: (rules: VisibilityRule[]) => void }) {
+  const candidates = () => props.siblings.filter((field) => !isDecorative(field.type) && field.id);
+  const update = (index: number, patch: Partial<VisibilityRule>) => props.onChange(props.rules.map((rule, i) => (i === index ? { ...rule, ...patch } : rule)));
+  const sibling = (id: string) => candidates().find((field) => field.id === id);
+
+  return (
+    <div>
+      <Show when={props.rules.length} fallback={<p class="text-xs text-text-faint">Always shown.</p>}>
+        <div class="space-y-2">
+          <For each={props.rules}>
+            {(rule, index) => (
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="w-12 text-xs text-text-muted">{index() === 0 ? 'Show if' : 'and'}</span>
+                <select aria-label="Field" class={`${selectClass} min-w-0 flex-1`} value={rule.field} onChange={(event) => update(index(), { field: event.currentTarget.value, value: undefined })}>
+                  <option value="">Choose a field…</option>
+                  <For each={candidates()}>{(field) => <option value={field.id}>{field.label || field.id}</option>}</For>
+                </select>
+                <select aria-label="Comparison" class={selectClass} value={rule.operator ?? 'equals'} onChange={(event) => update(index(), { operator: event.currentTarget.value as VisibilityOperator })}>
+                  <For each={OPERATORS}>{(operator) => <option value={operator.value}>{operator.label}</option>}</For>
+                </select>
+                <Show when={!['empty', 'not_empty'].includes(rule.operator ?? 'equals')}>
+                  <Show
+                    when={sibling(rule.field)?.options?.length || sibling(rule.field)?.type === 'checkbox'}
+                    fallback={
+                      <Input aria-label="Value" class="max-w-none min-w-0 flex-1" value={String(rule.value ?? '')} onInput={(event) => update(index(), { value: event.currentTarget.value })} />
+                    }
+                  >
+                    <select aria-label="Value" class={`${selectClass} min-w-0 flex-1`} value={String(rule.value ?? '')} onChange={(event) => update(index(), { value: sibling(rule.field)?.type === 'checkbox' ? event.currentTarget.value === 'true' : event.currentTarget.value })}>
+                      <option value="">Choose…</option>
+                      <For each={sibling(rule.field)?.type === 'checkbox' ? [{ value: 'true', label: 'On' }, { value: 'false', label: 'Off' }] : sibling(rule.field)?.options ?? []}>
+                        {(option) => <option value={option.value}>{option.label}</option>}
+                      </For>
+                    </select>
+                  </Show>
+                </Show>
+                <button
+                  type="button"
+                  class="flex size-8 shrink-0 items-center justify-center rounded-ds text-text-muted hover:bg-danger-tint hover:text-danger"
+                  aria-label="Remove this rule"
+                  onClick={() => props.onChange(props.rules.filter((_, i) => i !== index()))}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )}
+          </For>
+        </div>
+      </Show>
+      <button
+        type="button"
+        class="mt-2 -ml-2 inline-flex items-center gap-1.5 rounded-ds px-2 py-1.5 text-[13px] font-medium text-brand hover:bg-brand-tint disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={candidates().length === 0}
+        title={candidates().length === 0 ? 'Add another field first — a condition depends on one.' : undefined}
+        onClick={() => props.onChange([...props.rules, { field: candidates()[0]?.id ?? '', operator: 'equals' }])}
+      >
+        <Plus size={14} />
+        Add a rule
+      </button>
+    </div>
   );
 }
 
@@ -379,7 +502,7 @@ function OptionsEditor(props: { options: Array<{ value: string; label: string }>
       </div>
       <button
         type="button"
-        class="mt-2 inline-flex items-center gap-1.5 rounded-ds px-2 py-1.5 text-[13px] font-medium text-brand hover:bg-brand-tint"
+        class="mt-2 -ml-2 inline-flex items-center gap-1.5 rounded-ds px-2 py-1.5 text-[13px] font-medium text-brand hover:bg-brand-tint"
         onClick={() => props.onChange([...props.options, { value: '', label: '' }])}
       >
         <Plus size={14} />

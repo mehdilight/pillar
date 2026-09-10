@@ -376,8 +376,8 @@ export function moveSection(id: string, toIndex: number) {
 
 /* ── Git-backed actions ──────────────────────────────────────────────── */
 
-export async function publish(message: string) {
-  const result = await api.publish(message);
+export async function publish(message: string, push = true) {
+  const result = await api.publish(message, push);
 
   setStatus(await api.draftStatus());
 

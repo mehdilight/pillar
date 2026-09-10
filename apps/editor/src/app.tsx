@@ -1,18 +1,8 @@
 /* @refresh reload */
-import { onMount, type JSX } from 'solid-js';
+import { lazy, onMount, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 import { Route, Router } from '@solidjs/router';
 import Layout from './cms/Layout';
-import Overview from './cms/pages/Overview';
-import Collection from './cms/pages/Collection';
-import Entry from './cms/pages/Entry';
-import Types from './cms/pages/Types';
-import Media from './cms/pages/Media';
-import Settings from './cms/pages/Settings';
-import Publish from './cms/pages/Publish';
-import Menus from './cms/pages/Menus';
-import NotFound from './cms/pages/NotFound';
-import EditorScreen from './editor/EditorScreen';
 import Toast, { showToast } from './components/ui/Toast';
 import { api } from './api/client';
 import { installHost, loadPlugins } from './plugins/host';
@@ -50,6 +40,20 @@ function Root(props: { children?: JSX.Element }) {
     </>
   );
 }
+
+// Each screen is its own chunk, fetched on first visit: the visual editor's
+// drag and drop and menus, the field builder, the media library — none of it
+// is needed to show the overview.
+const Overview = lazy(() => import('./cms/pages/Overview'));
+const Collection = lazy(() => import('./cms/pages/Collection'));
+const Entry = lazy(() => import('./cms/pages/Entry'));
+const Types = lazy(() => import('./cms/pages/Types'));
+const Media = lazy(() => import('./cms/pages/Media'));
+const Settings = lazy(() => import('./cms/pages/Settings'));
+const Publish = lazy(() => import('./cms/pages/Publish'));
+const Menus = lazy(() => import('./cms/pages/Menus'));
+const NotFound = lazy(() => import('./cms/pages/NotFound'));
+const EditorScreen = lazy(() => import('./editor/EditorScreen'));
 
 const root = document.getElementById('pillar-root');
 

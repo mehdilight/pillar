@@ -13,10 +13,17 @@ final class Setting {
 	/** Groups inside repeaters inside groups: deep enough for any real form, and no deeper. */
 	public const MAX_DEPTH = 3;
 
+	/** How a `visible_if` rule compares a sibling's value. */
+	public const OPERATORS = [ 'equals', 'not_equals', 'contains', 'empty', 'not_empty' ];
+
+	/** What a `text` field's `input_type` may ask for. */
+	public const INPUT_TYPES = [ 'text', 'email', 'tel' ];
+
 	/**
 	 * @param list<array{value: string, label: string}> $options
 	 * @param list<Setting>                             $fields  a group's or a repeater row's fields
 	 * @param list<string>                              $collections
+	 * @param list<array{field: string, operator: string, value: mixed}> $visibleIf
 	 */
 	public function __construct(
 		public readonly string $id,
@@ -40,6 +47,18 @@ final class Setting {
 		public readonly array $collections = [],
 		/** `date`: a time of day as well. */
 		public readonly bool $time = false,
+		/** Must have a value — when it is shown. */
+		public readonly bool $required = false,
+		/** Text fields: at most this many characters. */
+		public readonly ?int $characterLimit = null,
+		/** `text`: `email` or `tel` — the keyboard, and for email, a check. */
+		public readonly string $inputType = 'text',
+		/** `radio`: `buttons` draws the options as a row of buttons. */
+		public readonly string $display = '',
+		/** Kept in the file, never shown in the form — data a plugin or script manages. */
+		public readonly bool $hidden = false,
+		/** Shown only when every rule holds for its sibling field. */
+		public readonly array $visibleIf = [],
 	) {}
 
 	/**
@@ -122,7 +141,61 @@ final class Setting {
 			multiple: in_array( $type, [ FieldType::Image, FieldType::CollectionItem ], true ) && true === ( $raw['multiple'] ?? false ),
 			collections: FieldType::CollectionItem === $type ? $collections : [],
 			time: FieldType::Date === $type && true === ( $raw['time'] ?? false ),
+			required: ! $type->isDecorative() && true === ( $raw['required'] ?? false ),
+			characterLimit: isset( $raw['character_limit'] ) && in_array( $type, [ FieldType::Text, FieldType::Textarea, FieldType::Markdown, FieldType::Richtext ], true )
+				? max( 1, (int) $raw['character_limit'] )
+				: null,
+			inputType: FieldType::Text === $type && in_array( $raw['input_type'] ?? 'text', self::INPUT_TYPES, true ) ? (string) ( $raw['input_type'] ?? 'text' ) : 'text',
+			display: FieldType::Radio === $type && 'buttons' === ( $raw['display'] ?? '' ) ? 'buttons' : '',
+			hidden: true === ( $raw['hidden'] ?? false ),
+			visibleIf: self::conditionsOf( $id, $raw ),
 		);
+	}
+
+	/**
+	 * `visible_if: [{ field: "kind", operator: "equals", value: "video" }]` —
+	 * a shape check here; that each rule names a real sibling is checked by
+	 * `checkConditions()`, once the siblings are known.
+	 *
+	 * @param array<string, mixed> $raw
+	 *
+	 * @return list<array{field: string, operator: string, value: mixed}>
+	 */
+	private static function conditionsOf( string $id, array $raw ): array {
+		$rules = [];
+
+		foreach ( (array) ( $raw['visible_if'] ?? [] ) as $rule ) {
+			$field    = is_array( $rule ) ? (string) ( $rule['field'] ?? '' ) : '';
+			$operator = is_array( $rule ) ? (string) ( $rule['operator'] ?? 'equals' ) : '';
+
+			if ( ! preg_match( '/^[a-z][a-z0-9_]*$/', $field ) || ! in_array( $operator, self::OPERATORS, true ) ) {
+				throw new SchemaException( sprintf( 'Setting "%s" has a visible_if rule that needs a field and one of: %s.', $id, implode( ', ', self::OPERATORS ) ) );
+			}
+
+			$rules[] = [ 'field' => $field, 'operator' => $operator, 'value' => $rule['value'] ?? null ];
+		}
+
+		return $rules;
+	}
+
+	/**
+	 * Every `visible_if` names a field beside it — not itself, not one that
+	 * does not exist. A typo here would silently hide a field forever.
+	 *
+	 * @param list<Setting> $siblings
+	 *
+	 * @throws SchemaException
+	 */
+	public static function checkConditions( array $siblings ): void {
+		$ids = array_map( static fn ( Setting $setting ): string => $setting->id, $siblings );
+
+		foreach ( $siblings as $setting ) {
+			foreach ( $setting->visibleIf as $rule ) {
+				if ( $rule['field'] === $setting->id || ! in_array( $rule['field'], $ids, true ) ) {
+					throw new SchemaException( sprintf( 'Setting "%s" is shown depending on "%s", which is not a field beside it.', $setting->id, $rule['field'] ) );
+				}
+			}
+		}
 	}
 
 	/**
@@ -170,6 +243,8 @@ final class Setting {
 			throw new SchemaException( sprintf( 'Setting "%s" is a %s and needs at least one field.', $id, $type->value ) );
 		}
 
+		self::checkConditions( $fields );
+
 		return $fields;
 	}
 
@@ -207,6 +282,12 @@ final class Setting {
 				'multiple'    => $this->multiple ?: null,
 				'collections' => $this->collections,
 				'time'        => $this->time ?: null,
+				'required'    => $this->required ?: null,
+				'character_limit' => $this->characterLimit,
+				'input_type'  => 'text' === $this->inputType ? null : $this->inputType,
+				'display'     => $this->display,
+				'hidden'      => $this->hidden ?: null,
+				'visible_if'  => $this->visibleIf,
 			] as $key => $value
 		) {
 			if ( null !== $value && '' !== $value && [] !== $value ) {

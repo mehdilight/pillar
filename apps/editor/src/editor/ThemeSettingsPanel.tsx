@@ -1,6 +1,6 @@
 import { For, Show, createResource, createSignal } from 'solid-js';
 import { ChevronDown } from '../components/ui/Icons';
-import SettingInput from '../components/SettingInput';
+import FormFields from '../components/fields/FormFields';
 import { showToast } from '../components/ui/Toast';
 import { api } from '../api/client';
 import * as editor from '../store/editor';
@@ -58,11 +58,7 @@ export default function ThemeSettingsPanel() {
 
               <Show when={open() === panel.name}>
                 <div class="px-3 pb-3">
-                  <For each={panel.settings}>
-                    {(setting) => (
-                      <SettingInput setting={setting} value={current()[setting.id]} onChange={(value) => change(setting.id, value)} />
-                    )}
-                  </For>
+                  <FormFields fields={panel.settings} values={current()} onChange={change} />
                 </div>
               </Show>
             </div>

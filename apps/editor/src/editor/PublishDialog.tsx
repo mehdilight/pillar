@@ -18,12 +18,13 @@ export default function PublishDialog(props: {
   const [pending, setPending] = createSignal(false);
 
   const files = () => editor.status()?.files ?? [];
+  const [push, setPush] = createSignal(true);
 
   const run = async () => {
     setPending(true);
 
     try {
-      const result = await editor.publish(message().trim() || 'Update site content');
+      const result = await editor.publish(message().trim() || 'Update site content', push());
 
       showToast(result.message, 'success');
       props.onOpenChange(false);
@@ -51,7 +52,7 @@ export default function PublishDialog(props: {
             disabled={pending() || files().length === 0}
             onClick={run}
           >
-            {pending() ? 'Publishing…' : 'Commit & publish'}
+            {pending() ? 'Publishing…' : editor.status()?.has_remote && !push() ? 'Commit' : 'Commit & publish'}
           </button>
         </>
       }
@@ -63,8 +64,15 @@ export default function PublishDialog(props: {
         <p class="text-[13px] text-[#303030]">
           {files().length} file{files().length === 1 ? '' : 's'} will be committed on{' '}
           <code class="sam-mono">{editor.status()?.branch}</code>
-          <Show when={editor.status()?.has_remote}> and pushed.</Show>
+          <Show when={editor.status()?.has_remote && push()}> and pushed.</Show>
         </p>
+
+        <Show when={editor.status()?.has_remote}>
+          <label class="flex cursor-pointer items-center gap-2 text-[12px] text-[#303030]">
+            <input type="checkbox" class="size-4 rounded border-[#c9cccf]" checked={push()} onChange={(event) => setPush(event.currentTarget.checked)} />
+            Push to the remote after committing
+          </label>
+        </Show>
 
         <ul class="rounded-lg border border-[#e1e3e5] bg-[#f6f6f7] divide-y divide-[#e1e3e5] max-h-48 overflow-y-auto">
           <For each={files()}>

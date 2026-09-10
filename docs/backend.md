@@ -223,6 +223,19 @@ Groups and repeaters nest three deep. Nested frontmatter is written as
 indented YAML blocks; a schema is written with one field per line
 (`Support\CompactJson`), so adding a field is a one-field diff.
 
+**Rules and conditions** are field options, not types: `required`,
+`character_limit` (text fields), `input_type` (`email`, `tel`), `display:
+buttons` (a radio as a row of buttons), `hidden` (kept in the file, never in
+the form) and `visible_if` — rules over sibling fields, each `{ field,
+operator, value }` with `equals`, `not_equals`, `contains`, `empty` or
+`not_empty`, all of which must hold. A rule must name a field beside it; a
+typo fails the schema. `Schema\Rules` evaluates them for the server and
+`pillar check`, and the dashboard mirrors it (`lib/fieldRules.ts`, tested
+against the same cases) so a form marks a problem under its field before
+saving. They apply once an entry is published: a draft saves half-written,
+and `pillar check` warns about it rather than failing. A field its conditions
+hide is never required, and keeps its value.
+
 **Relationships** are `collection_item` fields — `collections: [posts]`,
 optionally `multiple` and `max` — plus `page`, a link to an entry of `pages`.
 They are stored as references, the slug (or `collection/slug` when several
@@ -298,7 +311,7 @@ The frontend already fixed this contract — these are exactly the endpoints
 | `GET /api/content` · `/{collection}` · `PUT/DELETE /{collection}/{slug}` | `content/**/*.md` + `schemas/*.json` |
 | `POST /api/media` | writes into `assets/`, returns the built URL |
 | `GET /api/status` · `/api/history` | `git status --porcelain` · `git log` |
-| `POST /api/publish` · `/api/discard` | commit (+ push) · `git checkout --` |
+| `POST /api/publish` · `/api/discard` | commit, and push unless `push: false` · `git checkout --` |
 | `POST /api/build` | runs the builder, streams progress |
 | `GET /preview/*` | the page rendered live, with `?editor=1` |
 | `GET /` | the dashboard SPA (`public/editor`, resolved via its Vite manifest) |

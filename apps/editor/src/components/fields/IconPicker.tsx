@@ -1,7 +1,7 @@
-import { For, Show, createMemo, createSignal } from 'solid-js';
+import { For, Show, createEffect, createMemo, createSignal } from 'solid-js';
 import Field from '../ui/Field';
 import Modal from '../ui/Modal';
-import { ICON_NAMES, NamedIcon } from '../ui/Icons';
+import { NamedIcon, iconNames } from '../ui/Icons';
 import { controlClass } from '../ui/Field';
 
 /** More than a screenful, fewer than make the grid slow: search narrows the rest. */
@@ -12,26 +12,54 @@ const SHOWN = 180;
  * renders it however it likes: Phosphor's web font, its own sprite.
  */
 export default function IconPicker(props: { label?: string; info?: string; value: string; onValue: (value: string) => void }) {
-  const [open, setOpen] = createSignal(false);
-  const [query, setQuery] = createSignal('');
-
-  const matching = createMemo(() => {
-    const terms = query().trim().toLowerCase().split(/\s+/).filter(Boolean);
-
-    return terms.length ? ICON_NAMES.filter((name) => terms.every((term) => name.includes(term))) : ICON_NAMES;
-  });
-
   return (
     <Field label={props.label} info={props.info}>
+      <IconChooser value={props.value} onValue={props.onValue} />
+    </Field>
+  );
+}
+
+/**
+ * The chooser itself, without a label — for a form that labels its own
+ * controls, like the content type drawer. `cms` sizes it like the CMS's inputs.
+ */
+export function IconChooser(props: { value: string; onValue: (value: string) => void; id?: string; cms?: boolean }) {
+  const [open, setOpen] = createSignal(false);
+  const [query, setQuery] = createSignal('');
+  const [names, setNames] = createSignal<string[] | null>(null);
+
+  // The list of ~1,500 names is fetched the first time a picker opens, not with the dashboard.
+  createEffect(() => {
+    if (open() && names() === null) void iconNames().then(setNames);
+  });
+
+  const matching = createMemo(() => {
+    const all = names() ?? [];
+    const terms = query().trim().toLowerCase().split(/\s+/).filter(Boolean);
+
+    return terms.length ? all.filter((name) => terms.every((term) => name.includes(term))) : all;
+  });
+
+  const button = () =>
+    props.cms
+      ? 'inline-flex h-8 min-w-0 flex-1 items-center gap-2 rounded-ds border border-border-strong bg-surface px-2.5 text-[13px] text-text shadow-ds-sm hover:bg-surface-muted'
+      : 'sam-btn min-w-0 flex-1 justify-start!';
+
+  return (
+    <>
       <div class="flex items-center gap-2">
-        <button type="button" class="sam-btn min-w-0 flex-1 justify-start!" onClick={() => setOpen(true)}>
+        <button id={props.id} type="button" class={button()} onClick={() => setOpen(true)}>
           <Show when={props.value} fallback={<span class="text-gray-500">Choose an icon</span>}>
             <NamedIcon name={props.value} size={16} />
             <span class="truncate font-mono text-[11.5px]">{props.value}</span>
           </Show>
         </button>
         <Show when={props.value}>
-          <button type="button" class="sam-btn" onClick={() => props.onValue('')}>
+          <button
+            type="button"
+            class={props.cms ? 'h-8 shrink-0 rounded-ds px-2 text-xs text-text-muted hover:bg-surface-muted hover:text-text' : 'sam-btn'}
+            onClick={() => props.onValue('')}
+          >
             Clear
           </button>
         </Show>
@@ -43,11 +71,14 @@ export default function IconPicker(props: { label?: string; info?: string; value
           autofocus
           aria-label="Search icons"
           class={`${controlClass} mb-3`}
-          placeholder={`Search ${ICON_NAMES.length} icons — arrow, heart, rocket…`}
+          placeholder={names() ? `Search ${names()!.length} icons — arrow, heart, rocket…` : 'Loading icons…'}
           value={query()}
           onInput={(event) => setQuery(event.currentTarget.value)}
         />
-        <Show when={matching().length} fallback={<p class="py-10 text-center text-xs text-gray-500">No icon matches “{query()}”.</p>}>
+        <Show
+          when={matching().length}
+          fallback={<p class="py-10 text-center text-xs text-gray-500">{names() === null ? 'Loading icons…' : `No icon matches “${query()}”.`}</p>}
+        >
           <div class="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-1.5">
             <For each={matching().slice(0, SHOWN)}>
               {(name) => (
@@ -74,6 +105,6 @@ export default function IconPicker(props: { label?: string; info?: string; value
           </Show>
         </Show>
       </Modal>
-    </Field>
+    </>
   );
 }

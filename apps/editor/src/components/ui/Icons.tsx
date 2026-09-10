@@ -1,4 +1,4 @@
-import { createResource, splitProps, type JSX } from 'solid-js';
+import { createEffect, createSignal, on, onCleanup, splitProps, type JSX } from 'solid-js';
 import AlertCircleSvg from '@phosphor-icons/core/assets/regular/warning-circle.svg?raw';
 import ArrowLeftSvg from '@phosphor-icons/core/assets/regular/arrow-left.svg?raw';
 import ArrowLeftFromLineSvg from '@phosphor-icons/core/assets/regular/sign-out.svg?raw';
@@ -111,21 +111,77 @@ export const Undo2 = (props: IconProps) => <SvgIcon source={Undo2Svg} {...props}
 export const Upload = (props: IconProps) => <SvgIcon source={UploadSvg} {...props} />;
 export const X = (props: IconProps) => <SvgIcon source={XSvg} {...props} />;
 
-// Only bundled Phosphor assets can be loaded; schema values never become markup.
-const icons = import.meta.glob('/node_modules/@phosphor-icons/core/assets/regular/*.svg', { query: '?raw', import: 'default' });
-export function ContentTypeIcon(props: IconProps & { name?: string }) {
-  const [local, rest] = splitProps(props, ['name']);
-  const [source] = createResource(() => local.name || 'file-text', async (name) => {
-    const load = icons[`/node_modules/@phosphor-icons/core/assets/regular/${name}.svg`];
-    return load ? await load() as string : FileTextSvg;
-  });
-  return <SvgIcon source={source.latest ?? FileTextSvg} {...rest} />;
+/** Icon names as they are written in a schema: `rocket-launch`. Anything else never reaches a URL. */
+const ICON_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+const loaded = new Map<string, Promise<string>>();
+
+/**
+ * One Phosphor icon's markup, fetched from the dashboard's own assets (see
+ * `phosphorIcons` in vite.config.ts) and kept. Only those files are ever
+ * inserted — a schema value selects an icon, it never becomes markup.
+ */
+function loadIcon(name: string): Promise<string> {
+  const safe = ICON_NAME.test(name) ? name : 'file-text';
+
+  if (!loaded.has(safe)) {
+    const request = fetch(`${import.meta.env.BASE_URL}assets/ph-${safe}.svg`).then(async (response) => {
+      const svg = response.ok ? await response.text() : '';
+
+      if (!svg.trimStart().startsWith('<svg')) throw new Error(`No icon "${safe}"`);
+
+      return svg;
+    });
+
+    loaded.set(safe, request);
+
+    // A failure is never kept: while the dashboard is being rebuilt its files
+    // are briefly missing, and caching that would draw every icon as the
+    // fallback until a reload.
+    request.catch(() => loaded.delete(safe));
+  }
+
+  return loaded.get(safe)!.catch(() => FileTextSvg);
 }
 
-/** Any bundled Phosphor icon by name — field types, the icon field, content types. */
-export const NamedIcon = ContentTypeIcon;
+/**
+ * Any Phosphor icon by name — field types, the icon field, content types.
+ *
+ * A signal, not a resource: a resource read under a Suspense boundary would
+ * blank that boundary while the icon loads.
+ */
+export function NamedIcon(props: IconProps & { name?: string }) {
+  const [local, rest] = splitProps(props, ['name']);
+  const [source, setSource] = createSignal('');
 
-/** Every icon name the bundle can load, for the icon field's search. */
-export const ICON_NAMES: string[] = Object.keys(icons)
-  .map((path) => path.slice(path.lastIndexOf('/') + 1, -4))
-  .sort();
+  createEffect(
+    on(
+      () => local.name || 'file-text',
+      (name) => {
+        let current = true;
+
+        void loadIcon(name).then((svg) => current && setSource(svg));
+        onCleanup(() => (current = false));
+      }
+    )
+  );
+
+  return <SvgIcon source={source()} {...rest} />;
+}
+
+export const ContentTypeIcon = NamedIcon;
+
+let names: Promise<string[]> | null = null;
+
+/** Every icon name there is, for the icon field's search — fetched the first time a picker opens. */
+export function iconNames(): Promise<string[]> {
+  names ??= fetch(`${import.meta.env.BASE_URL}assets/ph-icons.json`)
+    .then((response) => (response.ok ? response.json() : []))
+    .catch(() => {
+      names = null;
+
+      return [];
+    });
+
+  return names;
+}

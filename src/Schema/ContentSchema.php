@@ -32,6 +32,8 @@ final class ContentSchema {
 			}
 		}
 
+		Setting::checkConditions( $fields );
+
 		return new self(
 			collection: $collection,
 			label: (string) ( $raw['label'] ?? ucfirst( $collection ) ),

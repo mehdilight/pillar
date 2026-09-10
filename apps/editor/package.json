@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build && node build-plugins.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "esbuild src/lib/blocks.test.ts src/lib/markdown.test.ts --bundle --format=esm --platform=node --external:node:* --outdir=.test --log-level=error && node --test .test/blocks.test.js .test/markdown.test.js",
+    "test": "esbuild src/lib/blocks.test.ts src/lib/markdown.test.ts src/lib/fieldRules.test.ts --bundle --format=esm --platform=node --external:node:* --outdir=.test --log-level=error && node --test .test/blocks.test.js .test/markdown.test.js .test/fieldRules.test.js",
     "test:seo": "esbuild ../../plugins/seo/frontend/src/analysis.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/seo.test.mjs --log-level=error && node --test .test/seo.test.mjs",
     "build:plugins": "node build-plugins.mjs"
   },

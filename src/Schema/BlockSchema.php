@@ -25,6 +25,8 @@ final class BlockSchema {
 			}
 		}
 
+		Setting::checkConditions( $settings );
+
 		return new self(
 			type: $type,
 			name: (string) ( $raw['name'] ?? $type ),

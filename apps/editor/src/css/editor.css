@@ -125,10 +125,13 @@ input[type='radio'].ed-radio:checked::after {
     font-family: var(--font-mono);
     padding-top: 14px;
     margin-top: 4px;
+    margin-bottom: 10px;
     border-top: 1px solid var(--border);
 }
 
-.ed-field:first-child .ed-group-head {
+/* The first heading of a form needs no rule above it. Each field sits in its
+   own wrapper (FormFields), so "first" is the wrapper's position. */
+[data-field]:first-child > .ed-field > .ed-group-head {
     padding-top: 2px;
     margin-top: 0;
     border-top: none;

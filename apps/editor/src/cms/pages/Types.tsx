@@ -4,7 +4,7 @@ import Page from '../ui/Page';
 import { Badge, Button, Empty, Input, Label, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/ds';
 import Drawer from '../../components/ui/Drawer';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import IconPicker from '../../components/fields/IconPicker';
+import { IconChooser } from '../../components/fields/IconPicker';
 import { NamedIcon, Plus } from '../../components/ui/Icons';
 import { showToast } from '../../components/ui/Toast';
 import FieldList from '../fields/FieldList';
@@ -194,8 +194,9 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
               <Label for="type-label">Label</Label>
               <Input id="type-label" value={label()} placeholder="Guides" onInput={(event) => setLabel(event.currentTarget.value)} class="max-w-none" />
             </div>
-            <div class="[&_label]:mb-1 [&_label]:text-xs [&_label]:font-medium [&_label]:text-text-secondary">
-              <IconPicker label="Icon" value={icon()} onValue={setIcon} />
+            <div>
+              <Label for="type-icon">Icon</Label>
+              <IconChooser id="type-icon" cms value={icon()} onValue={setIcon} />
             </div>
           </section>
 

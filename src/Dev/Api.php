@@ -16,6 +16,7 @@ use Pillar\PillarException;
 use Pillar\Schema\ContentSchema;
 use Pillar\Schema\SchemaException;
 use Pillar\Schema\SectionSchema;
+use Pillar\Schema\Rules;
 use Pillar\Schema\Setting;
 use Pillar\Site\PathPolicy;
 use Pillar\Template\PageTemplate;
@@ -460,6 +461,8 @@ final class Api {
 		$relative = 'content/' . $this->safe( $collection ) . '/' . $this->safe( $slug ) . '.md';
 		$existing = $this->root . '/' . PathPolicy::normalise( $relative );
 
+		$this->checkRules( $collection, $frontmatter );
+
 		// Written back as a normal markdown file a developer can edit by hand —
 		// and without restyling it: frontmatter lines whose values did not
 		// change are kept exactly as they were written. See FrontmatterWriter.
@@ -482,6 +485,27 @@ final class Api {
 			$this->write( $relative, $file );
 		}
 		return $this->json( [ 'ok' => true ], $createOnly ? 201 : 200 );
+	}
+
+	/**
+	 * A published entry must satisfy its fields' rules — required, limits,
+	 * email addresses. A draft may be saved half-written; the rules apply when
+	 * it is published. The form checks the same first (lib/fieldRules.ts);
+	 * this is what a script or a stale tab cannot get past.
+	 *
+	 * @param array<mixed, mixed> $frontmatter
+	 */
+	private function checkRules( string $collection, array $frontmatter ): void {
+		if ( filter_var( $frontmatter['draft'] ?? false, FILTER_VALIDATE_BOOL ) ) {
+			return;
+		}
+
+		$schema = ContentSchema::all( $this->pillar()->site->layers() )[ $collection ] ?? null;
+		$broken = null === $schema ? [] : Rules::violations( $schema->fields, $frontmatter );
+
+		if ( [] !== $broken ) {
+			throw new PillarException( 'Not published: ' . implode( ' ', array_column( $broken, 'message' ) ) );
+		}
 	}
 
 	private function deleteItem( string $collection, string $slug ): Response {
@@ -569,7 +593,12 @@ final class Api {
 			return $this->json( [ 'error' => 'This site is not a git repository, so there is nothing to publish to.' ], 422 );
 		}
 
-		$result = $this->git->commit( (string) ( $body['message'] ?? 'Update site content' ), push: true );
+		// Pushed unless the author asked for a local commit only — to review
+		// it first, or because there is no connection.
+		$result = $this->git->commit(
+			(string) ( $body['message'] ?? 'Update site content' ),
+			push: filter_var( $body['push'] ?? true, FILTER_VALIDATE_BOOL )
+		);
 
 		return $this->json( [ 'message' => $result['message'] ], $result['ok'] ? 200 : 422 );
 	}

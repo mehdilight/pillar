@@ -1,7 +1,7 @@
-import { For, Show, createEffect, createSignal, on } from 'solid-js';
+import { Show, createEffect, createSignal, on } from 'solid-js';
 import { ChevronDown, Trash2, X } from '../components/ui/Icons';
 import { SectionIcon } from '../components/ui/SectionIcon';
-import SettingInput from '../components/SettingInput';
+import FormFields from '../components/fields/FormFields';
 import * as editor from '../store/editor';
 import type { PageSection } from '../types';
 
@@ -75,15 +75,7 @@ export default function SettingsPanel(props: { section: PageSection }) {
               </div>
             }
           >
-            <For each={settings()}>
-              {(setting) => (
-                <SettingInput
-                  setting={setting}
-                  value={local()[setting.id]}
-                  onChange={(value) => change(setting.id, value)}
-                />
-              )}
-            </For>
+            <FormFields fields={settings()} values={local()} onChange={change} />
           </Show>
         </div>
 

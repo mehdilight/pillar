@@ -3,7 +3,7 @@ import { Dynamic } from 'solid-js/web';
 import { A } from '@solidjs/router';
 import Page from '../ui/Page';
 import { Postbox, SidebarLayout, buttonClass } from '../ui/ds';
-import SettingInput from '../../components/SettingInput';
+import FormFields from '../../components/fields/FormFields';
 import { showToast } from '../../components/ui/Toast';
 import { api, editorConfig } from '../../api/client';
 import { refreshStatus } from '../../store/status';
@@ -60,11 +60,7 @@ export default function Settings() {
                   <Show
                     when={custom(panel.plugin)}
                     fallback={
-                      <For each={panel.settings}>
-                        {(setting) => (
-                          <SettingInput setting={setting} value={current()[setting.id]} onChange={(value) => change(setting.id, value)} />
-                        )}
-                      </For>
+                      <FormFields fields={panel.settings} values={current()} onChange={change} />
                     }
                   >
                     {/* The element the plugin's stylesheet is scoped to. */}

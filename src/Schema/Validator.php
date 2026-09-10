@@ -155,7 +155,17 @@ final class Validator {
 	}
 
 	private function checkContentFile( ContentSchema $schema, MarkdownFile $file ): void {
-		$this->checkValues( $schema->fields, $file->frontmatter, 'content/' . $file->collection . '/' . $file->slug . '.md', '' );
+		$where = 'content/' . $file->collection . '/' . $file->slug . '.md';
+
+		$this->checkValues( $schema->fields, $file->frontmatter, $where, '' );
+
+		// Required fields, limits, email addresses: errors once published, a
+		// warning on a draft that is still being written.
+		foreach ( Rules::violations( $schema->fields, $file->frontmatter ) as $violation ) {
+			filter_var( $file->frontmatter['draft'] ?? false, FILTER_VALIDATE_BOOL )
+				? $this->warn( $where, $violation['message'] . ' (draft)' )
+				: $this->error( $where, $violation['message'] );
+		}
 	}
 
 	/**

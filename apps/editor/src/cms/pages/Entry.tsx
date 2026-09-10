@@ -5,7 +5,7 @@ import { ExternalLink } from '../../components/ui/Icons';
 import Page from '../ui/Page';
 import { Button, Input, Label, Loading, Notice, Postbox, SidebarLayout, buttonClass } from '../ui/ds';
 import RichEditor from '../../components/ui/LazyRichEditor';
-import SettingInput from '../../components/SettingInput';
+import FormFields, { FieldErrors } from '../../components/fields/FormFields';
 import { CurrentEntry } from '../../components/fields/RelationshipInput';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { showToast } from '../../components/ui/Toast';
@@ -13,7 +13,7 @@ import { api } from '../../api/client';
 import { collectionNamed, entryUrl, loadCollections } from '../../store/content';
 import { refreshStatus } from '../../store/status';
 import { slotsFor } from '../../plugins/host';
-import { isDecorative, isWide } from '../../lib/fieldTypes';
+import { violations } from '../../lib/fieldRules';
 import type { ContentItem } from '../../types';
 
 const slugify = (value: string) =>
@@ -52,6 +52,8 @@ export default function Entry() {
   const [saving, setSaving] = createSignal(false);
   const [deleting, setDeleting] = createSignal(false);
   const [leaving, setLeaving] = createSignal<BeforeLeaveEventArgs | null>(null);
+  // Shown under their fields once a save has been tried — not while typing a new entry.
+  const [errors, setErrors] = createSignal<Record<string, string>>({});
 
   const collection = () => collectionNamed(params.collection);
   const fields = () => (collection()?.fields ?? []).filter((field) => !OWN_FIELDS.includes(field.id));
@@ -95,11 +97,34 @@ export default function Entry() {
       }
 
       setSaved(snapshot());
+      setErrors({});
     })
+  );
+
+  const problems = () => violations(fields(), frontmatter());
+
+  // Fixing a field clears its message as soon as it is fixed.
+  createEffect(
+    on(problems, (current) => {
+      if (Object.keys(errors()).length) setErrors(Object.fromEntries(current.map((problem) => [problem.path, problem.message])));
+    }, { defer: true })
   );
 
   const save = async () => {
     if (saving() || !title().trim() || !validSlug()) return;
+
+    // The fields' rules — required, limits, email addresses — hold once an
+    // entry is published. A draft saves half-written, told what is left.
+    const found = problems();
+
+    setErrors(Object.fromEntries(found.map((problem) => [problem.path, problem.message])));
+
+    if (found.length && !draft()) {
+      showToast(`Fix ${found.length === 1 ? 'one field' : `${found.length} fields`} before publishing — or save it as a draft.`, 'error');
+      document.querySelector(`[data-field="${CSS.escape(found[0].path)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      return;
+    }
 
     setSaving(true);
 
@@ -117,7 +142,10 @@ export default function Entry() {
       isNew() ? await api.createItem(item) : await api.saveItem(item);
 
       setSaved(snapshot());
-      showToast(isNew() ? 'Entry created' : 'Saved', 'success');
+      showToast(
+        found.length ? `Saved as a draft — ${found.length === 1 ? 'one field needs' : `${found.length} fields need`} attention before publishing` : isNew() ? 'Entry created' : 'Saved',
+        'success'
+      );
       void refreshStatus();
       void loadCollections();
 
@@ -241,19 +269,9 @@ export default function Entry() {
                   */}
                   <Show when={fields().length}>
                     <Postbox title="Details">
-                      <div class="grid gap-x-5 sm:grid-cols-2">
-                        <For each={fields()}>
-                          {(field) => (
-                            <div class="min-w-0" classList={{ 'sm:col-span-2': isWide(field) || isDecorative(field.type) }}>
-                              <SettingInput
-                                setting={field}
-                                value={frontmatter()[field.id]}
-                                onChange={(value) => setFrontmatter({ ...frontmatter(), [field.id]: value })}
-                              />
-                            </div>
-                          )}
-                        </For>
-                      </div>
+                      <FieldErrors.Provider value={errors}>
+                        <FormFields grid fields={fields()} values={frontmatter()} onChange={(id, value) => setFrontmatter({ ...frontmatter(), [id]: value })} />
+                      </FieldErrors.Provider>
                     </Postbox>
                   </Show>
                 </div>

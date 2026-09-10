@@ -129,6 +129,24 @@ export function cleanField(field: SchemaSetting): SchemaSetting {
   if (field.type !== 'image' && field.type !== 'collection_item') delete out.multiple;
   if (field.type !== 'collection_item') delete out.collections;
   if (field.type !== 'date') delete out.time;
+  if (!['text', 'textarea', 'markdown', 'richtext'].includes(field.type)) delete out.character_limit;
+  if (field.type !== 'text' || out.input_type === 'text') delete out.input_type;
+  if (field.type !== 'radio') delete out.display;
+  if (isDecorative(field.type)) {
+    delete out.required;
+    delete out.visible_if;
+    delete out.hidden;
+  }
+  if (Array.isArray(out.visible_if)) {
+    out.visible_if = (out.visible_if as Array<Record<string, unknown>>).map((rule) =>
+      Object.fromEntries(
+        Object.entries(rule).filter(
+          ([key, value]) =>
+            value !== undefined && !(key === 'operator' && value === 'equals') && !(key === 'value' && ['empty', 'not_empty'].includes(String(rule.operator)))
+        )
+      )
+    );
+  }
   if (isDecorative(field.type)) delete out.id;
 
   return out as unknown as SchemaSetting;

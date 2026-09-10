@@ -1,9 +1,11 @@
-import { For, Show } from 'solid-js';
-import SettingInput from '../SettingInput';
+import { Show } from 'solid-js';
+import FormFields from './FormFields';
 import type { SchemaSetting } from '../../types';
 
 /** Fields kept together as one value: `author.name`, `author.url`. */
 export default function GroupInput(props: {
+  /** This group's path with a trailing dot: `author.`. */
+  path?: string;
   label?: string;
   info?: string;
   fields: SchemaSetting[];
@@ -18,22 +20,12 @@ export default function GroupInput(props: {
       <Show when={props.info}>
         <p class="mb-2 text-[11px] leading-normal text-gray-500">{props.info}</p>
       </Show>
-      <SubFields fields={props.fields} value={props.value} onValue={props.onValue} />
+      <SubFields path={props.path} fields={props.fields} value={props.value} onValue={props.onValue} />
     </fieldset>
   );
 }
 
 /** A set of fields over one object — what a group is, and each repeater row. */
-export function SubFields(props: { fields: SchemaSetting[]; value: Record<string, unknown>; onValue: (value: Record<string, unknown>) => void }) {
-  return (
-    <For each={props.fields}>
-      {(field) => (
-        <SettingInput
-          setting={field}
-          value={props.value[field.id]}
-          onChange={(value) => props.onValue({ ...props.value, [field.id]: value })}
-        />
-      )}
-    </For>
-  );
+export function SubFields(props: { path?: string; fields: SchemaSetting[]; value: Record<string, unknown>; onValue: (value: Record<string, unknown>) => void }) {
+  return <FormFields path={props.path} fields={props.fields} values={props.value} onChange={(id, value) => props.onValue({ ...props.value, [id]: value })} />;
 }
