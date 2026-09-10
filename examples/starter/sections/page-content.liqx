@@ -1,7 +1,7 @@
 <article class="wrap prose">
   <h1>{page.title}</h1>
   <if {section.settings.show_date && page.date}>
-    <time datetime={page.date}>{page.date}</time>
+    <time datetime={page.date}>{page.date | date('%b %e, %Y')}</time>
   </if>
   {page.content}
 </article>

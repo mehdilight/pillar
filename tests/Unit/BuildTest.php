@@ -19,6 +19,40 @@ final class BuildTest extends SiteTestCase {
 		self::assertFileExists( $this->root . '/dist/posts/why-static/index.html' );
 	}
 
+	public function test_every_page_using_a_snippet_is_rebuilt_when_it_changes(): void {
+		// Two pages render <PostCard>. Liqx caches a parsed snippet, so without
+		// care only the first page to render it records it as a dependency.
+		copy( $this->root . '/templates/index.json', $this->root . '/templates/archive.json' );
+
+		( new Builder( $this->pillar() ) )->build();
+
+		$manifest = json_decode( (string) file_get_contents( $this->root . '/.pillar/manifest.json' ), true );
+
+		foreach ( [ '/', '/archive/' ] as $url ) {
+			self::assertNotEmpty(
+				array_filter( $manifest['pages'][ $url ]['deps'], static fn ( string $dep ): bool => str_ends_with( $dep, 'snippets/post-card.liqx' ) ),
+				$url . ' does not record the snippet it renders'
+			);
+		}
+
+		file_put_contents( $this->root . '/snippets/post-card.liqx', "<li class=\"changed\">{props.post.title}</li>" );
+		( new Builder( $this->pillar() ) )->build();
+
+		self::assertStringContainsString( 'class="changed"', (string) file_get_contents( $this->root . '/dist/index.html' ) );
+		self::assertStringContainsString( 'class="changed"', (string) file_get_contents( $this->root . '/dist/archive/index.html' ) );
+	}
+
+	public function test_a_deleted_entry_takes_its_folder_with_it(): void {
+		( new Builder( $this->pillar() ) )->build();
+		self::assertDirectoryExists( $this->root . '/dist/posts/why-static' );
+
+		unlink( $this->root . '/content/posts/why-static.md' );
+		( new Builder( $this->pillar() ) )->build();
+
+		self::assertDirectoryDoesNotExist( $this->root . '/dist/posts/why-static' );
+		self::assertDirectoryExists( $this->root . '/dist/posts' );
+	}
+
 	public function test_an_empty_declared_collection_does_not_make_its_entry_template_a_page(): void {
 		file_put_contents( $this->root . '/schemas/guides.json', '{"label": "Guides", "fields": [{"id": "title", "type": "text"}]}' );
 		copy( $this->root . '/templates/post.json', $this->root . '/templates/guide.json' );

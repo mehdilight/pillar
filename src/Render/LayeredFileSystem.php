@@ -45,6 +45,20 @@ final class LayeredFileSystem implements FileSystem {
 		$this->listeners[] = $listener;
 	}
 
+	/**
+	 * The same file system as a new object, listeners and all.
+	 *
+	 * Liqx caches a parsed partial per file-system object and never asks it
+	 * again, so only the first page to use a snippet would record it as a
+	 * dependency — every later page renders it from the cache, unrecorded, and
+	 * is not rebuilt when the snippet changes. A fresh object per page makes
+	 * each page load, and record, what it uses; compiled templates are still
+	 * reused from disk.
+	 */
+	public function fresh(): self {
+		return clone $this;
+	}
+
 	public function load( string $name ): string {
 		$candidates = $this->candidates( $name );
 

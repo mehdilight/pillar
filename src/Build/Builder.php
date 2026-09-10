@@ -70,6 +70,10 @@ final class Builder {
 
 			$this->recorder->start();
 
+			// Every snippet this page renders must be recorded for it — see
+			// LayeredFileSystem::fresh() for why the file system is renewed.
+			$this->pillar->environment->setSnippetFileSystem( $this->pillar->snippets->fresh() );
+
 			$html = $this->pillar->render( $route->template, $route->url, $route->data );
 			$html = $this->pillar->build->runEachPage( $html, $route->url );
 			$path = $output . '/' . $route->outputPath();
@@ -234,6 +238,14 @@ final class Builder {
 		}
 		if ( ! in_array( $relative, $active, true ) && is_file( $output . '/' . $relative ) ) {
 			unlink( $output . '/' . $relative );
+
+			// A deleted post's folder goes with its page — up to, never
+			// including, the output directory, and only while it is empty.
+			for ( $dir = dirname( $relative ); '.' !== $dir && '' !== $dir; $dir = dirname( $dir ) ) {
+				if ( ! @rmdir( $output . '/' . $dir ) ) {
+					break;
+				}
+			}
 		}
 	}
 
