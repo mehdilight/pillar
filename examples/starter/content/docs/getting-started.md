@@ -9,10 +9,7 @@ composer require pillar/pillar
 pillar dev --site ./my-site
 ```
 
-`pillar dev` serves three things on one port: the dashboard at `/`, a JSON API
-over the working tree at `/api`, and the site itself at `/preview`. The preview
-renders through the same code `pillar build` uses, so what you see is what gets
-written.
+`pillar dev` serves three things on one port: the dashboard at `/`, a JSON API over the working tree at `/api`, and the site itself at `/preview`. The preview renders through the same code `pillar build` uses, so what you see is what gets written.
 
 When you are ready:
 
@@ -20,3 +17,5 @@ When you are ready:
 pillar build          # → dist/, plain HTML files
 pillar build --force  # ignore the incremental manifest
 ```
+
+![](/assets/uploads/screenshot-2026-09-06-at-16-42-09-d23fb7a8a8.png)
