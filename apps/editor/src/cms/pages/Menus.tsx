@@ -26,6 +26,14 @@ const sortableId = (item: MenuItem) => {
   return id;
 };
 
+// Menu edits create new objects. Preserve the sortable key across those edits
+// so Solid retains the row (including its expanded accordion state).
+const retainSortableId = (previous: MenuItem, next: MenuItem) => {
+  const id = sortableIds.get(previous);
+  if (id) sortableIds.set(next, id);
+  return next;
+};
+
 /** Navigation starts as a compact index, then opens one list for focused editing. */
 export default function Menus() {
   const params = useParams<{ handle?: string }>();
@@ -133,7 +141,7 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
       <DragDropSensors>
         <SortableProvider ids={props.items.map(sortableId)}>
           <div class={props.depth ? 'border-l-2 border-brand/15 bg-surface-muted/30' : ''}>
-            <For each={props.items}>{(item) => <SortableMenuRow item={item} id={sortableId(item)} onChange={(next) => props.onChange(props.items.map((current) => current === item ? next : current))} onRemove={() => props.onChange(props.items.filter((current) => current !== item))} depth={props.depth} />}</For>
+            <For each={props.items}>{(item) => <SortableMenuRow item={item} id={sortableId(item)} onChange={(next) => props.onChange(props.items.map((current) => current === item ? retainSortableId(item, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => current !== item))} depth={props.depth} />}</For>
             <Show when={props.items.length === 0}><div class="flex flex-col items-center px-5 py-10 text-center"><Link2 size={22} class="mb-2 text-text-faint" /><p class="text-[13px] font-medium text-text">This menu has no links.</p><p class="mt-1 text-xs text-text-muted">Add a destination for people to navigate to.</p></div></Show>
           </div>
         </SortableProvider>
