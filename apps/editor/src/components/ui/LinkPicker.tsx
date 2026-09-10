@@ -1,8 +1,8 @@
 import { For, Show, createMemo, createResource, createSignal } from 'solid-js';
 import { ChevronDown, Link2, Search } from 'lucide-solid';
+import { Popover } from '@kobalte/core';
 import { api } from '../../api/client';
 import { entryUrl } from '../../store/content';
-import type { ContentCollection, ContentItem, TemplateSummary } from '../../types';
 import Field, { controlClass } from './Field';
 
 interface Destination {
@@ -53,28 +53,17 @@ export default function LinkPicker(props: LinkPickerProps) {
   };
 
   const control = (
-    <div class="relative">
-      <div class="flex">
-        <input
-          type="text"
-          class={`${controlClass} rounded-e-none border-e-0`}
-          value={props.value}
-          placeholder={props.placeholder ?? '/about/ or https://example.com'}
-          onInput={(event) => props.onValue(event.currentTarget.value)}
-        />
-        <button
-          type="button"
-          class="inline-flex h-9 shrink-0 items-center gap-1 border border-[#8c9196] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3]"
-          classList={{ 'rounded-e-lg': true, 'bg-[#eef6ff] text-[#005bd3]': open() }}
-          aria-expanded={open()}
+    <Popover.Root open={open()} onOpenChange={setOpen} placement="bottom-start" gutter={6} sameWidth fitViewport overflowPadding={12}>
+      <Popover.Anchor class="flex">
+        <input type="text" class={`${controlClass} rounded-e-none border-e-0`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
+        <Popover.Trigger
+          class="inline-flex h-9 shrink-0 items-center gap-1 rounded-e-lg border border-[#8c9196] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3]"
+          classList={{ 'bg-[#eef6ff] text-[#005bd3]': open() }}
           aria-label="Browse link destinations"
-          onClick={() => setOpen(!open())}
-        >
-          <Link2 size={14} /> Browse <ChevronDown size={14} />
-        </button>
-      </div>
-      <Show when={open()}>
-        <div class="absolute z-30 mt-1 w-full overflow-hidden rounded-ds border border-border-strong bg-surface shadow-ds-lg">
+        ><Link2 size={14} /> Browse <ChevronDown size={14} /></Popover.Trigger>
+      </Popover.Anchor>
+      <Popover.Portal>
+        <Popover.Content class="z-[100] overflow-hidden rounded-ds border border-border-strong bg-surface shadow-ds-lg" onOpenAutoFocus={(event) => event.preventDefault()}>
           <div class="border-b border-border p-2">
             <div class="flex items-center gap-2 rounded border border-border-strong bg-surface px-2 text-text-muted focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
               <Search size={14} />
@@ -85,7 +74,7 @@ export default function LinkPicker(props: LinkPickerProps) {
             <Show when={!data.loading} fallback={<p class="px-3 py-4 text-xs text-text-muted">Loading destinations…</p>}>
               <Show when={matches().length} fallback={<p class="px-3 py-4 text-xs text-text-muted">No matching pages or entries. Paste a URL above instead.</p>}>
                 <For each={matches()}>
-                  {(destination, index) => (
+                  {(destination) => (
                     <button type="button" class="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-surface-muted focus:bg-surface-muted focus:outline-none" onClick={() => select(destination.url)}>
                       <span class="w-20 shrink-0 truncate text-[10px] font-semibold uppercase tracking-[.04em] text-text-faint">{destination.group}</span>
                       <span class="min-w-0 flex-1"><span class="block truncate text-[13px] text-text">{destination.label}</span><span class="block truncate text-[11px] text-text-faint">{destination.url}</span></span>
@@ -99,9 +88,9 @@ export default function LinkPicker(props: LinkPickerProps) {
             <button type="button" class="rounded px-2 py-1 text-[11px] text-text-muted hover:bg-surface hover:text-text" onClick={() => select('#main')}>Link to main content</button>
             <button type="button" class="rounded px-2 py-1 text-[11px] text-text-muted hover:bg-surface hover:text-text" onClick={() => select('#top')}>Link to page top</button>
           </div>
-        </div>
-      </Show>
-    </div>
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 
   return props.label ? <Field label={props.label} info={props.info}>{control}</Field> : control;
