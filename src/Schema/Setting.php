@@ -10,7 +10,14 @@ namespace Pillar\Schema;
  */
 final class Setting {
 
-	/** @param list<array{value: string, label: string}> $options */
+	/** Groups inside repeaters inside groups: deep enough for any real form, and no deeper. */
+	public const MAX_DEPTH = 3;
+
+	/**
+	 * @param list<array{value: string, label: string}> $options
+	 * @param list<Setting>                             $fields  a group's or a repeater row's fields
+	 * @param list<string>                              $collections
+	 */
 	public function __construct(
 		public readonly string $id,
 		public readonly FieldType $type,
@@ -26,6 +33,13 @@ final class Setting {
 		public readonly string $placeholder = '',
 		public readonly string $cssVar = '',
 		public readonly string $cssUnit = '',
+		public readonly array $fields = [],
+		/** `image` → a gallery; `collection_item` → several entries. Stored as a list. */
+		public readonly bool $multiple = false,
+		/** `collection_item`: the collections its entries come from. */
+		public readonly array $collections = [],
+		/** `date`: a time of day as well. */
+		public readonly bool $time = false,
 	) {}
 
 	/**
@@ -35,7 +49,7 @@ final class Setting {
 	 *         the dashboard offers and this rejects would otherwise render a
 	 *         control that silently writes a value nothing reads.
 	 */
-	public static function fromArray( array $raw ): self {
+	public static function fromArray( array $raw, int $depth = 0 ): self {
 		$name = (string) ( $raw['type'] ?? '' );
 		$type = FieldType::tryFrom( $name );
 
@@ -74,8 +88,19 @@ final class Setting {
 			}
 		}
 
-		if ( in_array( $type, [ FieldType::Select, FieldType::Radio ], true ) && [] === $options ) {
+		if ( in_array( $type, [ FieldType::Select, FieldType::Radio, FieldType::Checkboxes ], true ) && [] === $options ) {
 			throw new SchemaException( sprintf( 'Setting "%s" is a %s and needs options.', $id, $name ) );
+		}
+
+		$fields = self::fieldsOf( $type, $id, $raw, $depth );
+
+		// `collections: [posts, docs]`, or the shorthand `collection: posts`.
+		$collections = array_values( array_unique( array_map( 'strval', (array) ( $raw['collections'] ?? ( isset( $raw['collection'] ) ? [ $raw['collection'] ] : [] ) ) ) ) );
+
+		foreach ( $collections as $collection ) {
+			if ( ! preg_match( '/^[a-z][a-z0-9-]*$/', $collection ) ) {
+				throw new SchemaException( sprintf( 'Setting "%s" names a collection "%s" that is not a collection name.', $id, $collection ) );
+			}
 		}
 
 		return new self(
@@ -93,13 +118,69 @@ final class Setting {
 			placeholder: (string) ( $raw['placeholder'] ?? '' ),
 			cssVar: (string) ( $raw['css_var'] ?? '' ),
 			cssUnit: (string) ( $raw['css_unit'] ?? '' ),
+			fields: $fields,
+			multiple: in_array( $type, [ FieldType::Image, FieldType::CollectionItem ], true ) && true === ( $raw['multiple'] ?? false ),
+			collections: FieldType::CollectionItem === $type ? $collections : [],
+			time: FieldType::Date === $type && true === ( $raw['time'] ?? false ),
 		);
+	}
+
+	/**
+	 * A group's or repeater's sub-fields — required, uniquely named, and only
+	 * for those two types: sub-fields on a text setting would be a schema
+	 * that says more than the form can show.
+	 *
+	 * @param array<string, mixed> $raw
+	 *
+	 * @return list<Setting>
+	 */
+	private static function fieldsOf( FieldType $type, string $id, array $raw, int $depth ): array {
+		$holds = in_array( $type, [ FieldType::Group, FieldType::Repeater ], true );
+
+		if ( ! $holds ) {
+			return [];
+		}
+
+		if ( $depth >= self::MAX_DEPTH ) {
+			throw new SchemaException( sprintf( 'Setting "%s" nests groups and repeaters more than %d deep.', $id, self::MAX_DEPTH ) );
+		}
+
+		$fields = [];
+		$seen   = [];
+
+		foreach ( (array) ( $raw['fields'] ?? [] ) as $field ) {
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+
+			$setting = self::fromArray( $field, $depth + 1 );
+
+			if ( ! $setting->type->isDecorative() ) {
+				if ( isset( $seen[ $setting->id ] ) ) {
+					throw new SchemaException( sprintf( 'Setting "%s" has two fields called "%s".', $id, $setting->id ) );
+				}
+
+				$seen[ $setting->id ] = true;
+			}
+
+			$fields[] = $setting;
+		}
+
+		if ( [] === $seen ) {
+			throw new SchemaException( sprintf( 'Setting "%s" is a %s and needs at least one field.', $id, $type->value ) );
+		}
+
+		return $fields;
 	}
 
 	/** The value a section starts with: the schema's default, else the type's empty value. */
 	public function initialValue(): mixed {
 		if ( $this->type->isDecorative() ) {
 			return null;
+		}
+
+		if ( null === $this->default && $this->multiple ) {
+			return [];
 		}
 
 		return $this->default ?? $this->type->emptyValue();
@@ -122,6 +203,10 @@ final class Setting {
 				'placeholder' => $this->placeholder,
 				'css_var'     => $this->cssVar,
 				'css_unit'    => $this->cssUnit,
+				'fields'      => array_map( static fn ( Setting $field ): array => $field->toArray(), $this->fields ),
+				'multiple'    => $this->multiple ?: null,
+				'collections' => $this->collections,
+				'time'        => $this->time ?: null,
 			] as $key => $value
 		) {
 			if ( null !== $value && '' !== $value && [] !== $value ) {

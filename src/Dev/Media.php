@@ -19,6 +19,15 @@ final class Media {
 
 	private const IMAGE_EXTENSIONS = [ 'png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'svg' ];
 
+	/**
+	 * Files a `file` field can offer: downloads, not pages. Nothing a browser
+	 * would run — no HTML, no SVG, no script — since an upload is served from
+	 * the site's own origin.
+	 */
+	public const FILE_EXTENSIONS = [ 'pdf', 'zip', 'csv', 'txt', 'docx', 'xlsx', 'pptx', 'mp3', 'mp4', 'webm' ];
+
+	private const MAX_FILE_BYTES = 25 * 1024 * 1024;
+
 	/** Checked on the decoded bytes; the encoded payload may be a third larger. */
 	private const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -29,14 +38,14 @@ final class Media {
 	}
 
 	/**
-	 * Every image in every layer, the site's own shadowing a theme's of the
-	 * same name. Images from an addon or theme are listed read-only — they
+	 * Every image and file in every layer, the site's own shadowing a theme's
+	 * of the same name. Images from an addon or theme are listed read-only — they
 	 * belong to their package, and deleting one would be undone on update.
 	 *
 	 * Each carries the site files that mention it, so the library can say an
 	 * image is in use before someone deletes it.
 	 *
-	 * @return list<array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string}>
+	 * @return list<array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string, kind: string}>
 	 */
 	public function all(): array {
 		$images = [];
@@ -52,7 +61,7 @@ final class Media {
 
 			foreach ( $files as $file ) {
 				/** @var \SplFileInfo $file */
-				if ( ! $file->isFile() || ! self::isImage( $file->getFilename() ) ) {
+				if ( ! $file->isFile() || ! self::isMedia( $file->getFilename() ) ) {
 					continue;
 				}
 
@@ -84,17 +93,21 @@ final class Media {
 	 *
 	 * @param array<string, mixed> $input `name` and base64 `data`
 	 *
-	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string}
+	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string, kind: string}
 	 */
 	public function upload( array $input ): array {
 		$encoded = (string) ( $input['data'] ?? '' );
 
-		if ( strlen( $encoded ) > self::MAX_BYTES * 1.4 ) {
-			throw new PillarException( 'Choose an image smaller than 10 MB.' );
+		if ( strlen( $encoded ) > self::MAX_FILE_BYTES * 1.4 ) {
+			throw new PillarException( 'Choose a file smaller than 25 MB.' );
 		}
 
 		$data = base64_decode( $encoded, true );
 		$info = false === $data ? false : @getimagesizefromstring( $data );
+
+		if ( false !== $data && false === $info ) {
+			return $this->uploadFile( (string) ( $input['name'] ?? 'file' ), $data );
+		}
 
 		$extension = match ( $info['mime'] ?? '' ) {
 			'image/png'  => 'png',
@@ -113,16 +126,51 @@ final class Media {
 			throw new PillarException( 'Choose an image smaller than 10 MB.' );
 		}
 
-		$stem = pathinfo( basename( (string) ( $input['name'] ?? 'image' ) ), PATHINFO_FILENAME );
-		$stem = trim( (string) preg_replace( '/[^a-z0-9]+/', '-', strtolower( $stem ) ), '-' ) ?: 'image';
-		$name = substr( $stem, 0, 60 ) . '-' . substr( hash( 'sha256', (string) $data ), 0, 10 ) . '.' . $extension;
+		return $this->store( (string) ( $input['name'] ?? 'image' ), (string) $data, $extension );
+	}
+
+	/**
+	 * A document, archive or recording. The extension must be one a `file`
+	 * field offers, and the bytes must be what it claims: a PDF starts
+	 * `%PDF-`, an Office file is a ZIP, a text file is text.
+	 *
+	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string, kind: string}
+	 */
+	private function uploadFile( string $original, string $data ): array {
+		$extension = strtolower( pathinfo( $original, PATHINFO_EXTENSION ) );
+
+		if ( ! in_array( $extension, self::FILE_EXTENSIONS, true ) ) {
+			throw new PillarException( 'Choose a PNG, JPG, GIF, WebP or AVIF image, or a PDF, ZIP, CSV, text, Word, Excel, PowerPoint, MP3, MP4 or WebM file.' );
+		}
+
+		$genuine = match ( $extension ) {
+			'pdf'                                => str_starts_with( $data, '%PDF-' ),
+			'zip', 'docx', 'xlsx', 'pptx'        => str_starts_with( $data, "PK\x03\x04" ) || str_starts_with( $data, "PK\x05\x06" ),
+			'mp3'                                => str_starts_with( $data, 'ID3' ) || 1 === preg_match( '/^\xFF[\xE0-\xFF]/', $data ),
+			'mp4'                                => 'ftyp' === substr( $data, 4, 4 ),
+			'webm'                               => str_starts_with( $data, "\x1A\x45\xDF\xA3" ),
+			default                              => ! str_contains( $data, "\0" ) && mb_check_encoding( $data, 'UTF-8' ),
+		};
+
+		if ( ! $genuine ) {
+			throw new PillarException( sprintf( '%s is not a real .%s file.', basename( $original ), $extension ) );
+		}
+
+		return $this->store( $original, $data, $extension );
+	}
+
+	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string, kind: string} */
+	private function store( string $original, string $data, string $extension ): array {
+		$stem = pathinfo( basename( $original ), PATHINFO_FILENAME );
+		$stem = trim( (string) preg_replace( '/[^a-z0-9]+/', '-', strtolower( $stem ) ), '-' ) ?: 'file';
+		$name = substr( $stem, 0, 60 ) . '-' . substr( hash( 'sha256', $data ), 0, 10 ) . '.' . $extension;
 
 		$root = $this->site->absolute( 'assets/uploads' );
 
 		@mkdir( $root, 0777, true );
 
-		if ( false === file_put_contents( $root . '/' . $name, (string) $data ) ) {
-			throw new PillarException( 'Could not save the image. Check that the site folder is writable.' );
+		if ( false === file_put_contents( $root . '/' . $name, $data ) ) {
+			throw new PillarException( 'Could not save the file. Check that the site folder is writable.' );
 		}
 
 		return $this->describe( $root . '/' . $name, '/assets/uploads/' . $name, false );
@@ -137,8 +185,8 @@ final class Media {
 	public function delete( string $url ): void {
 		$relative = PathPolicy::normalise( ltrim( $url, '/' ) );
 
-		if ( ! str_starts_with( $relative, 'assets/' ) || ! self::isImage( $relative ) ) {
-			throw new PillarException( 'Only images in the site media library can be deleted.' );
+		if ( ! str_starts_with( $relative, 'assets/' ) || ! self::isMedia( $relative ) ) {
+			throw new PillarException( 'Only images and files in the site media library can be deleted.' );
 		}
 
 		$path = realpath( $this->site->absolute( $relative ) );
@@ -219,7 +267,7 @@ final class Media {
 	 * Set an image's alt text, returning the image. Theme images take alt text
 	 * too — it is kept in the site's own `config/media.json`, not the theme.
 	 *
-	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string}
+	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string, kind: string}
 	 */
 	public function setAlt( string $url, string $alt ): array {
 		foreach ( $this->all() as $image ) {
@@ -237,7 +285,11 @@ final class Media {
 		return in_array( strtolower( pathinfo( $path, PATHINFO_EXTENSION ) ), self::IMAGE_EXTENSIONS, true );
 	}
 
-	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string} */
+	private static function isMedia( string $path ): bool {
+		return self::isImage( $path ) || in_array( strtolower( pathinfo( $path, PATHINFO_EXTENSION ) ), self::FILE_EXTENSIONS, true );
+	}
+
+	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string, kind: string} */
 	private function describe( string $path, string $url, bool $readonly ): array {
 		$dimensions = @getimagesize( $path );
 
@@ -251,6 +303,7 @@ final class Media {
 			'modified' => (int) filemtime( $path ),
 			'used_in'  => [],
 			'alt'      => $this->alt->for( $url ),
+			'kind'     => self::isImage( $path ) ? 'image' : 'file',
 		];
 	}
 }

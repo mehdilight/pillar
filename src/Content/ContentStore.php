@@ -6,6 +6,9 @@ namespace Pillar\Content;
 use League\CommonMark\CommonMarkConverter;
 use Pillar\Render\Drops\CollectionDrop;
 use Pillar\Render\Drops\PageDrop;
+use Pillar\Schema\ContentSchema;
+use Pillar\Schema\FieldType;
+use Pillar\Schema\Setting;
 use Pillar\Site\Site;
 
 /**
@@ -33,6 +36,9 @@ final class ContentStore {
 
 	/** @var list<callable(string): void> */
 	private array $listeners = [];
+
+	/** @var array<string, ContentSchema>|null */
+	private ?array $schemas = null;
 
 	public function __construct(
 		private readonly Site $site,
@@ -177,14 +183,105 @@ final class ContentStore {
 	 * hand back the saved version the moment anything had already read it.
 	 */
 	public function unsaved( MarkdownFile $file ): PageDrop {
-		return new PageDrop( $file, $this->markdown->convert( $file->body )->getContent() );
+		return new PageDrop( $file, $this->markdown->convert( $file->body )->getContent(), $this->augmenter( $file->collection ) );
 	}
 
 	/** Markdown is converted once per file per build, however many pages read it. */
 	public function page( MarkdownFile $file ): PageDrop {
 		return $this->pages[ $file->collection . '/' . $file->slug ] ??= new PageDrop(
 			$file,
-			$this->markdown->convert( $file->body )->getContent()
+			$this->markdown->convert( $file->body )->getContent(),
+			$this->augmenter( $file->collection )
 		);
+	}
+
+	/**
+	 * An entry, by reference — recorded as a read of its collection, so a
+	 * page showing a related post is rebuilt when that post changes. A draft
+	 * is not found in a production build, the same as everywhere else.
+	 */
+	public function entry( string $collection, string $slug ): ?PageDrop {
+		foreach ( $this->listeners as $listener ) {
+			$listener( $collection );
+		}
+
+		$file = $this->find( $collection, $slug );
+
+		return null === $file ? null : $this->page( $file );
+	}
+
+	/**
+	 * A field's value as a template should see it.
+	 *
+	 * A relationship is stored as references — `related: [git-is-the-store]`
+	 * — and read as the entries themselves: `{post.title}` over
+	 * `page.related`, not a slug to look up. Groups and repeater rows are
+	 * resolved all the way down. A reference to nothing is dropped.
+	 */
+	public function resolve( Setting $field, mixed $value ): mixed {
+		return match ( $field->type ) {
+			FieldType::CollectionItem => $this->references( $field, $value ),
+			FieldType::Page => is_string( $value ) && '' !== trim( $value, '/' ) ? $this->entry( 'pages', trim( $value, '/' ) ) : null,
+			FieldType::Group => is_array( $value ) ? $this->resolveAll( $field->fields, $value ) : $value,
+			FieldType::Repeater => is_array( $value )
+				? array_map( fn ( mixed $row ): mixed => is_array( $row ) ? $this->resolveAll( $field->fields, $row ) : $row, $value )
+				: $value,
+			default => $value,
+		};
+	}
+
+	/**
+	 * @param list<Setting>        $fields
+	 * @param array<mixed, mixed>  $values
+	 *
+	 * @return array<mixed, mixed>
+	 */
+	public function resolveAll( array $fields, array $values ): array {
+		foreach ( $fields as $field ) {
+			if ( ! $field->type->isDecorative() && array_key_exists( $field->id, $values ) ) {
+				$values[ $field->id ] = $this->resolve( $field, $values[ $field->id ] );
+			}
+		}
+
+		return $values;
+	}
+
+	/**
+	 * `slug` for a field with one collection, `collection/slug` for one with
+	 * several — either resolves.
+	 *
+	 * @return PageDrop|list<PageDrop>|null
+	 */
+	private function references( Setting $field, mixed $value ): PageDrop|array|null {
+		$entries = [];
+
+		foreach ( is_array( $value ) ? $value : [ $value ] as $reference ) {
+			if ( ! is_string( $reference ) || '' === $reference ) {
+				continue;
+			}
+
+			[ $collection, $slug ] = str_contains( $reference, '/' )
+				? explode( '/', $reference, 2 )
+				: [ $field->collections[0] ?? '', $reference ];
+
+			$entry = '' === $collection ? null : $this->entry( $collection, $slug );
+
+			if ( null !== $entry ) {
+				$entries[] = $entry;
+			}
+		}
+
+		return $field->multiple ? $entries : ( $entries[0] ?? null );
+	}
+
+	/** How a collection's entries answer for their own fields — see `resolve()`. */
+	private function augmenter( string $collection ): \Closure {
+		return function ( string $name, mixed $value ) use ( $collection ): mixed {
+			$this->schemas ??= ContentSchema::all( $this->site->layers() );
+
+			$field = ( $this->schemas[ $collection ] ?? null )?->field( $name );
+
+			return null === $field ? $value : $this->resolve( $field, $value );
+		};
 	}
 }

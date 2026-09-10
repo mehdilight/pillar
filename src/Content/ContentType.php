@@ -7,6 +7,7 @@ use Pillar\PillarException;
 use Pillar\Schema\ContentSchema;
 use Pillar\Schema\Setting;
 use Pillar\Site\Site;
+use Pillar\Support\CompactJson;
 
 /**
  * Creating and changing a content type.
@@ -50,7 +51,7 @@ final class ContentType {
 	 *
 	 * @throws PillarException
 	 */
-	public function create( string $name, string $label = '', ?array $fields = null, bool $withTemplate = true ): array {
+	public function create( string $name, string $label = '', ?array $fields = null, bool $withTemplate = true, ?string $icon = null ): array {
 		$name = $this->validName( $name );
 
 		if ( is_dir( $this->site->absolute( 'content/' . $name ) ) || null !== $this->site->layers()->resolve( 'schemas/' . $name . '.json' ) ) {
@@ -66,7 +67,7 @@ final class ContentType {
 		$files = [];
 		$notes = [];
 
-		$files[] = $this->writeSchema( $name, '' !== $label ? $label : ucfirst( str_replace( '-', ' ', $name ) ), $fields );
+		$files[] = $this->writeSchema( $name, '' !== $label ? $label : ucfirst( str_replace( '-', ' ', $name ) ), $fields, $icon );
 		$files[] = $this->makeDirectory( $name );
 
 		$singular = self::singular( $name );
@@ -91,7 +92,7 @@ final class ContentType {
 	 *
 	 * @throws PillarException
 	 */
-	public function update( string $name, string $label, array $fields ): string {
+	public function update( string $name, string $label, array $fields, ?string $icon = null ): string {
 		$name = $this->validName( $name );
 
 		if ( null === $this->site->layers()->resolve( 'schemas/' . $name . '.json' ) ) {
@@ -100,7 +101,7 @@ final class ContentType {
 
 		ContentSchema::fromArray( $name, [ 'label' => $label, 'fields' => $fields ] );
 
-		return $this->writeSchema( $name, $label, $fields );
+		return $this->writeSchema( $name, $label, $fields, $icon );
 	}
 
 	/**
@@ -143,20 +144,25 @@ final class ContentType {
 		return str_ends_with( $collection, 's' ) ? substr( $collection, 0, -1 ) : $collection;
 	}
 
-	/** @param list<array<string, mixed>> $fields */
-	private function writeSchema( string $name, string $label, array $fields ): string {
+	/**
+	 * @param list<array<string, mixed>> $fields
+	 * @param string|null                $icon   a Phosphor icon name; null keeps the file's own
+	 */
+	private function writeSchema( string $name, string $label, array $fields, ?string $icon = null ): string {
 		$relative = 'schemas/' . $name . '.json';
 		$existing = $this->site->layers()->resolve( $relative );
 		$raw = null !== $existing ? json_decode( (string) file_get_contents( $existing ), true ) : [];
 		$metadata = is_array( $raw ) ? $raw : [];
 
-		$this->put(
-			$relative,
-			(string) json_encode(
-				array_replace( $metadata, [ 'label' => $label, 'fields' => $fields ] ),
-				JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
-			) . "\n"
-		);
+		if ( null !== $icon ) {
+			if ( ! preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $icon ) ) {
+				throw new PillarException( sprintf( '"%s" is not an icon name.', $icon ) );
+			}
+
+			$metadata['icon'] = $icon;
+		}
+
+		$this->put( $relative, CompactJson::encode( array_replace( $metadata, [ 'label' => $label, 'fields' => $fields ] ) ) );
 
 		return $relative;
 	}

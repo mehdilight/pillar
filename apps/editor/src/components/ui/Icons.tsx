@@ -121,3 +121,11 @@ export function ContentTypeIcon(props: IconProps & { name?: string }) {
   });
   return <SvgIcon source={source.latest ?? FileTextSvg} {...rest} />;
 }
+
+/** Any bundled Phosphor icon by name — field types, the icon field, content types. */
+export const NamedIcon = ContentTypeIcon;
+
+/** Every icon name the bundle can load, for the icon field's search. */
+export const ICON_NAMES: string[] = Object.keys(icons)
+  .map((path) => path.slice(path.lastIndexOf('/') + 1, -4))
+  .sort();

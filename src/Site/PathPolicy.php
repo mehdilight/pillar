@@ -51,6 +51,16 @@ final class PathPolicy {
 		'woff2',
 		'ttf',
 		'otf',
+		// Downloads a `file` field offers — see Dev\Media::FILE_EXTENSIONS.
+		'pdf',
+		'zip',
+		'csv',
+		'docx',
+		'xlsx',
+		'pptx',
+		'mp3',
+		'mp4',
+		'webm',
 	];
 
 	/** Files a site may keep at its root, beside the allowed folders. */

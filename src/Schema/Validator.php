@@ -155,48 +155,103 @@ final class Validator {
 	}
 
 	private function checkContentFile( ContentSchema $schema, MarkdownFile $file ): void {
-		$where = 'content/' . $file->collection . '/' . $file->slug . '.md';
+		$this->checkValues( $schema->fields, $file->frontmatter, 'content/' . $file->collection . '/' . $file->slug . '.md', '' );
+	}
 
-		foreach ( $schema->fields as $field ) {
-			if ( ! array_key_exists( $field->id, $file->frontmatter ) ) {
+	/**
+	 * Every value against its field — and into groups and repeater rows, so a
+	 * wrong value three levels down is reported with its path: `faq[1].answer`.
+	 *
+	 * @param list<Setting>        $fields
+	 * @param array<mixed, mixed>  $values
+	 */
+	private function checkValues( array $fields, array $values, string $where, string $path ): void {
+		foreach ( $fields as $field ) {
+			if ( $field->type->isDecorative() || ! array_key_exists( $field->id, $values ) || null === $values[ $field->id ] ) {
 				continue;
 			}
 
-			$value = $file->frontmatter[ $field->id ];
-			$type  = $this->describe( $field->type );
+			$value = $values[ $field->id ];
+			$name  = $path . $field->id;
+			$type  = $this->describe( $field );
 
-			if ( null !== $type && ! $this->matches( $field->type, $value ) ) {
-				$this->error(
-					$where,
-					sprintf( '"%s" should be %s, got %s.', $field->id, $type, get_debug_type( $value ) )
-				);
+			if ( null !== $type && ! $this->matches( $field, $value ) ) {
+				$this->error( $where, sprintf( '"%s" should be %s, got %s.', $name, $type, get_debug_type( $value ) ) );
+
+				continue;
 			}
 
-			if ( [] !== $field->options && is_scalar( $value ) ) {
+			if ( [] !== $field->options ) {
 				$allowed = array_column( $field->options, 'value' );
 
-				if ( ! in_array( (string) $value, $allowed, true ) ) {
-					$this->error( $where, sprintf( '"%s" is "%s"; allowed: %s.', $field->id, $value, implode( ', ', $allowed ) ) );
+				foreach ( is_array( $value ) ? $value : [ $value ] as $choice ) {
+					if ( is_scalar( $choice ) && ! in_array( (string) $choice, $allowed, true ) ) {
+						$this->error( $where, sprintf( '"%s" is "%s"; allowed: %s.', $name, $choice, implode( ', ', $allowed ) ) );
+					}
+				}
+			}
+
+			if ( FieldType::CollectionItem === $field->type ) {
+				$this->checkReferences( $field, $value, $where, $name );
+			}
+
+			if ( FieldType::Group === $field->type && is_array( $value ) ) {
+				$this->checkValues( $field->fields, $value, $where, $name . '.' );
+			}
+
+			if ( FieldType::Repeater === $field->type && is_array( $value ) ) {
+				foreach ( array_values( $value ) as $index => $row ) {
+					if ( is_array( $row ) ) {
+						$this->checkValues( $field->fields, $row, $where, sprintf( '%s[%d].', $name, $index ) );
+					}
 				}
 			}
 		}
 	}
 
-	private function describe( FieldType $type ): ?string {
-		return match ( $type ) {
+	/** A relationship naming an entry that is not there: renamed, deleted, or never written. */
+	private function checkReferences( Setting $field, mixed $value, string $where, string $name ): void {
+		foreach ( is_array( $value ) ? $value : [ $value ] as $reference ) {
+			if ( ! is_string( $reference ) || '' === $reference ) {
+				continue;
+			}
+
+			[ $collection, $slug ] = str_contains( $reference, '/' ) ? explode( '/', $reference, 2 ) : [ $field->collections[0] ?? '', $reference ];
+
+			if ( '' !== $collection && null === $this->content->find( $collection, $slug ) ) {
+				$this->warn( $where, sprintf( '"%s" points to %s/%s, which does not exist.', $name, $collection, $slug ) );
+			}
+		}
+	}
+
+	private function describe( Setting $field ): ?string {
+		if ( $field->multiple ) {
+			return 'a list';
+		}
+
+		return match ( $field->type ) {
+			FieldType::CollectionItem => 'an entry',
 			FieldType::Checkbox => 'a boolean',
 			FieldType::Number, FieldType::Range => 'a number',
-			FieldType::Tags => 'a list',
-			FieldType::Text, FieldType::Textarea, FieldType::Url, FieldType::Date => 'a string',
+			FieldType::Tags, FieldType::Checkboxes, FieldType::Repeater, FieldType::Table => 'a list',
+			FieldType::Group => 'a set of fields',
+			FieldType::Text, FieldType::Textarea, FieldType::Url, FieldType::Date, FieldType::Icon, FieldType::File => 'a string',
 			default => null,
 		};
 	}
 
-	private function matches( FieldType $type, mixed $value ): bool {
-		return match ( $type ) {
+	private function matches( Setting $field, mixed $value ): bool {
+		if ( $field->multiple ) {
+			return is_array( $value ) && array_is_list( $value );
+		}
+
+		return match ( $field->type ) {
 			FieldType::Checkbox => is_bool( $value ),
 			FieldType::Number, FieldType::Range => is_int( $value ) || is_float( $value ),
-			FieldType::Tags => is_array( $value ),
+			FieldType::Tags, FieldType::Checkboxes => is_array( $value ) && array_is_list( $value ),
+			FieldType::Repeater => is_array( $value ) && array_is_list( $value ) && [] === array_filter( $value, static fn ( mixed $row ): bool => ! is_array( $row ) ),
+			FieldType::Table => is_array( $value ) && array_is_list( $value ) && [] === array_filter( $value, static fn ( mixed $row ): bool => ! is_array( $row ) ),
+			FieldType::Group => is_array( $value ) && ( [] === $value || ! array_is_list( $value ) ),
 			default => is_string( $value ) || is_int( $value ) || is_float( $value ),
 		};
 	}

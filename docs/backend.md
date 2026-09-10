@@ -210,6 +210,31 @@ is the same thing, and either can be edited the other way. A declared type with
 no entries still lists, or creating one and adding its first entry would be
 impossible.
 
+**Field types** come from `schema/field-types.json`, the one list PHP's
+`FieldType` enum and the dashboard's union are generated from. Beyond text,
+numbers and choices there are structured types: `group` (fields stored as one
+object — `author.name`), `repeater` (rows of the same fields — an FAQ),
+`table` (rows of strings, the first row the header), `checkboxes` (a list of
+option values), `icon` (a Phosphor icon name — a theme renders it however it
+likes) and `file` (a download from the media library: PDF, ZIP, Office,
+MP3/MP4/WebM, each checked against its bytes on upload). Options widen a type:
+`image` with `multiple` is a gallery, `date` with `time` a date and time.
+Groups and repeaters nest three deep. Nested frontmatter is written as
+indented YAML blocks; a schema is written with one field per line
+(`Support\CompactJson`), so adding a field is a one-field diff.
+
+**Relationships** are `collection_item` fields — `collections: [posts]`,
+optionally `multiple` and `max` — plus `page`, a link to an entry of `pages`.
+They are stored as references, the slug (or `collection/slug` when several
+collections are offered), and read as the entries themselves: the store gives
+each `PageDrop` an augmenter, so `page.related.map((post) => …)` loops over
+posts, into groups and repeater rows too. A section's `collection_item`
+setting resolves the same way through `SettingsCaster`. Resolving a reference
+records its collection as a dependency, so a page showing a related post is
+rebuilt when that post changes; drafts resolve only where drafts render; a
+reference to nothing resolves to nothing, and `pillar check` warns about it.
+`collection` stays a name — templates index `collections[name]` with it.
+
 **Pagination** is declared by the template, not by a section:
 
 ```json

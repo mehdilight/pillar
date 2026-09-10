@@ -1,6 +1,6 @@
 import { For, Show, createMemo, createSignal } from 'solid-js';
-import { ImagePlus, Upload } from './ui/Icons';
-import { ACCEPTED, bytes, createMediaLibrary, mediaUrl, plural } from '../lib/media';
+import { FileText, ImagePlus, Upload } from './ui/Icons';
+import { ACCEPTED, ACCEPTED_FILES, FILE_EXTENSIONS, bytes, createMediaLibrary, extension, mediaUrl, plural } from '../lib/media';
 import type { MediaItem } from '../types';
 import { controlClass } from './ui/Field';
 import AltField from './AltField';
@@ -9,9 +9,15 @@ import { showToast } from './ui/Toast';
 
 export { mediaUrl };
 
-/** The image picker's library: choose an image, or upload one and choose it. */
-export default function MediaLibrary(props: { onChoose?: (url: string) => void; compact?: boolean }) {
-  const { images, all, refetch, upload: uploadFiles, remove: removeImage, saveAlt, progress, error, setError } = createMediaLibrary();
+/**
+ * The picker's library: choose an image — or, with `kind="file"`, a download —
+ * or upload one and choose it.
+ */
+export default function MediaLibrary(props: { onChoose?: (url: string) => void; compact?: boolean; kind?: 'image' | 'file' }) {
+  const { images, all: everything, refetch, upload: uploadFiles, remove: removeImage, saveAlt, progress, error, setError } = createMediaLibrary();
+  const kind = () => props.kind ?? 'image';
+  const noun = () => (kind() === 'image' ? 'image' : 'file');
+  const all = () => everything().filter((item) => (item.kind ?? 'image') === kind());
   const [query, setQuery] = createSignal('');
   const [format, setFormat] = createSignal('');
   const [page, setPage] = createSignal(1);
@@ -38,16 +44,16 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
   return <div class="flex-1 min-h-0 flex flex-col bg-[#f1f2f4]" classList={{ 'min-h-[440px]': props.compact }}
     onDragOver={(e) => { e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); void upload(Array.from(e.dataTransfer?.files ?? [])); }}>
     <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-[#e1e3e5] bg-white">
-      <div><h1 class="text-sm font-semibold text-[#202223]">Media library</h1><p class="ed-hint">{plural(all().length, 'image')} · Upload once, use anywhere.</p></div>
-      <input ref={uploadInput} type="file" multiple accept={ACCEPTED} class="hidden" aria-label="Upload images" onChange={(e) => void upload(Array.from(e.currentTarget.files ?? []))} />
-      <button type="button" class="sam-btn primary" disabled={!!progress()} onClick={() => uploadInput.click()}><Upload size={14} />{progress() || 'Upload images'}</button>
+      <div><h1 class="text-sm font-semibold text-[#202223]">Media library</h1><p class="ed-hint">{plural(all().length, noun())} · Upload once, use anywhere.</p></div>
+      <input ref={uploadInput} type="file" multiple  accept={kind() === 'image' ? ACCEPTED : ACCEPTED_FILES} class="hidden" aria-label={`Upload ${noun()}s`} onChange={(e) => void upload(Array.from(e.currentTarget.files ?? []))} />
+      <button type="button" class="sam-btn primary" disabled={!!progress()} onClick={() => uploadInput.click()}><Upload size={14} />{progress() || `Upload ${noun()}s`}</button>
     </div>
     <div class="flex flex-1 min-h-0 overflow-y-auto flex-col md:flex-row">
       <div class="flex-1 min-w-0 p-5">
         <div class="flex flex-wrap gap-2 mb-4">
-          <input type="search" aria-label="Search images" class={`${controlClass} flex-1 min-w-[140px]`} placeholder="Search images…" value={query()} onInput={(e) => { setQuery(e.currentTarget.value); setPage(1); }} />
-          <select aria-label="Image type" class={`${controlClass} w-auto!`} value={format()} onChange={(e) => { setFormat(e.currentTarget.value); setPage(1); }}>
-            <option value="">All image types</option><For each={['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg']}>{(type) => <option value={type}>{type.toUpperCase()}</option>}</For>
+          <input type="search" aria-label={`Search ${noun()}s`} class={`${controlClass} flex-1 min-w-[140px]`} placeholder={`Search ${noun()}s…`} value={query()} onInput={(e) => { setQuery(e.currentTarget.value); setPage(1); }} />
+          <select aria-label={`${noun()} type`} class={`${controlClass} w-auto!`} value={format()} onChange={(e) => { setFormat(e.currentTarget.value); setPage(1); }}>
+            <option value="">All {noun()} types</option><For each={kind() === 'image' ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg'] : FILE_EXTENSIONS}>{(type) => <option value={type}>{type.toUpperCase()}</option>}</For>
           </select>
         </div>
         <Show when={error()}><p class="text-xs text-red-600 mb-4 whitespace-pre-wrap" role="alert">{error()}</p></Show>
@@ -55,16 +61,18 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
         <Show when={images.loading}><p class="ed-hint" role="status">Loading images…</p></Show>
         <Show when={visible().length} fallback={
           <Show when={!images.loading && !images.error}><div class="rounded-xl border-2 border-dashed border-[#c9cccf] p-10 text-center flex flex-col items-center gap-3">
-            <ImagePlus size={28} class="text-gray-400" /><p class="text-sm font-medium text-[#303030]">{all().length ? 'No images match your search' : 'Add your first image'}</p>
-            <p class="text-xs text-gray-500">{all().length ? 'Try another name or image type.' : 'Drop images here, or choose them from your computer.'}</p>
-            <Show when={!all().length}><button type="button" class="sam-btn" onClick={() => uploadInput.click()}>Choose images</button></Show>
+            <ImagePlus size={28} class="text-gray-400" /><p class="text-sm font-medium text-[#303030]">{all().length ? `No ${noun()}s match your search` : `Add your first ${noun()}`}</p>
+            <p class="text-xs text-gray-500">{all().length ? `Try another name or ${noun()} type.` : `Drop ${noun()}s here, or choose them from your computer.`}</p>
+            <Show when={!all().length}><button type="button" class="sam-btn" onClick={() => uploadInput.click()}>Choose {noun()}s</button></Show>
           </div></Show>
         }>
           <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
             <For each={visible()}>{(image) => <button type="button" class="text-left bg-white rounded-lg overflow-hidden border hover:border-[#005bd3] focus-visible:ring-2 focus-visible:ring-[#005bd3] transition-colors"
               classList={{ 'border-[#005bd3] ring-1 ring-[#005bd3]': selected()?.url === image.url, 'border-[#e1e3e5]': selected()?.url !== image.url }}
               aria-pressed={selected()?.url === image.url} onClick={() => setSelected(image)}>
-              <img src={mediaUrl(image.url)} alt={image.name} loading="lazy" class="w-full h-28 object-contain bg-[#f6f6f7]" />
+              <Show when={image.kind !== 'file'} fallback={<div class="flex h-28 flex-col items-center justify-center gap-1.5 bg-[#f6f6f7] text-gray-400"><FileText size={28} /><span class="text-[10px] font-semibold tracking-wide text-gray-500">{extension(image)}</span></div>}>
+                <img src={mediaUrl(image.url)} alt={image.name} loading="lazy" class="w-full h-28 object-contain bg-[#f6f6f7]" />
+              </Show>
               <div class="p-2.5"><p class="text-xs font-medium truncate">{image.name}</p><p class="ed-hint">{bytes(image.size)}{image.readonly ? ' · Theme image' : ''}</p></div>
             </button>}</For>
           </div>
@@ -75,18 +83,22 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
         </div></Show>
       </div>
       <Show when={selected()}>{(image) => <aside class="md:w-[280px] shrink-0 border-t md:border-t-0 md:border-l border-[#e1e3e5] p-4 bg-white">
-        <img src={mediaUrl(image().url)} alt={image().name} class="w-full max-h-52 object-contain bg-[#f6f6f7] rounded-lg mb-4" />
+        <Show when={image().kind !== 'file'}>
+          <img src={mediaUrl(image().url)} alt={image().name} class="w-full max-h-52 object-contain bg-[#f6f6f7] rounded-lg mb-4" />
+        </Show>
         <h2 class="text-xs font-semibold break-all mb-2">{image().name}</h2>
         <p class="ed-hint">{image().width ? `${image().width} × ${image().height} pixels · ` : ''}{bytes(image().size)}</p>
-        <div class="mt-4"><AltField id="picker-alt" image={image()} onSave={async (alt) => {
-          const updated = await saveAlt(image(), alt);
-          if (updated) setSelected({ ...image(), alt: updated.alt });
-        }} /></div>
-        <label class="ed-hint block mt-4 mb-1" for="media-address">Image address</label>
+        <Show when={image().kind !== 'file'}>
+          <div class="mt-4"><AltField id="picker-alt" image={image()} onSave={async (alt) => {
+            const updated = await saveAlt(image(), alt);
+            if (updated) setSelected({ ...image(), alt: updated.alt });
+          }} /></div>
+        </Show>
+        <label class="ed-hint block mt-4 mb-1" for="media-address">Address</label>
         <input id="media-address" readOnly class={`${controlClass} text-xs!`} value={image().url} onFocus={(e) => e.currentTarget.select()} />
         <div class="flex flex-wrap gap-2 mt-3">
-          <Show when={props.onChoose}><button type="button" class="sam-btn primary" onClick={() => props.onChoose?.(image().url)}>Use this image</button></Show>
-          <button type="button" class="sam-btn" onClick={() => void navigator.clipboard.writeText(image().url).then(() => showToast('Image address copied', 'success')).catch(() => setError('Select the image address above and copy it.'))}>Copy address</button>
+          <Show when={props.onChoose}><button type="button" class="sam-btn primary" onClick={() => props.onChoose?.(image().url)}>Use this {noun()}</button></Show>
+          <button type="button" class="sam-btn" onClick={() => void navigator.clipboard.writeText(image().url).then(() => showToast('Address copied', 'success')).catch(() => setError('Select the address above and copy it.'))}>Copy address</button>
           <Show when={!selected()?.readonly}><button type="button" class="sam-btn danger" disabled={deleting()} onClick={() => setConfirm(true)}>Delete</button></Show>
         </div>
         <Show when={selected()?.readonly}><p class="ed-hint mt-3">Included with your theme or addon. You can use it, but it cannot be deleted here.</p></Show>

@@ -113,8 +113,14 @@ final class FrontmatterWriter {
 		return is_int( $value ) || is_float( $value ) ? (string) $value : $value;
 	}
 
-	/** One key, dumped with short lists inline — `tags: [a, b]`, the usual style. */
+	/**
+	 * A list of plain values stays on one line — `tags: [design, git]` — and
+	 * anything with structure (a group, repeater rows, a table) is written as
+	 * indented blocks, which is the only way a person reads it back.
+	 */
 	private static function dump( string $key, mixed $value ): string {
-		return rtrim( Yaml::dump( [ $key => $value ], 1, 2 ), "\n" );
+		$flat = ! is_array( $value ) || [] === array_filter( $value, 'is_array' );
+
+		return rtrim( Yaml::dump( [ $key => $value ], $flat ? 1 : 10, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK | Yaml::DUMP_COMPACT_NESTED_MAPPING ), "\n" );
 	}
 }

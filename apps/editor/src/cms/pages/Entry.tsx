@@ -6,12 +6,14 @@ import Page from '../ui/Page';
 import { Button, Input, Label, Loading, Notice, Postbox, SidebarLayout, buttonClass } from '../ui/ds';
 import RichEditor from '../../components/ui/LazyRichEditor';
 import SettingInput from '../../components/SettingInput';
+import { CurrentEntry } from '../../components/fields/RelationshipInput';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { showToast } from '../../components/ui/Toast';
 import { api } from '../../api/client';
 import { collectionNamed, entryUrl, loadCollections } from '../../store/content';
 import { refreshStatus } from '../../store/status';
 import { slotsFor } from '../../plugins/host';
+import { isDecorative, isWide } from '../../lib/fieldTypes';
 import type { ContentItem } from '../../types';
 
 const slugify = (value: string) =>
@@ -194,116 +196,138 @@ export default function Entry() {
             </Notice>
           }
         >
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              void save();
+          <CurrentEntry.Provider
+            value={{
+              get collection() {
+                return params.collection;
+              },
+              get slug() {
+                return slug();
+              },
             }}
           >
-            <SidebarLayout variant="form">
-              <div class="min-w-0 space-y-4">
-                <div>
-                  <label for="entry-title" class="sr-only">
-                    Title
-                  </label>
-                  <Input
-                    id="entry-title"
-                    placeholder="Title"
-                    class="h-[42px] max-w-none text-base font-medium"
-                    value={title()}
-                    onInput={(event) => setTitle(event.currentTarget.value)}
-                  />
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void save();
+              }}
+            >
+              <SidebarLayout variant="form">
+                <div class="min-w-0 space-y-4">
+                  <div>
+                    <label for="entry-title" class="sr-only">
+                      Title
+                    </label>
+                    <Input
+                      id="entry-title"
+                      placeholder="Title"
+                      class="h-[42px] max-w-none text-base font-medium"
+                      value={title()}
+                      onInput={(event) => setTitle(event.currentTarget.value)}
+                    />
+                  </div>
+
+                  <Postbox title="Content" flush>
+                    <div class="p-3">
+                      <RichEditor value={body()} onValue={setBody} minHeight={420} placeholder="Start writing…" />
+                    </div>
+                  </Postbox>
+
+                  {/*
+                    The collection's fields, in schema order, beside the content they
+                    describe — short ones two to a row, repeaters, tables and long text
+                    across the full width. The sidebar keeps what is about the file rather
+                    than in it: publishing, the URL, plugin panels.
+                  */}
+                  <Show when={fields().length}>
+                    <Postbox title="Details">
+                      <div class="grid gap-x-5 sm:grid-cols-2">
+                        <For each={fields()}>
+                          {(field) => (
+                            <div class="min-w-0" classList={{ 'sm:col-span-2': isWide(field) || isDecorative(field.type) }}>
+                              <SettingInput
+                                setting={field}
+                                value={frontmatter()[field.id]}
+                                onChange={(value) => setFrontmatter({ ...frontmatter(), [field.id]: value })}
+                              />
+                            </div>
+                          )}
+                        </For>
+                      </div>
+                    </Postbox>
+                  </Show>
                 </div>
 
-                <Postbox title="Content" flush>
-                  <div class="p-3">
-                    <RichEditor value={body()} onValue={setBody} minHeight={420} placeholder="Start writing…" />
-                  </div>
-                </Postbox>
-              </div>
-
-              <div>
-                <Postbox title="Publish">
-                  <label class="flex items-center gap-2 text-xs text-text-muted cursor-pointer">
-                    <input
-                      type="checkbox"
-                      class="size-4 rounded border-border-strong text-brand focus:ring-brand"
-                      checked={!draft()}
-                      onChange={(event) => setFrontmatter({ ...frontmatter(), draft: !event.currentTarget.checked })}
-                    />
-                    Published — included when the site is built
-                  </label>
-                  <p class="mt-2 text-[11.5px] text-text-faint">
-                    Saving writes the file. Changes go live when you publish them.
-                  </p>
-                  <div class="mt-4 flex flex-wrap gap-2">
-                    <Button variant="primary" type="submit" disabled={saving() || !title().trim() || !validSlug()}>
-                      {saveLabel()}
-                    </Button>
-                    <Show when={!isNew()}>
-                      <a href={`/preview${entryUrl(params.collection, slug())}`} target="_blank" rel="noopener" class={buttonClass()}>
-                        <ExternalLink size={13} />
-                        Preview
-                      </a>
-                    </Show>
-                  </div>
-                  <Show when={!isNew()}>
-                    <button type="button" class="mt-3 text-xs text-danger hover:underline" onClick={() => setDeleting(true)}>
-                      Delete this entry
-                    </button>
-                  </Show>
-                </Postbox>
-
-                <Postbox title="URL">
-                  <Label for="entry-slug">URL name</Label>
-                  <Input
-                    id="entry-slug"
-                    value={slug()}
-                    disabled={!isNew()}
-                    onInput={(event) => setCustomSlug(event.currentTarget.value)}
-                    class="max-w-none font-mono text-xs"
-                  />
-                  <Show when={slug() && !validSlug()}>
-                    <p class="mt-1 text-xs text-danger">Letters, numbers, hyphens or underscores.</p>
-                  </Show>
-                  <p class="mt-1.5 text-xs text-text-faint break-all">{entryUrl(params.collection, slug() || 'your-entry')}</p>
-                  <Show when={!isNew()}>
-                    <p class="mt-1 text-[11.5px] text-text-faint">The URL is the file's name, so it is fixed once created.</p>
-                  </Show>
-                </Postbox>
-
-                <Show when={fields().length}>
-                  <Postbox title="Details">
-                    <For each={fields()}>
-                      {(field) => (
-                        <SettingInput
-                          setting={field}
-                          value={frontmatter()[field.id]}
-                          onChange={(value) => setFrontmatter({ ...frontmatter(), [field.id]: value })}
-                        />
-                      )}
-                    </For>
-                  </Postbox>
-                </Show>
-
-                {/* Plugin panels — whatever the site's enabled plugins registered. */}
-                <For each={slotsFor('content.item.sidebar')}>
-                  {(panel) => (
-                    <section data-pillar-plugin={panel.plugin} class="mb-4 min-w-0 rounded-ds border border-border bg-surface shadow-ds-sm">
-                      <Dynamic
-                        component={panel.component}
-                        collection={params.collection}
-                        slug={slug()}
-                        frontmatter={frontmatter()}
-                        body={body()}
-                        setFrontmatter={setFrontmatter}
+                <div>
+                  <Postbox title="Publish">
+                    <label class="flex items-center gap-2 text-xs text-text-muted cursor-pointer">
+                      <input
+                        type="checkbox"
+                        class="size-4 rounded border-border-strong text-brand focus:ring-brand"
+                        checked={!draft()}
+                        onChange={(event) => setFrontmatter({ ...frontmatter(), draft: !event.currentTarget.checked })}
                       />
-                    </section>
-                  )}
-                </For>
-              </div>
-            </SidebarLayout>
-          </form>
+                      Published — included when the site is built
+                    </label>
+                    <p class="mt-2 text-[11.5px] text-text-faint">
+                      Saving writes the file. Changes go live when you publish them.
+                    </p>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                      <Button variant="primary" type="submit" disabled={saving() || !title().trim() || !validSlug()}>
+                        {saveLabel()}
+                      </Button>
+                      <Show when={!isNew()}>
+                        <a href={`/preview${entryUrl(params.collection, slug())}`} target="_blank" rel="noopener" class={buttonClass()}>
+                          <ExternalLink size={13} />
+                          Preview
+                        </a>
+                      </Show>
+                    </div>
+                    <Show when={!isNew()}>
+                      <button type="button" class="mt-3 text-xs text-danger hover:underline" onClick={() => setDeleting(true)}>
+                        Delete this entry
+                      </button>
+                    </Show>
+                  </Postbox>
+
+                  <Postbox title="URL">
+                    <Label for="entry-slug">URL name</Label>
+                    <Input
+                      id="entry-slug"
+                      value={slug()}
+                      disabled={!isNew()}
+                      onInput={(event) => setCustomSlug(event.currentTarget.value)}
+                      class="max-w-none font-mono text-xs"
+                    />
+                    <Show when={slug() && !validSlug()}>
+                      <p class="mt-1 text-xs text-danger">Letters, numbers, hyphens or underscores.</p>
+                    </Show>
+                    <p class="mt-1.5 text-xs text-text-faint break-all">{entryUrl(params.collection, slug() || 'your-entry')}</p>
+                    <Show when={!isNew()}>
+                      <p class="mt-1 text-[11.5px] text-text-faint">The URL is the file's name, so it is fixed once created.</p>
+                    </Show>
+                  </Postbox>
+
+
+                  {/* Plugin panels — whatever the site's enabled plugins registered. */}
+                  <For each={slotsFor('content.item.sidebar')}>
+                    {(panel) => (
+                      <section data-pillar-plugin={panel.plugin} class="mb-4 min-w-0 rounded-ds border border-border bg-surface shadow-ds-sm">
+                        <Dynamic
+                          component={panel.component}
+                          collection={params.collection}
+                          slug={slug()}
+                          frontmatter={frontmatter()}
+                          body={body()}
+                          setFrontmatter={setFrontmatter}
+                        />
+                      </section>
+                    )}
+                  </For>
+                </div>
+              </SidebarLayout>
+            </form>
+          </CurrentEntry.Provider>
         </Show>
       </Show>
 

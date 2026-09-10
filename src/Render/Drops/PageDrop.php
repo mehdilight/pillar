@@ -14,9 +14,11 @@ use Pillar\Content\MarkdownFile;
  */
 final class PageDrop extends Drop {
 
+	/** @param (\Closure(string, mixed): mixed)|null $augment turns a field's stored value into what a template reads */
 	public function __construct(
 		private readonly MarkdownFile $file,
 		private readonly string $html,
+		private readonly ?\Closure $augment = null,
 	) {}
 
 	public function title(): string {
@@ -60,7 +62,10 @@ final class PageDrop extends Drop {
 		return (bool) ( $this->file->frontmatter['draft'] ?? false );
 	}
 
+	/** Any other frontmatter key — a relationship's references read as the entries they name. */
 	protected function methodMissing( string $name ): mixed {
-		return $this->file->frontmatter[ $name ] ?? null;
+		$value = $this->file->frontmatter[ $name ] ?? null;
+
+		return null === $value || null === $this->augment ? $value : ( $this->augment )( $name, $value );
 	}
 }

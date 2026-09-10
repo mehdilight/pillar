@@ -379,7 +379,8 @@ final class Api {
 			(string) ( $body['name'] ?? '' ),
 			(string) ( $body['label'] ?? '' ),
 			$fields,
-			(bool) ( $body['template'] ?? true )
+			(bool) ( $body['template'] ?? true ),
+			isset( $body['icon'] ) ? (string) $body['icon'] : null
 		);
 
 		return $this->json( $result, 201 );
@@ -390,7 +391,8 @@ final class Api {
 		$written = ( new ContentType( $this->pillar()->site ) )->update(
 			$name,
 			(string) ( $body['label'] ?? ucfirst( $name ) ),
-			$this->fieldsFrom( $body ) ?? []
+			$this->fieldsFrom( $body ) ?? [],
+			isset( $body['icon'] ) ? (string) $body['icon'] : null
 		);
 
 		return $this->json( [ 'ok' => true, 'file' => $written ] );

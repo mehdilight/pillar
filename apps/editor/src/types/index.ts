@@ -1,4 +1,5 @@
 import type { JSX } from 'solid-js';
+import type { FieldType } from './field-types';
 
 /**
  * The editor's data model.
@@ -76,35 +77,19 @@ export interface SchemaSetting {
   css_var?: string;
   /** Appended to the value when patching, e.g. "px". */
   css_unit?: string;
+  /** `group` and `repeater`: the fields each value, or each row, holds. */
+  fields?: SchemaSetting[];
+  /** `image` → a gallery; `collection_item` → several entries. Stored as a list. */
+  multiple?: boolean;
+  /** `collection_item`: the collections its entries come from. */
+  collections?: string[];
+  /** `date`: a time of day as well. */
+  time?: boolean;
 }
 
-/** Mirrors `schema/field-types.json` — the one list both sides are generated from. */
-export type FieldType =
-  | 'text'
-  | 'textarea'
-  | 'richtext'
-  | 'markdown'
-  | 'number'
-  | 'range'
-  | 'checkbox'
-  | 'select'
-  | 'radio'
-  | 'color'
-  | 'url'
-  | 'image'
-  | 'video'
-  | 'html'
-  | 'code'
-  | 'date'
-  | 'tags'
-  | 'menu'
-  | 'page'
-  | 'collection'
-  | 'collection_item'
-  | 'header'
-  | 'paragraph';
-
-export const DECORATIVE_FIELD_TYPES: FieldType[] = ['header', 'paragraph'];
+/** Generated from `schema/field-types.json` — the one list both sides are written from. */
+export type { FieldType } from './field-types';
+export { DECORATIVE_FIELD_TYPES } from './field-types';
 
 export interface SectionPreset {
   name: string;
@@ -220,6 +205,8 @@ export interface MediaItem {
   used_in: string[];
   /** The library's alt text — used wherever the image appears without its own. Empty if unset. */
   alt: string;
+  /** An image, or a download a `file` field can offer. */
+  kind: 'image' | 'file';
 }
 
 export interface IconProps {

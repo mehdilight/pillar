@@ -6,6 +6,7 @@ import type {
   DraftStatus,
   HistoryEntry,
   PageSection,
+  SchemaSetting,
   SettingsPanelSchema,
   TemplatePayload,
   TemplateSummary,
@@ -169,7 +170,9 @@ export const api = {
   createCollection: (body: {
     name: string;
     label?: string;
-    fields?: string[];
+    /** Preset keys, or whole field definitions. */
+    fields?: Array<string | SchemaSetting>;
+    icon?: string;
   }): Promise<{ name: string; singular: string; files: string[]; notes: string[] }> =>
     request('/content-types', { method: 'POST', body: JSON.stringify(body) }, () => {
       const name = body.name.trim();
@@ -182,11 +185,15 @@ export const api = {
         name,
         label: body.label || name,
         count: 0,
-        fields: (body.fields ?? ['title']).map((key) => ({
-          id: key,
-          type: key === 'date' ? 'date' : key === 'tags' ? 'tags' : key === 'draft' ? 'checkbox' : 'text',
-          label: key[0].toUpperCase() + key.slice(1),
-        })),
+        fields: (body.fields ?? ['title']).map((key) =>
+          typeof key !== 'string'
+            ? key
+            : {
+                id: key,
+                type: key === 'date' ? 'date' : key === 'tags' ? 'tags' : key === 'draft' ? 'checkbox' : 'text',
+                label: key[0].toUpperCase() + key.slice(1),
+              }
+        ),
       });
 
       const singular = name.endsWith('s') ? name.slice(0, -1) : name;
@@ -204,7 +211,7 @@ export const api = {
     ]),
 
   /** Replace a type's label and fields: preset keys, or whole field definitions to keep as they are. */
-  updateCollection: (name: string, body: { label: string; fields: Array<string | Record<string, unknown>> }): Promise<void> =>
+  updateCollection: (name: string, body: { label: string; fields: Array<string | SchemaSetting>; icon?: string }): Promise<void> =>
     request(`/content-types/${encodeURIComponent(name)}`, { method: 'PUT', body: JSON.stringify(body) }, () => {
       throw new Error('Editing a content type needs the local server.');
     }),

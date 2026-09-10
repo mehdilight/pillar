@@ -16,6 +16,8 @@ interface ModalProps {
 /**
  * Dialog shell.
  *
+ * Above drawers (z 60+), since a modal is often opened from inside one.
+ *
  * Radix has no Solid build, so this is the same markup driven by an Escape
  * listener and an overlay click — the class strings are bastet's, unchanged,
  * so both editors keep one look.
@@ -36,13 +38,13 @@ export default function Modal(props: ModalProps) {
     <Show when={props.open}>
       <Portal>
         <div
-          class="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-50"
+          class="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-[90]"
           onClick={() => props.onOpenChange(false)}
         />
         <div
           role="dialog"
           aria-modal="true"
-          class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.18)] border border-[#e1e3e5] z-50 flex flex-col overflow-hidden outline-none max-h-[85vh]"
+          class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.18)] border border-[#e1e3e5] z-[90] flex flex-col overflow-hidden outline-none max-h-[85vh]"
           classList={{
             'w-[900px] max-w-[92vw]': props.wide,
             'w-[520px] max-w-[90vw]': !props.wide,

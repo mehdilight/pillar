@@ -15,6 +15,15 @@ import TagsInput from './ui/TagsInput';
 import ImagePicker from './ui/ImagePicker';
 import Field, { controlClass } from './ui/Field';
 import RichEditor from './ui/LazyRichEditor';
+import CheckboxGroup from './fields/CheckboxGroup';
+import GroupInput from './fields/GroupInput';
+import RepeaterInput from './fields/RepeaterInput';
+import TableInput from './fields/TableInput';
+import IconPicker from './fields/IconPicker';
+import FilePicker from './fields/FilePicker';
+import GalleryInput from './fields/GalleryInput';
+import RelationshipInput from './fields/RelationshipInput';
+import CollectionPicker from './fields/CollectionPicker';
 
 interface SettingInputProps {
   setting: SchemaSetting;
@@ -169,6 +178,16 @@ export default function SettingInput(props: SettingInputProps) {
         />
       </Match>
 
+      <Match when={setting().type === 'checkboxes'}>
+        <CheckboxGroup
+          label={setting().label}
+          info={setting().info}
+          options={options()}
+          value={Array.isArray(value()) ? value() : []}
+          onValue={props.onChange}
+        />
+      </Match>
+
       <Match when={setting().type === 'select'}>
         <SelectInput
           label={setting().label}
@@ -189,7 +208,19 @@ export default function SettingInput(props: SettingInputProps) {
         />
       </Match>
 
+      <Match when={setting().type === 'icon'}>
+        <IconPicker label={setting().label} info={setting().info} value={String(value() ?? '')} onValue={props.onChange} />
+      </Match>
+
       {/* ── Assets & content references ───────────────────────────────── */}
+      <Match when={setting().type === 'image' && setting().multiple}>
+        <GalleryInput label={setting().label} info={setting().info} value={Array.isArray(value()) ? value() : []} onValue={props.onChange} />
+      </Match>
+
+      <Match when={setting().type === 'file'}>
+        <FilePicker label={setting().label} info={setting().info} value={value() ?? null} onValue={props.onChange} />
+      </Match>
+
       <Match when={setting().type === 'image' || setting().type === 'video'}>
         <ImagePicker
           label={setting().label}
@@ -211,9 +242,9 @@ export default function SettingInput(props: SettingInputProps) {
       <Match when={setting().type === 'date'}>
         <Field label={setting().label} info={setting().info}>
           <input
-            type="date"
+            type={setting().time ? 'datetime-local' : 'date'}
             class={controlClass}
-            value={String(value() ?? '').slice(0, 10)}
+            value={String(value() ?? '').slice(0, setting().time ? 16 : 10)}
             onInput={(event) => props.onChange(event.currentTarget.value)}
           />
         </Field>
@@ -231,6 +262,58 @@ export default function SettingInput(props: SettingInputProps) {
           info={setting().info ?? 'Choose a navigation list. Manage lists under Navigation.'}
           value={String(value() ?? '')}
           options={menuOptions()}
+          onValue={props.onChange}
+        />
+      </Match>
+
+      {/* ── Relationships: linked by reference, read by templates as entries ─ */}
+      <Match when={setting().type === 'collection_item' && setting().collections?.length}>
+        <RelationshipInput
+          label={setting().label}
+          info={setting().info}
+          collections={setting().collections!}
+          multiple={setting().multiple}
+          max={setting().max}
+          value={value()}
+          onValue={props.onChange}
+        />
+      </Match>
+
+      <Match when={setting().type === 'page'}>
+        <RelationshipInput label={setting().label} info={setting().info} collections={['pages']} value={value()} onValue={props.onChange} />
+      </Match>
+
+      <Match when={setting().type === 'collection'}>
+        <CollectionPicker label={setting().label} info={setting().info} value={String(value() ?? '')} onValue={props.onChange} />
+      </Match>
+
+      {/* ── Structure: fields inside fields ───────────────────────────── */}
+      <Match when={setting().type === 'group'}>
+        <GroupInput
+          label={setting().label}
+          info={setting().info}
+          fields={setting().fields ?? []}
+          value={value() && typeof value() === 'object' && !Array.isArray(value()) ? value() : {}}
+          onValue={props.onChange}
+        />
+      </Match>
+
+      <Match when={setting().type === 'repeater'}>
+        <RepeaterInput
+          label={setting().label}
+          info={setting().info}
+          fields={setting().fields ?? []}
+          max={setting().max}
+          value={Array.isArray(value()) ? value().filter((row: unknown) => row && typeof row === 'object') : []}
+          onValue={props.onChange}
+        />
+      </Match>
+
+      <Match when={setting().type === 'table'}>
+        <TableInput
+          label={setting().label}
+          info={setting().info}
+          value={Array.isArray(value()) ? value().map((row: unknown) => (Array.isArray(row) ? row.map(String) : [])) : []}
           onValue={props.onChange}
         />
       </Match>

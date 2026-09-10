@@ -98,7 +98,7 @@ final class Pillar {
 			$site,
 			$content,
 			$environment,
-			new SectionRenderer( $environment, $sections, $schemas, new SettingsCaster(), $errors, $editor ),
+			new SectionRenderer( $environment, $sections, $schemas, new SettingsCaster( $content ), $errors, $editor ),
 			$state,
 			$errors,
 			$head,

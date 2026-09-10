@@ -2,12 +2,17 @@ import { For, Show, createEffect, createResource, createSignal, on } from 'solid
 import { A } from '@solidjs/router';
 import Page from '../ui/Page';
 import { Badge, Button, Empty, Input, Label, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/ds';
-import Modal from '../../components/ui/Modal';
+import Drawer from '../../components/ui/Drawer';
+import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import IconPicker from '../../components/fields/IconPicker';
+import { NamedIcon, Plus } from '../../components/ui/Icons';
 import { showToast } from '../../components/ui/Toast';
+import FieldList from '../fields/FieldList';
 import { api } from '../../api/client';
 import { collections, loadCollections } from '../../store/content';
 import { refreshStatus } from '../../store/status';
-import type { ContentCollection } from '../../types';
+import { FIELD_TYPES, cleanField } from '../../lib/fieldTypes';
+import type { ContentCollection, SchemaSetting } from '../../types';
 
 /**
  * Content types: the collections a site has, and the fields each entry carries.
@@ -39,15 +44,22 @@ export default function Types() {
               {(collection) => (
                 <TableRow>
                   <TableCell class="font-semibold">
-                    <A href={`/content/${collection.name}`} class="text-brand hover:underline">
-                      {collection.label}
-                    </A>
-                    <div class="text-xs mt-1 font-normal">
-                      <span class="font-mono text-text-faint">content/{collection.name}/</span>
-                      <span class="text-text-faint mx-1">|</span>
-                      <button type="button" class="text-brand hover:underline" onClick={() => setEditing(collection)}>
-                        Edit fields
-                      </button>
+                    <div class="flex items-start gap-2.5">
+                      <span class="mt-0.5 text-text-muted">
+                        <NamedIcon name={collection.icon} size={16} />
+                      </span>
+                      <div>
+                        <A href={`/content/${collection.name}`} class="text-brand hover:underline">
+                          {collection.label}
+                        </A>
+                        <div class="mt-1 text-xs font-normal">
+                          <span class="font-mono text-text-faint">content/{collection.name}/</span>
+                          <span class="mx-1 text-text-faint">|</span>
+                          <button type="button" class="text-brand hover:underline" onClick={() => setEditing(collection)}>
+                            Edit fields
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -56,8 +68,8 @@ export default function Types() {
                         <For each={collection.fields}>
                           {(field) => (
                             <Badge>
-                              {field.label || field.id}
-                              <span class="ml-1 text-text-faint">{field.type}</span>
+                              {field.label || field.content || field.id}
+                              <span class="ml-1 text-text-faint">{FIELD_TYPES[field.type]?.label ?? field.type}</span>
                             </Badge>
                           )}
                         </For>
@@ -73,29 +85,33 @@ export default function Types() {
         </Table>
       </Show>
 
-      <TypeModal subject={editing()} onClose={() => setEditing(null)} />
+      <TypeDrawer subject={editing()} onClose={() => setEditing(null)} />
     </Page>
   );
 }
 
+type Preset = { key: string; default: boolean } & SchemaSetting;
+
+const presetField = ({ key: _key, default: _default, ...field }: Preset): SchemaSetting => field;
+
 /**
- * Create a type, or change one's label and fields.
- *
- * Fields come from the server's presets. A field the type already has that is
- * not a preset — one added by hand to the schema file — is kept as it is and
- * shown as such: this form must never quietly delete what it cannot edit.
+ * Create a type, or change its label, icon and fields — in a drawer, with
+ * each field configured in a drawer of its own over it.
  */
-function TypeModal(props: { subject: ContentCollection | 'new' | null; onClose: () => void }) {
-  const [presets] = createResource(api.fieldPresets);
+function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose: () => void }) {
+  const [presets] = createResource(async () => (await api.fieldPresets()) as Preset[]);
   const [name, setName] = createSignal('');
   const [label, setLabel] = createSignal('');
-  const [chosen, setChosen] = createSignal<string[]>([]);
+  const [icon, setIcon] = createSignal('');
+  const [fields, setFields] = createSignal<SchemaSetting[]>([]);
+  const [baseline, setBaseline] = createSignal('');
   const [pending, setPending] = createSignal(false);
+  const [discarding, setDiscarding] = createSignal(false);
 
   const isNew = () => props.subject === 'new';
   const existing = () => (props.subject === 'new' || props.subject === null ? null : props.subject);
-  const presetIds = () => (presets() ?? []).map((preset) => preset.key);
-  const custom = () => (existing()?.fields ?? []).filter((field) => !presetIds().includes(field.id));
+  const snapshot = () => JSON.stringify([name(), label(), icon(), fields()]);
+  const dirty = () => props.subject !== null && snapshot() !== baseline();
 
   createEffect(
     on([() => props.subject, presets], () => {
@@ -103,36 +119,34 @@ function TypeModal(props: { subject: ContentCollection | 'new' | null; onClose: 
 
       setName(type?.name ?? '');
       setLabel(type?.label ?? '');
-      setChosen(
-        type
-          ? type.fields.map((field) => field.id).filter((id) => presetIds().includes(id))
-          : (presets() ?? []).filter((preset) => preset.default).map((preset) => preset.key)
-      );
+      setIcon(type?.icon ?? (isNew() ? 'file-text' : ''));
+      setFields(type ? structuredClone(type.fields) : (presets() ?? []).filter((preset) => preset.default).map(presetField));
+      setBaseline(snapshot());
     })
   );
 
-  const toggle = (key: string) => setChosen((keys) => (keys.includes(key) ? keys.filter((k) => k !== key) : [...keys, key]));
+  // Presets not yet in the type, one click each.
+  const suggestions = () => (presets() ?? []).filter((preset) => !fields().some((field) => field.id === preset.id));
+
+  const close = () => {
+    if (pending()) return;
+    dirty() ? setDiscarding(true) : props.onClose();
+  };
 
   const save = async () => {
     setPending(true);
 
+    const definitions = fields().map(cleanField);
+
     try {
       if (isNew()) {
-        const created = await api.createCollection({ name: name().trim(), label: label().trim(), fields: chosen() });
+        const created = await api.createCollection({ name: name().trim(), label: label().trim(), fields: definitions, icon: icon() || undefined });
 
         showToast(`Created ${created.name}`, 'success');
       } else {
         const type = existing()!;
-        // Existing order first, newly ticked presets after. A field the type
-        // already has travels back as its full definition, even when its id
-        // is a preset's: Docs' `order` is labelled "Sidebar position", and
-        // sending the bare key would reset it to the preset's "Position".
-        const kept = type.fields
-          .filter((field) => !presetIds().includes(field.id) || chosen().includes(field.id))
-          .map((field) => field as unknown as Record<string, unknown>);
-        const added = chosen().filter((key) => !type.fields.some((field) => field.id === key));
 
-        await api.updateCollection(type.name, { label: label().trim() || type.label, fields: [...kept, ...added] });
+        await api.updateCollection(type.name, { label: label().trim() || type.label, fields: definitions, icon: icon() || undefined });
         showToast(`Updated ${type.label}`, 'success');
       }
 
@@ -146,62 +160,95 @@ function TypeModal(props: { subject: ContentCollection | 'new' | null; onClose: 
   };
 
   return (
-    <Modal
-      open={props.subject !== null}
-      onOpenChange={(open) => !open && !pending() && props.onClose()}
-      title={isNew() ? 'New content type' : `Edit ${existing()?.label ?? ''}`}
-      footer={
-        <>
-          <Button onClick={props.onClose} disabled={pending()}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={save} disabled={pending() || (isNew() && name().trim().length < 2)}>
-            {pending() ? 'Saving…' : isNew() ? 'Create' : 'Save'}
-          </Button>
-        </>
-      }
-    >
-      <div class="ds-root space-y-4 bg-transparent">
-        <Show when={isNew()}>
-          <div>
-            <Label for="type-name">Name</Label>
-            <Input id="type-name" value={name()} placeholder="guides" onInput={(event) => setName(event.currentTarget.value)} class="max-w-none" />
-            <p class="mt-1.5 text-xs text-text-faint">Plural and lowercase — it becomes the folder and the URL.</p>
-          </div>
-        </Show>
+    <>
+      <Drawer
+        open={props.subject !== null}
+        onClose={close}
+        width={720}
+        title={isNew() ? 'New content type' : existing()?.label ?? ''}
+        subtitle={isNew() ? 'A folder of markdown, and the form for its entries' : <span class="font-mono">schemas/{existing()?.name}.json</span>}
+        footer={
+          <>
+            <Show when={dirty()}>
+              <span class="mr-auto text-xs text-text-muted">Unsaved changes</span>
+            </Show>
+            <Button onClick={close} disabled={pending()}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={save} disabled={pending() || (isNew() && name().trim().length < 2)}>
+              {pending() ? 'Saving…' : isNew() ? 'Create content type' : 'Save'}
+            </Button>
+          </>
+        }
+      >
+        <div class="space-y-6">
+          <section class="grid gap-4 sm:grid-cols-[1fr_1fr_200px]">
+            <Show when={isNew()}>
+              <div>
+                <Label for="type-name">Name</Label>
+                <Input id="type-name" autofocus value={name()} placeholder="guides" onInput={(event) => setName(event.currentTarget.value)} class="max-w-none font-mono text-xs" />
+                <p class="mt-1 text-[11.5px] text-text-faint">Plural and lowercase — the folder and the URL.</p>
+              </div>
+            </Show>
+            <div classList={{ 'sm:col-span-2': !isNew() }}>
+              <Label for="type-label">Label</Label>
+              <Input id="type-label" value={label()} placeholder="Guides" onInput={(event) => setLabel(event.currentTarget.value)} class="max-w-none" />
+            </div>
+            <div class="[&_label]:mb-1 [&_label]:text-xs [&_label]:font-medium [&_label]:text-text-secondary">
+              <IconPicker label="Icon" value={icon()} onValue={setIcon} />
+            </div>
+          </section>
 
-        <div>
-          <Label for="type-label">Label</Label>
-          <Input id="type-label" value={label()} placeholder="Guides" onInput={(event) => setLabel(event.currentTarget.value)} class="max-w-none" />
-        </div>
+          <section>
+            <div class="mb-3 flex items-end justify-between gap-3">
+              <div>
+                <h3 class="text-[11.5px] font-semibold uppercase tracking-[.05em] text-text-muted">Fields</h3>
+                <p class="mt-0.5 text-xs text-text-faint">The form every entry gets. Drag to reorder; click one to configure it.</p>
+              </div>
+              <span class="text-xs tabular-nums text-text-faint">{fields().length}</span>
+            </div>
 
-        <div>
-          <p class="mb-2 text-xs font-medium text-text-secondary">Fields</p>
-          <div class="grid grid-cols-2 gap-2">
-            <For each={presets() ?? []}>
-              {(preset) => (
-                <label class="flex items-center gap-2 rounded-ds border border-border px-3 py-2 text-xs cursor-pointer hover:bg-surface-muted">
-                  <input type="checkbox" class="size-4 rounded border-border-strong text-brand" checked={chosen().includes(preset.key)} onChange={() => toggle(preset.key)} />
-                  <span class="font-medium text-text">{preset.label}</span>
-                  <span class="ml-auto text-text-faint">{preset.type}</span>
-                </label>
-              )}
-            </For>
-          </div>
-          <Show when={custom().length}>
-            <p class="mt-3 text-xs text-text-muted">
-              Kept as written in <code class="font-mono">schemas/{existing()?.name}.json</code>:{' '}
-              {custom().map((field) => field.label || field.id).join(', ')}
+            <FieldList fields={fields()} onChange={setFields} empty="No fields yet — entries will only have a body." />
+
+            <Show when={suggestions().length}>
+              <div class="mt-4 flex flex-wrap items-center gap-1.5">
+                <span class="mr-1 text-xs text-text-faint">Quick add</span>
+                <For each={suggestions()}>
+                  {(preset) => (
+                    <button
+                      type="button"
+                      class="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface px-2.5 py-1 text-xs text-text-secondary hover:border-brand hover:text-brand"
+                      onClick={() => setFields([...fields(), presetField(preset)])}
+                    >
+                      <Plus size={11} />
+                      {preset.label}
+                    </button>
+                  )}
+                </For>
+              </div>
+            </Show>
+          </section>
+
+          <Show when={isNew()}>
+            <p class="text-xs text-text-faint">
+              Creates <code class="font-mono">content/{name().trim() || 'name'}/</code>, <code class="font-mono">schemas/{name().trim() || 'name'}.json</code> and a template for its entries.
             </p>
           </Show>
         </div>
+      </Drawer>
 
-        <Show when={isNew()}>
-          <p class="text-xs text-text-faint">
-            Creates <code class="font-mono">content/{name().trim() || 'name'}/</code>, <code class="font-mono">schemas/{name().trim() || 'name'}.json</code> and a template for its entries.
-          </p>
-        </Show>
-      </div>
-    </Modal>
+      <ConfirmDialog
+        open={discarding()}
+        onOpenChange={setDiscarding}
+        danger
+        title="Discard changes?"
+        message="Your changes to this content type have not been saved."
+        confirmLabel="Discard"
+        onConfirm={() => {
+          setDiscarding(false);
+          props.onClose();
+        }}
+      />
+    </>
   );
 }

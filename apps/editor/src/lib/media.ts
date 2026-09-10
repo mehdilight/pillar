@@ -7,8 +7,17 @@ import type { MediaItem } from '../types';
 
 /** Checked here as well as on the server, so a large file fails before it is read. */
 const MAX_BYTES = 10 * 1024 * 1024;
+const MAX_FILE_BYTES = 25 * 1024 * 1024;
 
 export const ACCEPTED = 'image/png,image/jpeg,image/gif,image/webp,image/avif';
+
+/** Mirrors `Dev\Media::FILE_EXTENSIONS` — what a `file` field can hold. */
+export const FILE_EXTENSIONS = ['pdf', 'zip', 'csv', 'txt', 'docx', 'xlsx', 'pptx', 'mp3', 'mp4', 'webm'];
+
+export const ACCEPTED_FILES = FILE_EXTENSIONS.map((extension) => `.${extension}`).join(',');
+
+const isAcceptable = (file: File) =>
+  file.type.startsWith('image/') || FILE_EXTENSIONS.includes(file.name.split('.').pop()?.toLowerCase() ?? '');
 
 /** The address an image is shown from, whatever form a setting stored it in. */
 export function mediaUrl(value: string): string {
@@ -61,7 +70,7 @@ export function createMediaLibrary() {
 
   /** Uploads one by one, returning what arrived; failures are collected into `error`. */
   const upload = async (files: File[]): Promise<MediaItem[]> => {
-    const chosen = files.filter((file) => file.type.startsWith('image/'));
+    const chosen = files.filter(isAcceptable);
 
     if (progress() || chosen.length === 0) return [];
 
@@ -74,7 +83,9 @@ export function createMediaLibrary() {
       setProgress(chosen.length === 1 ? 'Uploading…' : `Uploading ${index + 1} of ${chosen.length}…`);
 
       try {
-        if (file.size > MAX_BYTES) throw new Error('Choose a file smaller than 10 MB.');
+        if (file.size > (file.type.startsWith('image/') ? MAX_BYTES : MAX_FILE_BYTES)) {
+          throw new Error(file.type.startsWith('image/') ? 'Choose an image smaller than 10 MB.' : 'Choose a file smaller than 25 MB.');
+        }
 
         uploaded.push(await api.uploadImage(file.name, await read(file)));
       } catch (cause) {
@@ -90,7 +101,7 @@ export function createMediaLibrary() {
 
     setProgress('');
 
-    if (uploaded.length) showToast(`Uploaded ${plural(uploaded.length, 'image')}`, 'success');
+    if (uploaded.length) showToast(`Uploaded ${plural(uploaded.length, uploaded.every((item) => item.kind === 'image') ? 'image' : 'file')}`, 'success');
 
     setError(failures.join('\n'));
 

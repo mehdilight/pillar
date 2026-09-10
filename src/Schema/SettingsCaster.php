@@ -14,6 +14,9 @@ namespace Pillar\Schema;
  */
 final class SettingsCaster {
 
+	/** With the site's content, a relationship setting reads as the entries it names. */
+	public function __construct( private readonly ?\Pillar\Content\ContentStore $content = null ) {}
+
 	/**
 	 * @param array<string, mixed> $stored
 	 *
@@ -42,7 +45,12 @@ final class SettingsCaster {
 		return $out + $stored;
 	}
 
-	/** @param list<Setting> $settings */
+	/**
+	 * @param list<Setting>        $settings
+	 * @param array<string, mixed> $stored
+	 *
+	 * @return array<string, mixed>
+	 */
 	public function castBlock( array $settings, array $stored ): array {
 		$out = [];
 
@@ -60,15 +68,37 @@ final class SettingsCaster {
 	}
 
 	private function value( Setting $setting, mixed $value ): mixed {
+		$cast = $this->castValue( $setting, $value );
+
+		return null !== $this->content && in_array( $setting->type, [ FieldType::CollectionItem, FieldType::Page ], true )
+			? $this->content->resolve( $setting, $cast )
+			: $cast;
+	}
+
+	private function castValue( Setting $setting, mixed $value ): mixed {
 		if ( null === $value ) {
 			return $setting->initialValue();
+		}
+
+		if ( $setting->multiple ) {
+			return array_values( array_map( 'strval', array_filter( (array) $value, 'is_scalar' ) ) );
 		}
 
 		return match ( $setting->type ) {
 			FieldType::Checkbox => filter_var( $value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE ) ?? (bool) $value,
 			FieldType::Number, FieldType::Range => $this->number( $value ),
-			FieldType::Tags => array_values( array_map( 'strval', (array) $value ) ),
-			FieldType::Image, FieldType::Video => '' === $value ? null : (string) $value,
+			FieldType::Tags, FieldType::Checkboxes => array_values( array_map( 'strval', array_filter( (array) $value, 'is_scalar' ) ) ),
+			FieldType::Image, FieldType::Video, FieldType::File => '' === $value ? null : (string) $value,
+			// A group is its fields, cast; a repeater is rows of them.
+			FieldType::Group => $this->castBlock( $setting->fields, is_array( $value ) ? $value : [] ),
+			FieldType::Repeater => array_values( array_map(
+				fn ( array $row ): array => $this->castBlock( $setting->fields, $row ),
+				array_filter( (array) $value, 'is_array' )
+			) ),
+			FieldType::Table => array_values( array_map(
+				static fn ( mixed $row ): array => array_values( array_map( static fn ( mixed $cell ): string => is_scalar( $cell ) ? (string) $cell : '', (array) $row ) ),
+				array_filter( (array) $value, 'is_array' )
+			) ),
 			default => is_scalar( $value ) ? (string) $value : $value,
 		};
 	}

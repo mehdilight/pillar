@@ -24,15 +24,21 @@ enum FieldType: string {
 	case Checkbox = 'checkbox';
 	case Select = 'select';
 	case Radio = 'radio';
+	case Checkboxes = 'checkboxes';
 	case Color = 'color';
+	case Icon = 'icon';
 	case Image = 'image';
 	case Video = 'video';
+	case File = 'file';
 	case Date = 'date';
 	case Tags = 'tags';
 	case Menu = 'menu';
 	case Page = 'page';
 	case Collection = 'collection';
 	case CollectionItem = 'collection_item';
+	case Group = 'group';
+	case Repeater = 'repeater';
+	case Table = 'table';
 	case Header = 'header';
 	case Paragraph = 'paragraph';
 
@@ -56,9 +62,13 @@ enum FieldType: string {
 			self::Checkbox => false,
 			self::Select => '',
 			self::Radio => '',
+			self::Checkboxes => array (
+),
 			self::Color => '',
+			self::Icon => '',
 			self::Image => NULL,
 			self::Video => NULL,
+			self::File => NULL,
 			self::Date => '',
 			self::Tags => array (
 ),
@@ -66,6 +76,12 @@ enum FieldType: string {
 			self::Page => '',
 			self::Collection => '',
 			self::CollectionItem => '',
+			self::Group => array (
+),
+			self::Repeater => array (
+),
+			self::Table => array (
+),
 			self::Header => NULL,
 			self::Paragraph => NULL,
 		};

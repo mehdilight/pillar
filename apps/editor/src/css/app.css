@@ -130,3 +130,16 @@ body {
     background: var(--bg);
     color: var(--text);
 }
+
+/* Drawers slide in from the right; nothing moves for people who ask it not to. */
+@keyframes pillar-drawer-in {
+    from { transform: translateX(100%); }
+}
+
+.pillar-drawer {
+    animation: pillar-drawer-in 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pillar-drawer { animation: none; }
+}
