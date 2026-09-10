@@ -8,6 +8,7 @@ import {
   House,
   Images,
   Layers,
+  ListTree,
   Menu,
   PaintbrushVertical,
   Settings,
@@ -151,6 +152,7 @@ function Sidebar(props: { open: boolean; onClose: () => void }) {
         </For>
         <Item to="/types" label="Content types" icon={(a) => <Folder size={18} class={iconClass(a)} />} />
         <Item to="/media" label="Media" icon={(a) => <Images size={18} class={iconClass(a)} />} />
+        <Item to="/menus" label="Navigation" icon={(a) => <ListTree size={18} class={iconClass(a)} />} />
       </ul>
 
       <p class="mt-5 mb-1.5 px-3.5 text-[11px] font-semibold uppercase tracking-[.05em] text-[#8a8a8a]">Site</p>

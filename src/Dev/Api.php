@@ -9,6 +9,7 @@ use Pillar\Content\ContentStore;
 use Pillar\Content\ContentType;
 use Pillar\Content\FrontmatterWriter;
 use Pillar\Content\MarkdownFile;
+use Pillar\Content\MenuStore;
 use Pillar\Git\LocalGit;
 use Pillar\Pillar;
 use Pillar\PillarException;
@@ -61,6 +62,9 @@ final class Api {
 				[ 'settings', 'schema' ] === $segments => $this->json( $this->settingsSchema() ),
 				[ 'settings' ] === $segments && 'GET' === $method => $this->json( $this->settings() ),
 				[ 'settings' ] === $segments && 'PUT' === $method => $this->saveSettings( $this->body( $request ) ),
+
+				[ 'menus' ] === $segments && 'GET' === $method => $this->json( MenuStore::load( $this->pillar()->site ) ),
+				[ 'menus' ] === $segments && 'PUT' === $method => $this->saveMenus( $this->body( $request ) ),
 
 				[ 'content-types' ] === $segments && 'GET' === $method => $this->json( $this->collections() ),
 				[ 'content-types' ] === $segments && 'POST' === $method
@@ -316,6 +320,14 @@ final class Api {
 		}
 
 		$this->write( 'config/settings_data.json', (string) json_encode( (object) $settings, self::JSON ) );
+
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function saveMenus( array $body ): Response {
+		$menus = MenuStore::normalise( (array) ( $body['menus'] ?? $body ) );
+		$this->write( 'data/menus.json', (string) json_encode( (object) $menus, self::JSON ) );
 
 		return $this->json( [ 'ok' => true ] );
 	}

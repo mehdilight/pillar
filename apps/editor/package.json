@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.15.4",
+    "@thisbeyond/solid-dnd": "^0.7.5",
     "@tiptap/core": "^3.31.3",
     "@tiptap/extension-image": "^3.31.3",
     "@tiptap/extension-table": "^3.31.3",

@@ -1,0 +1,25 @@
+{
+  "main": {
+    "title": "Main menu",
+    "items": [
+      {
+        "title": "Docs",
+        "url": "/docs/getting-started/",
+        "items": [
+          { "title": "Getting started", "url": "/docs/getting-started/" },
+          { "title": "Content collections", "url": "/docs/content-collections/" }
+        ]
+      },
+      { "title": "Writing", "url": "/blog/" },
+      { "title": "About", "url": "/about/" }
+    ]
+  },
+  "footer": {
+    "title": "Footer resources",
+    "items": [
+      { "title": "Getting started", "url": "/docs/getting-started/" },
+      { "title": "Content collections", "url": "/docs/content-collections/" },
+      { "title": "Writing a section", "url": "/docs/writing-a-section/" }
+    ]
+  }
+}

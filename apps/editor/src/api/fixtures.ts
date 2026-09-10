@@ -246,6 +246,24 @@ export const settingsData: Record<string, any> = {
   base_size: 16,
 };
 
+export const menus = {
+  main: {
+    title: 'Main menu',
+    items: [
+      { title: 'Documentation', url: '/docs/getting-started/' },
+      { title: 'Writing', url: '/blog/' },
+      { title: 'About', url: '/about/' },
+    ],
+  },
+  footer: {
+    title: 'Footer links',
+    items: [
+      { title: 'Getting started', url: '/docs/getting-started/' },
+      { title: 'Content collections', url: '/docs/content-collections/' },
+    ],
+  },
+};
+
 export const collections: ContentCollection[] = [
   {
     name: 'posts',

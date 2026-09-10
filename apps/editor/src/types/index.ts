@@ -162,6 +162,20 @@ export interface ContentItem {
   updated_at?: string;
 }
 
+/** A named navigation list, stored in data/menus.json. */
+export interface MenuItem {
+  title: string;
+  url: string;
+  items?: MenuItem[];
+}
+
+export interface LinkList {
+  title: string;
+  items: MenuItem[];
+}
+
+export type LinkLists = Record<string, LinkList>;
+
 /** One panel of `config/settings_schema.json`. */
 export interface SettingsPanelSchema {
   name: string;

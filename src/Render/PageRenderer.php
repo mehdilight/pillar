@@ -6,6 +6,7 @@ namespace Pillar\Render;
 use Phpmystic\Liqx\Environment;
 use Phpmystic\Liqx\Template;
 use Pillar\Content\ContentStore;
+use Pillar\Content\MenuStore;
 use Pillar\PillarException;
 use Pillar\Render\Drops\SiteDrop;
 use Pillar\Render\Head\HeadContext;
@@ -53,6 +54,7 @@ final class PageRenderer {
 			'site'        => new SiteDrop( $this->site, $settings ),
 			'settings'    => $settings,
 			'collections' => $this->content->collections(),
+			'menus'       => MenuStore::load( $this->site ),
 			'template'    => $template,
 			'route'       => $route,
 		];

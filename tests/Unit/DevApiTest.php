@@ -62,6 +62,24 @@ final class DevApiTest extends SiteTestCase {
 		self::assertSame( [ 'hero_a1', 'features_b2', 'posts_c3', 'hidden_d4' ], $written['order'], 'order is preserved' );
 	}
 
+	public function test_navigation_lists_are_saved_and_available_to_templates(): void {
+		$this->request( 'PUT', '/api/menus', [ 'menus' => [
+			'main' => [
+				'title' => 'Main navigation',
+				'items' => [ [ 'title' => 'About', 'url' => '/about/' ] ],
+			],
+		] ] );
+
+		$menus = $this->json( 'GET', '/api/menus' );
+		self::assertSame( 'Main navigation', $menus['main']['title'] );
+		self::assertSame( '/about/', $menus['main']['items'][0]['url'] );
+
+		file_put_contents( $this->root . '/sections/header.liqx', '<nav>{menus.main.items.map((link) => <a href={link.url}>{link.title}</a>)}</nav>' );
+
+		self::assertStringContainsString( '<a href="/about/">About</a>', $this->pillar()->render( 'index' ) );
+		self::assertFileExists( $this->root . '/data/menus.json' );
+	}
+
 	public function test_content_is_listed_with_the_fields_its_schema_declares(): void {
 		$collections = array_column( $this->json( 'GET', '/api/content' ), null, 'name' );
 

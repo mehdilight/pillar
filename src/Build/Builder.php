@@ -195,7 +195,7 @@ final class Builder {
 	private function fingerprint( array $assets ): string {
 		$parts = [ 'pillar:' . \Pillar\Cli\Application::VERSION, 'assets:' . md5( (string) json_encode( $assets ) ) ];
 
-		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json', 'config/media.json', 'layout/theme.liqx' ] as $file ) {
+		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json', 'config/media.json', 'data/menus.json', 'layout/theme.liqx' ] as $file ) {
 			$path    = $this->pillar->site->layers()->resolve( $file );
 			$parts[] = $file . ':' . ( null === $path ? 'none' : FileHash::of( $path ) );
 		}

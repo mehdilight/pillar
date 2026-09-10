@@ -3,7 +3,7 @@
     "header": {
       "section_type": "header",
       "settings": {
-        "links": "Docs | /docs/getting-started/, Writing | /blog/, About | /about/"
+        "menu": "main"
       },
       "is_layout": true,
       "order": 0

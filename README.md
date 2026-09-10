@@ -69,13 +69,19 @@ templates/*.json              which sections a page has        ← editor-owned
 sections/*.liqx               markup + a <schema> block
 snippets/*.liqx               components
 config/settings_*.json        site-wide settings + values      ← editor-owned
+data/menus.json               named navigation link lists       ← editor-owned
 schemas/*.json                content models
 content/<collection>/*.md     markdown + frontmatter           ← editor-owned
 assets/*                      css, images, fonts               ← editor-owned
 ```
 
-The four editor-owned paths are the only things the dashboard writes.
+Those editor-owned paths are the only things the dashboard writes.
 Everything else is developer territory, edited in an editor.
+
+Navigation lists live in `data/menus.json` and are managed in **Navigation**.
+Themes receive them as `menus`, so a section configured with the `main` handle
+can render `menus.main.items`. Links may contain nested `items` for dropdowns
+and documentation trees.
 
 ## Layout
 

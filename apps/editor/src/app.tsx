@@ -10,6 +10,7 @@ import Types from './cms/pages/Types';
 import Media from './cms/pages/Media';
 import Settings from './cms/pages/Settings';
 import Publish from './cms/pages/Publish';
+import Menus from './cms/pages/Menus';
 import NotFound from './cms/pages/NotFound';
 import EditorScreen from './editor/EditorScreen';
 import Toast, { showToast } from './components/ui/Toast';
@@ -65,6 +66,8 @@ render(
         <Route path="/content/:collection/:slug" component={Entry} />
         <Route path="/types" component={Types} />
         <Route path="/media" component={Media} />
+        <Route path="/menus" component={Menus} />
+        <Route path="/menus/:handle" component={Menus} />
         <Route path="/settings" component={Settings} />
         <Route path="/publish" component={Publish} />
         <Route path="*" component={NotFound} />

@@ -83,8 +83,13 @@ a.button:hover { color: var(--color-paper-white); text-decoration: none; }
 }
 .header .brand { justify-self: start; font-size: 16px; }
 .header nav { justify-self: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; font-size: 14px; }
+.header .nav-item { position: relative; }
 .header nav a { color: var(--color-stone-gray); }
 .header nav a:hover { color: var(--color-ink-black); text-decoration: none; }
+.header .nav-submenu { display: none; position: absolute; z-index: 2; top: calc(100% + 10px); left: -14px; min-width: 180px; padding: 8px; border: 1px solid var(--color-frost-wash); border-radius: 10px; background: var(--color-paper-white); box-shadow: 0 12px 30px rgb(0 0 0 / 10%); }
+.header .nav-submenu a { display: block; padding: 7px 8px; border-radius: 6px; white-space: nowrap; }
+.header .nav-submenu a:hover { background: var(--color-frost-wash); }
+.header .nav-item:focus-within .nav-submenu, .header .nav-item:hover .nav-submenu { display: block; }
 .header .button { justify-self: end; font-size: 14px; padding: 8px 16px; }
 
 .hero .display { margin-bottom: 0.25em; }

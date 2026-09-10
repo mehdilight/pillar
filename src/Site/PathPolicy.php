@@ -26,6 +26,7 @@ final class PathPolicy {
 		'snippets',
 		'templates',
 		'content',
+		'data',
 	];
 
 	public const EXTENSIONS = [

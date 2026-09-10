@@ -1,5 +1,6 @@
-import { Match, Show, Switch } from 'solid-js';
+import { Match, Show, Switch, createResource } from 'solid-js';
 import type { SchemaSetting } from '../types';
+import { api } from '../api/client';
 import TextInput from './ui/TextInput';
 import TextArea from './ui/TextArea';
 import NumberInput from './ui/NumberInput';
@@ -34,6 +35,15 @@ export default function SettingInput(props: SettingInputProps) {
   const value = () => props.value ?? setting().default;
   const options = () => setting().options ?? [];
   const firstOption = () => options()[0]?.value ?? '';
+  const [menus] = createResource(() => setting().type === 'menu', () => api.menus());
+  const menuOptions = () => {
+    const available = Object.entries(menus() ?? {}).map(([value, menu]) => ({ value, label: menu.title || value }));
+    const selected = String(value() ?? '');
+
+    return selected && !available.some((option) => option.value === selected)
+      ? [{ value: selected, label: `${selected} (missing)` }, ...available]
+      : available;
+  };
 
   return (
     <Switch fallback={<UnknownType type={setting().type} />}>
@@ -214,14 +224,17 @@ export default function SettingInput(props: SettingInputProps) {
         serves it; a free-text handle until then, which is what gets written to
         the JSON either way.
       */}
-      <Match
-        when={
-          setting().type === 'collection' ||
-          setting().type === 'collection_item' ||
-          setting().type === 'page' ||
-          setting().type === 'menu'
-        }
-      >
+      <Match when={setting().type === 'menu'}>
+        <SelectInput
+          label={setting().label}
+          info={setting().info ?? 'Choose a navigation list. Manage lists under Navigation.'}
+          value={String(value() ?? '')}
+          options={menuOptions()}
+          onValue={props.onChange}
+        />
+      </Match>
+
+      <Match when={setting().type === 'collection' || setting().type === 'collection_item' || setting().type === 'page'}>
         <TextInput
           label={setting().label}
           info={setting().info ?? `Handle of the ${setting().type.replace('_', ' ')}.`}

@@ -9,6 +9,7 @@ import type {
   SettingsPanelSchema,
   TemplatePayload,
   TemplateSummary,
+  LinkLists,
 } from '../types';
 
 /**
@@ -91,6 +92,7 @@ const store = {
   pages: structuredClone(fixtures.pages) as Record<string, PageSection[]>,
   layout: structuredClone(fixtures.layout) as PageSection[],
   settings: structuredClone(fixtures.settingsData) as Record<string, any>,
+  menus: structuredClone(fixtures.menus) as LinkLists,
   content: structuredClone(fixtures.content) as ContentItem[],
   dirty: new Set<string>(),
 };
@@ -154,6 +156,14 @@ export const api = {
     request('/settings', json({ settings }), () => {
       store.settings = settings;
       touch('config/settings_data.json');
+    }),
+
+  menus: (): Promise<LinkLists> => request('/menus', undefined, () => structuredClone(store.menus)),
+
+  saveMenus: (menus: LinkLists): Promise<void> =>
+    request('/menus', json({ menus }), () => {
+      store.menus = structuredClone(menus);
+      touch('data/menus.json');
     }),
 
   createCollection: (body: {
@@ -272,6 +282,7 @@ export const api = {
       store.pages = structuredClone(fixtures.pages);
       store.layout = structuredClone(fixtures.layout);
       store.settings = structuredClone(fixtures.settingsData);
+      store.menus = structuredClone(fixtures.menus);
       store.content = structuredClone(fixtures.content);
       store.dirty.clear();
     }),
