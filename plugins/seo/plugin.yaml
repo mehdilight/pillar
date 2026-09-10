@@ -1,0 +1,8 @@
+slug: seo
+name: SEO
+version: 0.1.0
+description: Titles, social cards, structured data, sitemap and content analysis. Ported from Bastet.
+namespace: Pillar\Seo
+plugin_class: Pillar\Seo\Plugin
+src: src
+theme: theme

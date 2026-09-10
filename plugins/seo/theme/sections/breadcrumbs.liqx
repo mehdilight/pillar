@@ -1,0 +1,4 @@
+<schema>
+{"name":"Breadcrumbs","settings":[],"presets":[{"name":"Breadcrumbs"}]}
+</schema>
+{seo_breadcrumbs(page, route)}
