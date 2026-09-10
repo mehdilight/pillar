@@ -185,7 +185,11 @@ function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: M
         <div class="border-t border-border bg-surface-muted/35 px-4 py-4 sm:pl-12">
           <div class="grid max-w-2xl items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"><div><Label>Label</Label><Input value={props.item.title} placeholder="For example, About" onInput={(event) => props.onChange({ ...props.item, title: event.currentTarget.value })} /></div><div><Label>Link</Label><LinkPicker compact value={props.item.url} onValue={(url) => props.onChange({ ...props.item, url })} /></div></div>
           <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={addSublink}><Plus size={13} class="shrink-0" /><span>Add sublink</span></button></div>
-          <Show when={(props.item.items ?? []).length}><div class="mt-3 rounded-ds border border-border bg-surface"><MenuRows items={props.item.items ?? []} depth={(props.depth ?? 0) + 1} onChange={(items) => props.onChange({ ...props.item, items })} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} /></div></Show>
+        </div>
+      </Show>
+      <Show when={(props.item.items ?? []).length}>
+        <div class="rounded-ds border border-border bg-surface">
+          <MenuRows items={props.item.items ?? []} depth={(props.depth ?? 0) + 1} onChange={(items) => props.onChange({ ...props.item, items })} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} />
         </div>
       </Show>
     </div>
