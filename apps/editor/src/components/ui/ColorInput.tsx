@@ -14,7 +14,7 @@ export default function ColorInput(props: ColorInputProps) {
 
   return (
     <Field label={props.label} info={props.info} for={id}>
-      <div class="relative flex items-center h-9 bg-white border border-[#8c9196] rounded-lg shadow-xs transition-colors hover:border-gray-500 focus-within:border-[#005bd3] focus-within:ring-1 focus-within:ring-[#005bd3]">
+      <div class="relative flex items-center h-9 bg-white border border-[#c9cccf] rounded-lg shadow-xs transition-colors hover:border-[#8c9196] focus-within:border-[#005bd3] focus-within:ring-1 focus-within:ring-[#005bd3]">
         <label
           for={id}
           class="relative w-6 h-6 ml-1.5 rounded-md border border-black/15 shadow-xs flex-shrink-0 cursor-pointer overflow-hidden flex items-center justify-center"

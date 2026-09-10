@@ -34,6 +34,6 @@ export default function Field(props: FieldProps) {
 
 /** The one input skin every text-shaped control wears. */
 export const controlClass =
-  'w-full h-9 bg-white border border-[#8c9196] rounded-lg px-3 py-1.5 text-[13px] leading-5 ' +
+  'w-full h-9 bg-white border border-[#c9cccf] rounded-lg px-3 py-1.5 text-[13px] leading-5 ' +
   'text-[#202223] placeholder-gray-400 focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] ' +
-  'outline-none shadow-xs transition-colors hover:border-gray-500';
+  'outline-none shadow-xs transition-colors hover:border-[#8c9196]';

@@ -22,7 +22,7 @@ export default function SelectInput(props: SelectInputProps) {
           id={id}
           value={props.value}
           onChange={(event) => props.onValue(event.currentTarget.value)}
-          class="w-full h-9 appearance-none bg-white border border-[#8c9196] rounded-lg pl-3 pr-8 py-1.5 text-[13px] leading-5 text-[#202223] focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] outline-none shadow-xs transition-colors hover:border-gray-500 cursor-pointer"
+          class="w-full h-9 appearance-none bg-white border border-[#c9cccf] rounded-lg pl-3 pr-8 py-1.5 text-[13px] leading-5 text-[#202223] focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] outline-none shadow-xs transition-colors hover:border-[#8c9196] cursor-pointer"
           style={{ appearance: 'none', 'background-image': 'none' }}
         >
           <For each={props.options}>

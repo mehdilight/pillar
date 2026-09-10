@@ -26,7 +26,7 @@ export default function CodeInput(props: CodeInputProps) {
         </div>
         <textarea
           id={id}
-          class="w-full text-xs font-mono p-2.5 border border-[#8c9196] rounded-b-lg bg-white resize-y outline-none focus:border-[#005bd3] focus:ring-0"
+          class="w-full text-xs font-mono p-2.5 border border-[#c9cccf] rounded-b-lg bg-white resize-y outline-none focus:border-[#005bd3] focus:ring-0"
           style={{ 'min-height': `${props.minHeight ?? 120}px`, 'white-space': 'pre', 'tab-size': 2 }}
           spellcheck={false}
           value={props.value ?? ''}

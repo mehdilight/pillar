@@ -105,7 +105,7 @@ export default function SettingsPanel(props: { section: PageSection }) {
             <Show when={cssOpen()}>
               <div class="px-4 pb-4 pt-1 flex flex-col gap-2 bg-[#f9fafb]">
                 <textarea
-                  class="w-full text-xs font-mono p-2.5 border border-[#8c9196] rounded-lg bg-white resize-y outline-none focus:border-[#005bd3] focus:ring-0"
+                  class="w-full text-xs font-mono p-2.5 border border-[#c9cccf] rounded-lg bg-white resize-y outline-none focus:border-[#005bd3] focus:ring-0"
                   style={{ 'min-height': '120px', 'white-space': 'pre', 'tab-size': 2 }}
                   placeholder={'/* Scoped to this section */\n& {\n  padding: 20px 0;\n}'}
                   spellcheck={false}

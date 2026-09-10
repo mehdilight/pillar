@@ -40,7 +40,7 @@ export default function AddSectionModal(props: {
           <input
             type="search"
             autofocus
-            class="w-full h-9 bg-white border border-[#8c9196] rounded-lg pl-8 pr-3 text-[13px] text-[#202223] placeholder-gray-400 outline-none focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3]"
+            class="w-full h-9 bg-white border border-[#c9cccf] rounded-lg pl-8 pr-3 text-[13px] text-[#202223] placeholder-gray-400 outline-none focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3]"
             placeholder="Search sections"
             value={query()}
             onInput={(event) => setQuery(event.currentTarget.value)}

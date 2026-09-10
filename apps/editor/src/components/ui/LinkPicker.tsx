@@ -63,7 +63,7 @@ export default function LinkPicker(props: LinkPickerProps) {
       <Popover.Anchor class="flex">
         <input type="text" class={`${pickerControlClass} ${props.compact ? 'h-8' : 'h-9'} rounded-e-none border-e-0`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
         <Popover.Trigger
-          class={`inline-flex shrink-0 items-center gap-1 rounded-e-lg border border-[#8c9196] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3] ${props.compact ? 'h-8' : 'h-9'}`}
+          class={`inline-flex shrink-0 items-center gap-1 rounded-e-lg border border-[#c9cccf] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:border-[#8c9196] hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3] ${props.compact ? 'h-8' : 'h-9'}`}
           classList={{ 'bg-[#eef6ff] text-[#005bd3]': open() }}
           aria-label="Browse link destinations"
         ><Link2 size={14} /> Browse <ChevronDown size={14} /></Popover.Trigger>
