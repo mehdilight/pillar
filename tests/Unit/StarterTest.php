@@ -60,6 +60,29 @@ final class StarterTest extends SiteTestCase {
 		self::assertStringContainsString( 'alt="Us, in 2026"', Pillar::forSite( $this->root, compile: false )->render( 'index' ) );
 	}
 
+	public function test_the_footer_draws_a_column_per_link_list_block(): void {
+		$layout = json_decode( (string) file_get_contents( $this->root . '/templates/layout.json' ), true );
+
+		$layout['sections']['footer']['blocks'] = [
+			[ 'id' => 'a', 'type' => 'link_column', 'settings' => [ 'menu' => 'company', 'heading' => '' ] ],
+			[ 'id' => 'b', 'type' => 'link_column', 'settings' => [ 'menu' => 'gone', 'heading' => 'Nothing here' ] ],
+			[ 'id' => 'c', 'type' => 'link_column', 'disabled' => true, 'settings' => [ 'menu' => 'main' ] ],
+		];
+		file_put_contents( $this->root . '/templates/layout.json', (string) json_encode( $layout ) );
+
+		$html   = Pillar::forSite( $this->root, compile: false )->render( 'index' );
+		$footer = substr( $html, (int) strpos( $html, '<footer' ) );
+
+		self::assertStringContainsString( '--footer-columns:2', $footer );
+		// An empty heading falls back to the link list's own title.
+		self::assertStringContainsString( '<h4>Company</h4>', $footer );
+		self::assertStringContainsString( '<a href="/docs/layers/">Themes and addons</a>', $footer );
+		// A link list that does not exist is an empty column, not a broken page.
+		self::assertStringContainsString( '<h4>Nothing here</h4>', $footer );
+		// A hidden block is not drawn.
+		self::assertStringNotContainsString( 'Main menu', $footer );
+	}
+
 	public function test_every_color_and_layout_setting_reaches_the_page(): void {
 		// A settings panel whose controls change nothing is worse than none —
 		// which is what the redesign briefly shipped.

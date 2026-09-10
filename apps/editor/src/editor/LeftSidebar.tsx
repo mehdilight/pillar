@@ -59,7 +59,14 @@ export default function LeftSidebar() {
 
           <div class="flex flex-col gap-0.5">
             <For each={headerSections()}>
-              {(section) => <SectionRow section={section} draggable={false} />}
+              {(section) => (
+                <SectionRow
+                  section={section}
+                  draggable={false}
+                  expanded={expanded().has(section.section_id)}
+                  onToggleExpanded={() => toggleExpanded(section.section_id)}
+                />
+              )}
             </For>
 
             <For each={editor.sections()}>
@@ -101,7 +108,14 @@ export default function LeftSidebar() {
             </For>
 
             <For each={footerSections()}>
-              {(section) => <SectionRow section={section} draggable={false} />}
+              {(section) => (
+                <SectionRow
+                  section={section}
+                  draggable={false}
+                  expanded={expanded().has(section.section_id)}
+                  onToggleExpanded={() => toggleExpanded(section.section_id)}
+                />
+              )}
             </For>
 
             <button

@@ -16,7 +16,33 @@
             },
             "order": 1,
             "enabled": true,
-            "is_layout": true
+            "is_layout": true,
+            "blocks": [
+                {
+                    "id": "column_products",
+                    "type": "link_column",
+                    "settings": {
+                        "menu": "products",
+                        "heading": "Products"
+                    }
+                },
+                {
+                    "id": "column_company",
+                    "type": "link_column",
+                    "settings": {
+                        "menu": "company",
+                        "heading": "Company"
+                    }
+                },
+                {
+                    "id": "column_resources",
+                    "type": "link_column",
+                    "settings": {
+                        "menu": "footer",
+                        "heading": "Resources"
+                    }
+                }
+            ]
         }
     },
     "order": [

@@ -161,11 +161,14 @@ a.button:hover { color: var(--color-paper-white); text-decoration: none; }
 .footer-brand { display: grid; gap: 12px; justify-items: start; align-content: start; }
 .footer-brand .brand { font-size: 18px; }
 .footer .note { margin: 0; font-size: var(--text-caption); color: var(--color-stone-gray); }
-.footer-cols { display: grid; grid-template-columns: repeat(3, minmax(140px, auto)); gap: 48px; }
+/* As many columns as the footer has link-column blocks. */
+.footer-cols { display: grid; grid-template-columns: repeat(var(--footer-columns, 3), minmax(140px, auto)); gap: 48px; }
 .footer-col h4 { margin: 0 0 16px; font-size: var(--text-caption); font-weight: 500; }
 .footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .footer-col a { font-size: 14px; color: var(--color-stone-gray); }
 .footer-col a:hover { color: var(--color-ink-black); text-decoration: none; }
+.footer-sublinks { margin-top: 8px !important; padding-left: 12px !important; gap: 8px !important; border-left: 1px solid var(--edge-soft); }
+.footer-sublinks a { font-size: 13px; }
 
 .docs { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 80px; align-items: start; }
 .docs-nav { position: sticky; top: 32px; padding-top: var(--section-gap); }
