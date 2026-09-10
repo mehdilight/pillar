@@ -185,8 +185,8 @@ final class Builder {
 	/**
 	 * What invalidates every page at once.
 	 *
-	 * Site settings, the template JSONs, the asset map, and Pillar's own
-	 * version. Plugins join this list in B5: a plugin that changes output must
+	 * Site settings, the template JSONs, the asset map, the media library's
+	 * alt text, and Pillar's own version. Plugins join this list in B5: a plugin that changes output must
 	 * change the fingerprint, or an incremental build will keep serving pages
 	 * it rendered before the plugin existed.
 	 *
@@ -195,7 +195,7 @@ final class Builder {
 	private function fingerprint( array $assets ): string {
 		$parts = [ 'pillar:' . \Pillar\Cli\Application::VERSION, 'assets:' . md5( (string) json_encode( $assets ) ) ];
 
-		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json', 'layout/theme.liqx' ] as $file ) {
+		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json', 'config/media.json', 'layout/theme.liqx' ] as $file ) {
 			$path    = $this->pillar->site->layers()->resolve( $file );
 			$parts[] = $file . ':' . ( null === $path ? 'none' : FileHash::of( $path ) );
 		}

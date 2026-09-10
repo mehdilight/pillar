@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Pillar\Dev;
 
+use Pillar\Media\AltText;
 use Pillar\PillarException;
 use Pillar\Site\PathPolicy;
 use Pillar\Site\Site;
@@ -21,7 +22,11 @@ final class Media {
 	/** Checked on the decoded bytes; the encoded payload may be a third larger. */
 	private const MAX_BYTES = 10 * 1024 * 1024;
 
-	public function __construct( private readonly Site $site ) {}
+	private readonly AltText $alt;
+
+	public function __construct( private readonly Site $site ) {
+		$this->alt = new AltText( $site );
+	}
 
 	/**
 	 * Every image in every layer, the site's own shadowing a theme's of the
@@ -31,7 +36,7 @@ final class Media {
 	 * Each carries the site files that mention it, so the library can say an
 	 * image is in use before someone deletes it.
 	 *
-	 * @return list<array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>}>
+	 * @return list<array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string}>
 	 */
 	public function all(): array {
 		$images = [];
@@ -63,6 +68,7 @@ final class Media {
 
 		foreach ( $images as $name => $image ) {
 			$images[ $name ]['used_in'] = self::mentions( $name, $sources );
+			$images[ $name ]['alt']     = $this->alt->for( $image['url'] );
 		}
 
 		return array_values( $images );
@@ -78,7 +84,7 @@ final class Media {
 	 *
 	 * @param array<string, mixed> $input `name` and base64 `data`
 	 *
-	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>}
+	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string}
 	 */
 	public function upload( array $input ): array {
 		$encoded = (string) ( $input['data'] ?? '' );
@@ -151,6 +157,8 @@ final class Media {
 		if ( ! unlink( $path ) ) {
 			throw new PillarException( 'Could not delete the image.' );
 		}
+
+		$this->alt->forget( $url );
 	}
 
 	/**
@@ -207,11 +215,29 @@ final class Media {
 		return array_keys( array_filter( $sources, static fn ( string $text ): bool => 1 === preg_match( $pattern, $text ) ) );
 	}
 
+	/**
+	 * Set an image's alt text, returning the image. Theme images take alt text
+	 * too — it is kept in the site's own `config/media.json`, not the theme.
+	 *
+	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string}
+	 */
+	public function setAlt( string $url, string $alt ): array {
+		foreach ( $this->all() as $image ) {
+			if ( $image['url'] === $url ) {
+				$this->alt->set( $url, $alt );
+
+				return [ 'alt' => $this->alt->for( $url ) ] + $image;
+			}
+		}
+
+		throw new PillarException( 'There is no such image in the media library.' );
+	}
+
 	private static function isImage( string $path ): bool {
 		return in_array( strtolower( pathinfo( $path, PATHINFO_EXTENSION ) ), self::IMAGE_EXTENSIONS, true );
 	}
 
-	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>} */
+	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>, alt: string} */
 	private function describe( string $path, string $url, bool $readonly ): array {
 		$dimensions = @getimagesize( $path );
 
@@ -224,6 +250,7 @@ final class Media {
 			'readonly' => $readonly,
 			'modified' => (int) filemtime( $path ),
 			'used_in'  => [],
+			'alt'      => $this->alt->for( $url ),
 		];
 	}
 }

@@ -82,6 +82,9 @@ final class Api {
 				[ 'media' ] === $segments && 'GET' === $method => $this->json( ( new Media( $this->pillar()->site ) )->all() ),
 				[ 'media' ] === $segments && 'DELETE' === $method => $this->deleteMedia( $this->body( $request ) ),
 				[ 'media' ] === $segments && 'POST' === $method => $this->json( ( new Media( $this->pillar()->site ) )->upload( $this->body( $request ) ), 201 ),
+				[ 'media', 'alt' ] === $segments && 'PUT' === $method => $this->json(
+					( new Media( $this->pillar()->site ) )->setAlt( (string) ( $this->body( $request )['url'] ?? '' ), (string) ( $this->body( $request )['alt'] ?? '' ) )
+				),
 
 				[ 'status' ] === $segments => $this->json( $this->status() ),
 				[ 'history' ] === $segments => $this->json( $this->git->history() ),

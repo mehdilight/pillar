@@ -202,6 +202,8 @@ export interface MediaItem {
   modified: number;
   /** Site files that mention the image — content, settings, templates, stylesheets. */
   used_in: string[];
+  /** The library's alt text — used wherever the image appears without its own. Empty if unset. */
+  alt: string;
 }
 
 export interface IconProps {

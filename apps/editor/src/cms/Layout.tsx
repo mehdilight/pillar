@@ -31,7 +31,7 @@ export default function Layout(props: { children?: JSX.Element }) {
   });
 
   return (
-    <div class="ds-root min-h-screen bg-canvas pt-14">
+    <div class="ds-root min-h-screen bg-canvas pt-14 [--sticky-top:3.5rem]">
       <Header onToggle={() => setNavOpen(!navOpen())} />
       <Sidebar open={navOpen()} onClose={() => setNavOpen(false)} />
       <Show when={navOpen()}>

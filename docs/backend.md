@@ -86,11 +86,19 @@ Pillar resolves `sections/`, `blocks/` and `snippets/` across several layers.
 **`EnvironmentFactory`** builds one liqx `Environment` per build (or per dev
 request): the standard filters, plus Pillar's — `markdownify`, `asset_url`
 (content-hashed), `image_url` / `image_tag` (build-time resize, cached by
-source hash), `absolute_url`, `excerpt`, `t` — plus globals (`section()`,
+source hash), `image_alt`, `absolute_url`, `excerpt`, `t` — plus globals (`section()`,
 `render()`, `content_for_layout`, `now`), both file systems, and
 `setCompiledTemplateDir('.pillar/compiled')` **from day one**. That last call
 is the difference between a 500-page build taking seconds and taking minutes.
 Every registered plugin extension is applied here, last (§10).
+
+**Alt text** is written once per image in the media library and kept in
+`config/media.json`, keyed by the image's path under `assets/`
+(`{"uploads/team.jpg": {"alt": "…"}}`). An image used without alt of its own —
+`![](/assets/uploads/team.jpg)` in markdown, `image_tag` with no second
+argument — takes the library's; `image_alt` returns it for templates that
+write their own `<img>`. Alt written where the image is used always wins. The
+file is part of the build fingerprint, so changing an alt rebuilds every page.
 
 **Drops** extend `Liqx\Drop`, whose entire contract is one method:
 `beforeMethod(string $method): mixed`. `SiteDrop`, `PageDrop`, `PostDrop`,

@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Pillar\Render;
 
 use League\CommonMark\CommonMarkConverter;
+use Pillar\Media\AltText;
 use Phpmystic\Liqx\Environment;
 use Pillar\Site\Site;
 
@@ -23,6 +24,7 @@ final class EnvironmentFactory {
 	public function __construct(
 		private readonly Site $site,
 		private readonly CommonMarkConverter $markdown,
+		private readonly ?AltText $alt = null,
 	) {}
 
 	/**
@@ -45,7 +47,7 @@ final class EnvironmentFactory {
 		$snippets = new LayeredFileSystem( $layers, 'snippets', 'blocks' );
 
 		$environment = Environment::create();
-		$filters     = new Filters( $this->site, $this->markdown );
+		$filters     = new Filters( $this->site, $this->markdown, $this->alt ?? new AltText( $this->site ) );
 		$state       = new PageState();
 
 		foreach ( $filters->all() as $name => $filter ) {

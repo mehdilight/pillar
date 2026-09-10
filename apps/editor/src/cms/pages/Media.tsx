@@ -3,13 +3,14 @@ import { A } from '@solidjs/router';
 import { Copy, ExternalLink, ImagePlus, Trash2, Upload } from 'lucide-solid';
 import Page from '../ui/Page';
 import { Badge, Button, Filters, Label, Loading, Notice, Pager, Postbox, SidebarLayout } from '../ui/ds';
+import AltField from '../../components/AltField';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { showToast } from '../../components/ui/Toast';
 import { ACCEPTED, bytes, createMediaLibrary, extension, mediaUrl, plural } from '../../lib/media';
 
 const PER_PAGE = 24;
 
-type Filter = 'all' | 'site' | 'theme' | 'unused';
+type Filter = 'all' | 'site' | 'theme' | 'unused' | 'no-alt';
 type Sort = 'newest' | 'name' | 'size';
 
 const control =
@@ -56,6 +57,7 @@ export default function Media() {
       site: all.filter((image) => !image.readonly).length,
       theme: all.filter((image) => image.readonly).length,
       unused: all.filter((image) => image.used_in.length === 0).length,
+      noAlt: all.filter((image) => !image.alt).length,
     };
   });
 
@@ -65,8 +67,9 @@ export default function Media() {
       if (filter() === 'site' && image.readonly) return false;
       if (filter() === 'theme' && !image.readonly) return false;
       if (filter() === 'unused' && image.used_in.length) return false;
+      if (filter() === 'no-alt' && image.alt) return false;
 
-      return !term || image.name.toLowerCase().includes(term);
+      return !term || image.name.toLowerCase().includes(term) || image.alt.toLowerCase().includes(term);
     });
 
     return [...kept].sort((a, b) =>
@@ -206,6 +209,7 @@ export default function Media() {
             { key: 'site', label: 'Uploads', count: counts().site },
             ...(counts().theme ? [{ key: 'theme', label: 'Theme', count: counts().theme }] : []),
             { key: 'unused', label: 'Unused', count: counts().unused },
+            { key: 'no-alt', label: 'No alt text', count: counts().noAlt },
           ]}
         />
         <div class="mb-3.5 flex w-full flex-wrap gap-2 sm:w-auto">
@@ -281,7 +285,7 @@ export default function Media() {
                         onClick={() => setSelectedUrl(selectedUrl() === image.url ? null : image.url)}
                       >
                         <div class={`relative aspect-[4/3] border-b border-border ${checkerboard}`}>
-                          <img src={mediaUrl(image.url)} alt="" loading="lazy" class="absolute inset-0 size-full object-contain p-2" />
+                          <img src={mediaUrl(image.url)} alt={image.alt} loading="lazy" class="absolute inset-0 size-full object-contain p-2" />
                           <Show when={image.readonly}>
                             <span class="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">Theme</span>
                           </Show>
@@ -297,6 +301,10 @@ export default function Media() {
                             <Show when={image.used_in.length === 0}>
                               <span aria-hidden="true">·</span>
                               <span>Unused</span>
+                            </Show>
+                            <Show when={!image.alt}>
+                              <span aria-hidden="true">·</span>
+                              <span class="text-warning">No alt</span>
                             </Show>
                           </p>
                         </div>
@@ -327,6 +335,18 @@ export default function Media() {
                     <dd class="mt-0.5 text-lg text-text">{bytes(totalSize())}</dd>
                   </div>
                 </dl>
+                <Show when={counts().noAlt}>
+                  <button
+                    type="button"
+                    class="mt-3 w-full rounded-ds bg-warning-tint px-3 py-2 text-left text-xs text-warning hover:underline"
+                    onClick={() => {
+                      setFilter('no-alt');
+                      setPage(1);
+                    }}
+                  >
+                    {plural(counts().noAlt, 'image')} without alt text
+                  </button>
+                </Show>
                 <p class="mt-3 text-[11.5px] leading-relaxed text-text-faint">
                   Select an image to see where it is used. Uploads are saved to <code class="font-mono">assets/uploads/</code> and published with the rest of the site.
                 </p>
@@ -350,7 +370,7 @@ export default function Media() {
                   class={`group relative block overflow-hidden rounded-ds border border-border ${checkerboard}`}
                   title="Open the original"
                 >
-                  <img src={mediaUrl(image.url)} alt={image.name} class="mx-auto max-h-56 w-full object-contain" />
+                  <img src={mediaUrl(image.url)} alt={image.alt || image.name} class="mx-auto max-h-56 w-full object-contain" />
                   <span class="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-ds bg-surface/90 text-text-muted opacity-0 shadow-ds-sm transition-opacity group-hover:opacity-100">
                     <ExternalLink size={12} />
                   </span>
@@ -360,6 +380,10 @@ export default function Media() {
                 <Show when={image.readonly}>
                   <Badge class="mt-1.5">From the theme</Badge>
                 </Show>
+
+                <div class="mt-3">
+                  <AltField image={image} onSave={(alt) => library.saveAlt(image, alt)} />
+                </div>
 
                 <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
                   <Show when={image.width}>
@@ -394,7 +418,7 @@ export default function Media() {
                 <button
                   type="button"
                   class="mt-1.5 text-[11.5px] text-brand hover:underline"
-                  onClick={() => void copy(`![${image.name.replace(/-[0-9a-f]{10}(?=\.\w+$)/, '').replace(/\.\w+$/, '')}](${image.url})`, 'Markdown')}
+                  onClick={() => void copy(`![${image.alt}](${image.url})`, 'Markdown')}
                 >
                   Copy as markdown
                 </button>

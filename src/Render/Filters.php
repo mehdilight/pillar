@@ -4,6 +4,7 @@ declare( strict_types=1 );
 namespace Pillar\Render;
 
 use League\CommonMark\CommonMarkConverter;
+use Pillar\Media\AltText;
 use Pillar\Site\Site;
 
 /**
@@ -18,6 +19,7 @@ final class Filters {
 	public function __construct(
 		private readonly Site $site,
 		private readonly CommonMarkConverter $markdown,
+		private readonly AltText $alt,
 		/** Content hashes for built assets, filled by the asset pipeline. */
 		private array $assetHashes = [],
 	) {}
@@ -34,6 +36,7 @@ final class Filters {
 			'asset_url'    => fn ( mixed $value ): string => $this->assetUrl( (string) $value ),
 			'image_url'    => fn ( mixed $value, mixed $width = null ): string => $this->imageUrl( $value, $width ),
 			'image_tag'    => fn ( mixed $value, mixed $alt = '', mixed $class = '' ): string => $this->imageTag( $value, $alt, $class ),
+			'image_alt'    => fn ( mixed $value ): string => $this->alt->for( self::source( $value ) ),
 			'absolute_url' => fn ( mixed $value ): string => $this->absoluteUrl( (string) $value ),
 			'excerpt'      => fn ( mixed $value, mixed $length = 200 ): string => $this->excerpt( (string) $value, (int) $length ),
 			't'            => static fn ( mixed $value ): string => (string) $value,
@@ -54,10 +57,15 @@ final class Filters {
 		return '/assets/' . ( $this->assetHashes[ $file ] ?? $file );
 	}
 
-	private function imageUrl( mixed $value, mixed $width ): string {
-		$url = is_object( $value ) && method_exists( $value, 'beforeMethod' )
+	/** An image value as stored: a path or URL, or a drop that knows its `url`. */
+	private static function source( mixed $value ): string {
+		return is_object( $value ) && method_exists( $value, 'beforeMethod' )
 			? (string) $value->beforeMethod( 'url' )
 			: (string) $value;
+	}
+
+	private function imageUrl( mixed $value, mixed $width ): string {
+		$url = self::source( $value );
 
 		if ( '' === $url ) {
 			return '';
@@ -68,12 +76,15 @@ final class Filters {
 		return null === $width || '' === $width ? $url : $url . '?w=' . (int) $width;
 	}
 
+	/** `alt` falls back to the media library's, so an image described once is described everywhere. */
 	private function imageTag( mixed $value, mixed $alt, mixed $class ): string {
 		$url = $this->imageUrl( $value, null );
 
 		if ( '' === $url ) {
 			return '';
 		}
+
+		$alt = '' === (string) $alt ? $this->alt->for( self::source( $value ) ) : $alt;
 
 		return sprintf(
 			'<img src="%s" alt="%s"%s>',

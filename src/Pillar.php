@@ -4,8 +4,10 @@ declare( strict_types=1 );
 namespace Pillar;
 
 use League\CommonMark\CommonMarkConverter;
+use League\CommonMark\Event\DocumentParsedEvent;
 use Phpmystic\Liqx\Environment;
 use Pillar\Content\ContentStore;
+use Pillar\Media\AltText;
 use Pillar\Render\EnvironmentFactory;
 use Pillar\Render\Filters;
 use Pillar\Render\LayeredFileSystem;
@@ -64,6 +66,9 @@ final class Pillar {
 	): self {
 		$site     = Site::load( $root );
 		$markdown = new CommonMarkConverter( [ 'html_input' => 'allow', 'allow_unsafe_links' => false ] );
+		$alt      = new AltText( $site );
+
+		$markdown->getEnvironment()->addEventListener( DocumentParsedEvent::class, $alt->fillMarkdownImages( ... ) );
 
 		$content = new ContentStore( $site, $markdown, $drafts );
 		$errors = new RenderErrors();
@@ -78,7 +83,7 @@ final class Pillar {
 			array_push( $extensions, ...$plugin->extensions() );
 		}
 
-		$factory = new EnvironmentFactory( $site, $markdown );
+		$factory = new EnvironmentFactory( $site, $markdown, $alt );
 		$factory->extend( ...$extensions );
 
 		[ $environment, $sections, $snippets, $filters, $state ] = $factory->create( $compile );

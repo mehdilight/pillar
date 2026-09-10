@@ -33,12 +33,27 @@ const read = (file: File) =>
     reader.readAsDataURL(file);
   });
 
+let libraryAlts: Promise<Map<string, string>> | null = null;
+
+/**
+ * The library's alt text for an image address, for showing what an image with
+ * no alt of its own will get. Fetched once, and again after an alt is saved.
+ */
+export async function libraryAlt(url: string): Promise<string> {
+  libraryAlts ??= api
+    .media()
+    .then((images) => new Map(images.map((image) => [image.url, image.alt])))
+    .catch(() => new Map());
+
+  return (await libraryAlts).get(mediaUrl(url)) ?? '';
+}
+
 /**
  * The media library's state and actions — shared by the Media page and every
  * image picker, so an upload behaves the same wherever it starts.
  */
 export function createMediaLibrary() {
-  const [images, { refetch }] = createResource(api.media);
+  const [images, { refetch, mutate }] = createResource(api.media);
   const [progress, setProgress] = createSignal('');
   const [error, setError] = createSignal('');
 
@@ -98,5 +113,23 @@ export function createMediaLibrary() {
     }
   };
 
-  return { images, all, refetch, upload, remove, progress, error, setError };
+  /** Saves an image's alt text; the list is patched in place rather than refetched. */
+  const saveAlt = async (image: MediaItem, alt: string): Promise<MediaItem | null> => {
+    try {
+      const updated = await api.setMediaAlt(image.url, alt);
+
+      mutate((list) => list?.map((item) => (item.url === updated.url ? { ...item, alt: updated.alt } : item)));
+      libraryAlts = null;
+      void refreshStatus();
+      showToast(updated.alt ? 'Alt text saved' : 'Alt text cleared', 'success');
+
+      return updated;
+    } catch (cause) {
+      showToast(cause instanceof Error ? cause.message : 'Could not save the alt text.', 'error');
+
+      return null;
+    }
+  };
+
+  return { images, all, refetch, upload, remove, saveAlt, progress, error, setError };
 }

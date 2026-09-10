@@ -28,6 +28,7 @@ import {
 import Modal from './Modal';
 import MediaLibrary from '../MediaLibrary';
 import { joinSoftBreaks, tidyMarkdown } from '../../lib/markdown';
+import { libraryAlt } from '../../lib/media';
 
 /**
  * The content editor: TipTap, reading and writing markdown.
@@ -156,6 +157,34 @@ export default function RichEditor(props: {
     return instance ? check(instance) : false;
   };
 
+  // The selected image, if the selection is one — its alt is edited in a bar
+  // under the toolbar. An image left without alt text takes the media
+  // library's at build, so the library's is shown as what "empty" means.
+  const selectedImage = () => {
+    tick();
+
+    const instance = editor();
+
+    return instance?.isActive('image') ? { src: String(instance.getAttributes('image').src ?? ''), alt: String(instance.getAttributes('image').alt ?? '') } : null;
+  };
+  // A signal, not a resource: a resource read here would suspend the lazy
+  // editor's boundary and remount the editor.
+  const [fallbackAlt, setFallbackAlt] = createSignal('');
+
+  createEffect(
+    on(
+      () => selectedImage()?.src ?? null,
+      (src) => {
+        setFallbackAlt('');
+        if (src) void libraryAlt(src).then((alt) => selectedImage()?.src === src && setFallbackAlt(alt));
+      }
+    )
+  );
+
+  const setImageAlt = (alt: string) => {
+    editor()?.chain().updateAttributes('image', { alt: alt === '' ? null : alt }).run();
+  };
+
   const openLink = () => {
     setLinkUrl(String(editor()?.getAttributes('link').href ?? ''));
     setLinking(true);
@@ -208,76 +237,106 @@ export default function RichEditor(props: {
   ];
 
   return (
-    <div class="rich-editor rounded-xl border border-[#e1e3e5] bg-white overflow-hidden">
-      <div class="flex flex-wrap items-center gap-0.5 px-1.5 py-1 border-b border-[#e1e3e5] bg-[#fbfbfc]">
-        <Show when={!source()}>
-          <For each={tools}>
-            {(tool) =>
-              tool === 'divider' ? (
-                <span class="mx-1 h-4 w-px bg-[#e1e3e5]" aria-hidden="true" />
-              ) : (
-                <button
-                  type="button"
-                  class="p-1.5 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
-                  classList={{
-                    'bg-[#e9eef7] text-[#005bd3]': tool.active?.() ?? false,
-                    'text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4]': !(tool.active?.() ?? false),
-                  }}
-                  title={tool.label}
-                  aria-label={tool.label}
-                  aria-pressed={tool.active ? tool.active() : undefined}
-                  disabled={tool.enabled ? !tool.enabled() : false}
-                  // Keep the selection: a toolbar that steals focus formats nothing.
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={tool.run}
-                >
-                  {tool.icon()}
-                </button>
-              )
-            }
-          </For>
+    // overflow-clip, not hidden: clipping the corners must not stop the bars sticking.
+    <div class="rich-editor rounded-xl border border-[#e1e3e5] bg-white overflow-clip">
+      {/* The bars stay in view while a long entry scrolls — an image's alt among them. --sticky-top clears a fixed header above the scroller. */}
+      <div class="sticky top-(--sticky-top,0px) z-10 rounded-t-xl">
+        <div class="flex flex-wrap items-center gap-0.5 px-1.5 py-1 border-b border-[#e1e3e5] bg-[#fbfbfc] rounded-t-xl">
+          <Show when={!source()}>
+            <For each={tools}>
+              {(tool) =>
+                tool === 'divider' ? (
+                  <span class="mx-1 h-4 w-px bg-[#e1e3e5]" aria-hidden="true" />
+                ) : (
+                  <button
+                    type="button"
+                    class="p-1.5 rounded-md transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+                    classList={{
+                      'bg-[#e9eef7] text-[#005bd3]': tool.active?.() ?? false,
+                      'text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4]': !(tool.active?.() ?? false),
+                    }}
+                    title={tool.label}
+                    aria-label={tool.label}
+                    aria-pressed={tool.active ? tool.active() : undefined}
+                    disabled={tool.enabled ? !tool.enabled() : false}
+                    // Keep the selection: a toolbar that steals focus formats nothing.
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={tool.run}
+                  >
+                    {tool.icon()}
+                  </button>
+                )
+              }
+            </For>
+          </Show>
+
+          <button
+            type="button"
+            class="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
+            classList={{
+              'bg-[#e9eef7] text-[#005bd3]': source(),
+              'text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4]': !source(),
+            }}
+            title={source() ? 'Back to the visual editor' : `Edit the ${format() === 'markdown' ? 'markdown' : 'HTML'} directly`}
+            onClick={toggleSource}
+          >
+            <FileCode size={13} />
+            {format() === 'markdown' ? 'Markdown' : 'HTML'}
+          </button>
+        </div>
+
+        <Show when={linking()}>
+          <form
+            class="flex items-center gap-2 px-2 py-1.5 border-b border-[#e1e3e5] bg-[#fbfbfc]"
+            onSubmit={(event) => {
+              event.preventDefault();
+              applyLink();
+            }}
+          >
+            <input
+              autofocus
+              type="url"
+              class="h-7 flex-1 rounded-md border border-[#c9cccf] bg-white px-2 text-xs outline-none focus:border-[#005bd3]"
+              placeholder="https://… or /a/page/"
+              value={linkUrl()}
+              onInput={(event) => setLinkUrl(event.currentTarget.value)}
+              onKeyDown={(event) => event.key === 'Escape' && setLinking(false)}
+            />
+            <button type="submit" class="sam-btn primary">
+              {linkUrl().trim() === '' ? 'Remove link' : 'Apply'}
+            </button>
+            <button type="button" class="sam-btn" onClick={() => setLinking(false)}>
+              Cancel
+            </button>
+          </form>
         </Show>
 
-        <button
-          type="button"
-          class="ml-auto inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-colors"
-          classList={{
-            'bg-[#e9eef7] text-[#005bd3]': source(),
-            'text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4]': !source(),
-          }}
-          title={source() ? 'Back to the visual editor' : `Edit the ${format() === 'markdown' ? 'markdown' : 'HTML'} directly`}
-          onClick={toggleSource}
-        >
-          <FileCode size={13} />
-          {format() === 'markdown' ? 'Markdown' : 'HTML'}
-        </button>
-      </div>
+        <Show when={!source() && selectedImage()}>
+          {(image) => (
+            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 px-2 py-1.5 border-b border-[#e1e3e5] bg-[#fbfbfc]">
+              <label for="rich-editor-alt" class="text-xs font-medium text-gray-600">
+                Alt text
+              </label>
+              <input
+                id="rich-editor-alt"
+                class="h-7 min-w-[180px] flex-1 rounded-md border border-[#c9cccf] bg-white px-2 text-xs outline-none focus:border-[#005bd3]"
+                placeholder={fallbackAlt() ? `From the media library: ${fallbackAlt()}` : 'Describe what the image shows'}
+                value={image().alt}
+                onInput={(event) => setImageAlt(event.currentTarget.value)}
+                onKeyDown={(event) => event.key === 'Enter' && (event.preventDefault(), editor()?.commands.focus())}
+              />
+              <span class="w-full text-[11px] text-gray-500">
+                {image().alt
+                  ? 'Used for this image here only.'
+                  : fallbackAlt()
+                    ? 'Empty: the media library’s alt text is used, and follows it when it changes.'
+                    : 'This image has no alt text in the media library either. Describe it here, or once in Media for everywhere it is used.'}
+              </span>
+            </div>
+          )}
+        </Show>
 
-      <Show when={linking()}>
-        <form
-          class="flex items-center gap-2 px-2 py-1.5 border-b border-[#e1e3e5] bg-[#fbfbfc]"
-          onSubmit={(event) => {
-            event.preventDefault();
-            applyLink();
-          }}
-        >
-          <input
-            autofocus
-            type="url"
-            class="h-7 flex-1 rounded-md border border-[#c9cccf] bg-white px-2 text-xs outline-none focus:border-[#005bd3]"
-            placeholder="https://… or /a/page/"
-            value={linkUrl()}
-            onInput={(event) => setLinkUrl(event.currentTarget.value)}
-            onKeyDown={(event) => event.key === 'Escape' && setLinking(false)}
-          />
-          <button type="submit" class="sam-btn primary">
-            {linkUrl().trim() === '' ? 'Remove link' : 'Apply'}
-          </button>
-          <button type="button" class="sam-btn" onClick={() => setLinking(false)}>
-            Cancel
-          </button>
-        </form>
-      </Show>
+      </div>
 
       {/* Both stay mounted: TipTap owns its element, and remounting it would lose the undo history. */}
       <div ref={element} class="rich-editor-body" classList={{ hidden: source() }} style={{ 'min-height': `${props.minHeight ?? 320}px` }} />

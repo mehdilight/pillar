@@ -102,6 +102,9 @@ export const api = {
   uploadImage: (name: string, data: string): Promise<MediaItem> =>
     request('/media', { method: 'POST', body: JSON.stringify({ name, data }) }, () => { throw new Error('Start the local server to upload an image.'); }),
 
+  setMediaAlt: (url: string, alt: string): Promise<MediaItem> =>
+    request('/media/alt', { method: 'PUT', body: JSON.stringify({ url, alt }) }, () => { throw new Error('Start the local server to edit alt text.'); }),
+
   deleteMedia: (url: string): Promise<void> => request('/media', { method: 'DELETE', body: JSON.stringify({ url }) }, () => { throw new Error('Start the local server to manage images.'); }),
 
   editorPanels: (): Promise<Record<string, { name: string }>> =>

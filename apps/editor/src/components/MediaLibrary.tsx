@@ -3,6 +3,7 @@ import { ImagePlus, Upload } from 'lucide-solid';
 import { ACCEPTED, bytes, createMediaLibrary, mediaUrl, plural } from '../lib/media';
 import type { MediaItem } from '../types';
 import { controlClass } from './ui/Field';
+import AltField from './AltField';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { showToast } from './ui/Toast';
 
@@ -10,7 +11,7 @@ export { mediaUrl };
 
 /** The image picker's library: choose an image, or upload one and choose it. */
 export default function MediaLibrary(props: { onChoose?: (url: string) => void; compact?: boolean }) {
-  const { images, all, refetch, upload: uploadFiles, remove: removeImage, progress, error, setError } = createMediaLibrary();
+  const { images, all, refetch, upload: uploadFiles, remove: removeImage, saveAlt, progress, error, setError } = createMediaLibrary();
   const [query, setQuery] = createSignal('');
   const [format, setFormat] = createSignal('');
   const [page, setPage] = createSignal(1);
@@ -77,6 +78,10 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
         <img src={mediaUrl(image().url)} alt={image().name} class="w-full max-h-52 object-contain bg-[#f6f6f7] rounded-lg mb-4" />
         <h2 class="text-xs font-semibold break-all mb-2">{image().name}</h2>
         <p class="ed-hint">{image().width ? `${image().width} × ${image().height} pixels · ` : ''}{bytes(image().size)}</p>
+        <div class="mt-4"><AltField id="picker-alt" image={image()} onSave={async (alt) => {
+          const updated = await saveAlt(image(), alt);
+          if (updated) setSelected({ ...image(), alt: updated.alt });
+        }} /></div>
         <label class="ed-hint block mt-4 mb-1" for="media-address">Image address</label>
         <input id="media-address" readOnly class={`${controlClass} text-xs!`} value={image().url} onFocus={(e) => e.currentTarget.select()} />
         <div class="flex flex-wrap gap-2 mt-3">
