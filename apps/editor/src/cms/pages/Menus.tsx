@@ -66,7 +66,7 @@ function MenuEditor(props: { handle: string }) {
   const [menus, { refetch }] = createResource(api.menus);
   const [draft, setDraft] = createSignal<LinkLists[string] | null>(null);
   const [loadedHandle, setLoadedHandle] = createSignal<string | null>(null);
-  const [expandedItems, setExpandedItems] = createSignal<Set<string>>(new Set());
+  const [expandedItems, setExpandedItems] = createSignal<Record<string, true>>({});
   const creating = () => props.handle === 'create';
   const current = () => draft() ?? emptyMenu();
   const handle = () => creating() ? handleOf(current().title) : props.handle;
@@ -81,9 +81,9 @@ function MenuEditor(props: { handle: string }) {
   const update = (next: LinkLists[string]) => setDraft(next);
   const setItemExpanded = (id: string, expanded: boolean) => {
     setExpandedItems((current) => {
-      const next = new Set(current);
-      if (expanded) next.add(id);
-      else next.delete(id);
+      const next = { ...current };
+      if (expanded) next[id] = true;
+      else delete next[id];
       return next;
     });
   };
@@ -125,7 +125,7 @@ function MenuEditor(props: { handle: string }) {
             <div class="max-w-2xl"><Label>Menu name</Label><Input autofocus placeholder="For example, Main menu" value={current().title} onInput={(event) => update({ ...current(), title: event.currentTarget.value })} /><p class="mt-2 text-xs text-text-muted">Handle: <code class="font-mono text-[11px] text-text-secondary">{handle()}</code><Show when={creating()}><span> · Created from the menu name when you save.</span></Show></p></div>
           </Postbox>
           <Postbox title="Menu items" flush actions={<Button size="sm" onClick={() => update({ ...current(), items: [...current().items, blankLink()] })}><Plus size={14} /> Add menu item</Button>}>
-            <MenuRows items={current().items} onChange={(items) => update({ ...current(), items })} isExpanded={(id) => expandedItems().has(id)} onExpandedChange={setItemExpanded} />
+            <MenuRows items={current().items} onChange={(items) => update({ ...current(), items })} isExpanded={(id) => expandedItems()[id] === true} onExpandedChange={setItemExpanded} />
           </Postbox>
         </div>
       </Show>
