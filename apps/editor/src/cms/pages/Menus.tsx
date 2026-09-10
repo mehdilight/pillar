@@ -164,6 +164,12 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
 
 function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: MenuItem) => void; onRemove: () => void; isExpanded: () => boolean; onExpandedChange: (id: string, expanded: boolean) => void; depth?: number }) {
   const sortable = createSortable(props.id);
+  const addSublink = () => {
+    const sublink = blankLink();
+    // Allocate its key before rendering and explicitly start it collapsed.
+    props.onExpandedChange(sortableId(sublink), false);
+    props.onChange({ ...props.item, items: [...(props.item.items ?? []), sublink] });
+  };
 
   return (
     <div ref={sortable} style={transformStyle(sortable.transform)} class="border-b border-border transition-shadow last:border-b-0" classList={{ 'relative z-10 shadow-ds-md': sortable.isActiveDraggable }}>
@@ -178,7 +184,7 @@ function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: M
       <Show when={props.isExpanded()}>
         <div class="border-t border-border bg-surface-muted/35 px-4 py-4 sm:pl-12">
           <div class="grid max-w-2xl items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"><div><Label>Label</Label><Input value={props.item.title} placeholder="For example, About" onInput={(event) => props.onChange({ ...props.item, title: event.currentTarget.value })} /></div><div><Label>Link</Label><LinkPicker compact value={props.item.url} onValue={(url) => props.onChange({ ...props.item, url })} /></div></div>
-          <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={() => props.onChange({ ...props.item, items: [...(props.item.items ?? []), blankLink()] })}><Plus size={13} class="shrink-0" /><span>Add sublink</span></button></div>
+          <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={addSublink}><Plus size={13} class="shrink-0" /><span>Add sublink</span></button></div>
           <Show when={(props.item.items ?? []).length}><div class="mt-3 rounded-ds border border-border bg-surface"><MenuRows items={props.item.items ?? []} depth={(props.depth ?? 0) + 1} onChange={(items) => props.onChange({ ...props.item, items })} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} /></div></Show>
         </div>
       </Show>
