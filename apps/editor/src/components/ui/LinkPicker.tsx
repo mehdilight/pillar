@@ -73,7 +73,7 @@ export default function LinkPicker(props: LinkPickerProps) {
           <div class="border-b border-border p-2">
             <div class="flex items-center gap-2 rounded border border-border-strong bg-surface px-2 text-text-muted focus-within:border-brand focus-within:ring-1 focus-within:ring-brand">
               <Search size={14} />
-              <input autofocus type="search" class="h-8 min-w-0 flex-1 bg-transparent text-[13px] text-text outline-none placeholder:text-text-faint" placeholder="Search pages and content" value={query()} onInput={(event) => setQuery(event.currentTarget.value)} />
+              <input autofocus type="search" class="h-8 min-w-0 flex-1 border-0 bg-transparent p-0 text-[13px] text-text shadow-none outline-none ring-0 placeholder:text-text-faint focus:border-0 focus:shadow-none focus:outline-none focus:ring-0" placeholder="Search pages and content" value={query()} onInput={(event) => setQuery(event.currentTarget.value)} />
             </div>
           </div>
           <div class="max-h-64 overflow-y-auto py-1">
