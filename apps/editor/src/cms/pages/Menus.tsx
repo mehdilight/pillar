@@ -150,9 +150,9 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
       <DragDropSensors>
         <SortableProvider ids={props.items.map(sortableId)}>
           <div class={props.depth ? 'border-l-2 border-brand/15 bg-surface-muted/30' : ''}>
-            <For each={props.items}>{(item) => {
-              const id = sortableId(item);
-              return <SortableMenuRow item={item} id={id} onChange={(next) => props.onChange(props.items.map((current) => current === item ? retainSortableId(item, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => current !== item))} isExpanded={() => props.isExpanded(id)} onExpandedChange={props.onExpandedChange} depth={props.depth} />;
+            <For each={props.items.map(sortableId)}>{(id) => {
+              const item = () => props.items.find((current) => sortableId(current) === id)!;
+              return <SortableMenuRow item={item()} id={id} onChange={(next) => props.onChange(props.items.map((current) => sortableId(current) === id ? retainSortableId(current, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => sortableId(current) !== id))} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} depth={props.depth} />;
             }}</For>
             <Show when={props.items.length === 0}><div class="flex flex-col items-center px-5 py-10 text-center"><Link2 size={22} class="mb-2 text-text-faint" /><p class="text-[13px] font-medium text-text">This menu has no links.</p><p class="mt-1 text-xs text-text-muted">Add a destination for people to navigate to.</p></div></Show>
           </div>
@@ -162,13 +162,16 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
   );
 }
 
-function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: MenuItem) => void; onRemove: () => void; isExpanded: () => boolean; onExpandedChange: (id: string, expanded: boolean) => void; depth?: number }) {
+function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: MenuItem) => void; onRemove: () => void; isExpanded: (id: string) => boolean; onExpandedChange: (id: string, expanded: boolean) => void; depth?: number }) {
   const sortable = createSortable(props.id);
+  const [childrenOpen, setChildrenOpen] = createSignal(true);
+  const editing = () => props.isExpanded(props.id);
   const addSublink = () => {
     const sublink = blankLink();
     // Allocate its key before rendering and explicitly start it collapsed.
     props.onExpandedChange(sortableId(sublink), false);
     props.onChange({ ...props.item, items: [...(props.item.items ?? []), sublink] });
+    setChildrenOpen(true);
   };
 
   return (
@@ -177,18 +180,22 @@ function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: M
         <button type="button" {...sortable.dragActivators} class="cursor-grab touch-none text-text-faint hover:text-text active:cursor-grabbing" aria-label={`Reorder ${props.item.title || 'menu item'}`}><GripVertical size={17} /></button>
         <div class="min-w-0 flex-1 py-1"><span class="block truncate text-[13px] font-medium text-text">{props.item.title || 'Untitled link'}</span><Show when={props.item.url}><span class="mt-0.5 block truncate text-[11px] text-text-faint">{props.item.url}</span></Show></div>
         <Show when={(props.item.items ?? []).length}><span class="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-text-muted">{props.item.items!.length} nested</span></Show>
-        <button type="button" class="rounded p-1 text-text-faint opacity-100 transition hover:bg-surface-muted hover:text-text md:opacity-0 md:group-hover:opacity-100" title="Edit link" onClick={() => props.onExpandedChange(props.id, true)}><Pencil size={15} /></button>
+        <button type="button" class="rounded p-1 text-text-faint transition hover:bg-surface-muted hover:text-text" title={editing() ? 'Close editor' : 'Edit link'} aria-label={`Edit ${props.item.title || 'Untitled link'}`} aria-expanded={editing()} onClick={() => props.onExpandedChange(props.id, !editing())}><Pencil size={15} /></button>
         <button type="button" class="rounded p-1 text-text-faint opacity-100 transition hover:bg-danger-tint hover:text-danger md:opacity-0 md:group-hover:opacity-100" title="Remove link" onClick={props.onRemove}><Trash2 size={15} /></button>
-        <ChevronRight size={16} class={`text-text-faint transition-transform ${props.isExpanded() ? 'rotate-90' : ''}`} />
+        <Show when={(props.item.items ?? []).length}>
+          <button type="button" class="rounded p-1 text-text-faint hover:bg-surface-muted hover:text-text" aria-label={`Toggle sublinks for ${props.item.title || 'Untitled link'}`} aria-expanded={childrenOpen()} aria-controls={`${props.id}-children`} onClick={() => setChildrenOpen((open) => !open)}>
+            <ChevronRight size={16} class={`transition-transform ${childrenOpen() ? 'rotate-90' : ''}`} />
+          </button>
+        </Show>
       </div>
-      <Show when={props.isExpanded()}>
+      <Show when={editing()}>
         <div class="border-t border-border bg-surface-muted/35 px-4 py-4 sm:pl-12">
           <div class="grid max-w-2xl items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"><div><Label>Label</Label><Input value={props.item.title} placeholder="For example, About" onInput={(event) => props.onChange({ ...props.item, title: event.currentTarget.value })} /></div><div><Label>Link</Label><LinkPicker compact value={props.item.url} onValue={(url) => props.onChange({ ...props.item, url })} /></div></div>
           <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={addSublink}><Plus size={13} class="shrink-0" /><span>Add sublink</span></button></div>
         </div>
       </Show>
       <Show when={(props.item.items ?? []).length}>
-        <div class="rounded-ds border border-border bg-surface">
+        <div id={`${props.id}-children`} hidden={!childrenOpen()} class="mx-4 mb-4 rounded-ds border border-border bg-surface sm:ml-12">
           <MenuRows items={props.item.items ?? []} depth={(props.depth ?? 0) + 1} onChange={(items) => props.onChange({ ...props.item, items })} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} />
         </div>
       </Show>
