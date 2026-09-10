@@ -8,6 +8,8 @@ use League\CommonMark\Event\DocumentParsedEvent;
 use Phpmystic\Liqx\Environment;
 use Pillar\Content\ContentStore;
 use Pillar\Media\AltText;
+use Pillar\Media\ImageConfig;
+use Pillar\Media\Images;
 use Pillar\Render\EnvironmentFactory;
 use Pillar\Render\Filters;
 use Pillar\Render\LayeredFileSystem;
@@ -52,6 +54,7 @@ final class Pillar {
 		public readonly EditorRegistry $editor,
 		/** @var list<\Pillar\Plugin\PluginContext> */
 		public readonly array $plugins,
+		public readonly Images $images,
 	) {}
 
 	/**
@@ -67,8 +70,10 @@ final class Pillar {
 		$site     = Site::load( $root );
 		$markdown = new CommonMarkConverter( [ 'html_input' => 'allow', 'allow_unsafe_links' => false ] );
 		$alt      = new AltText( $site );
+		$images   = new Images( $site, ImageConfig::fromSite( $site ) );
 
 		$markdown->getEnvironment()->addEventListener( DocumentParsedEvent::class, $alt->fillMarkdownImages( ... ) );
+		$markdown->getEnvironment()->addEventListener( DocumentParsedEvent::class, $images->fillMarkdownImages( ... ) );
 
 		$content = new ContentStore( $site, $markdown, $drafts );
 		$errors = new RenderErrors();
@@ -83,7 +88,7 @@ final class Pillar {
 			array_push( $extensions, ...$plugin->extensions() );
 		}
 
-		$factory = new EnvironmentFactory( $site, $markdown, $alt );
+		$factory = new EnvironmentFactory( $site, $markdown, $alt, $images );
 		$factory->extend( ...$extensions );
 
 		[ $environment, $sections, $snippets, $filters, $state ] = $factory->create( $compile );
@@ -109,7 +114,7 @@ final class Pillar {
 			static fn ( string $name ): string => $renderer->renderLayoutSection( $name )
 		);
 
-		return new self( $site, $environment, $content, $renderer, $errors, $filters, $sections, $snippets, $schemas, $head, $routes, $build, $editorRegistry, $plugins );
+		return new self( $site, $environment, $content, $renderer, $errors, $filters, $sections, $snippets, $schemas, $head, $routes, $build, $editorRegistry, $plugins, $images );
 	}
 
 	/** @param array<string, mixed> $data */

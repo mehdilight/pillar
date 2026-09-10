@@ -47,10 +47,11 @@ final class BuildCommand extends SiteCommand {
 		}
 
 		$output->writeln( sprintf(
-			'<info>✓</info> %d page(s) written, %d unchanged, %d asset(s) — %dms',
+			'<info>✓</info> %d page(s) written, %d unchanged, %d asset(s), %d resized image(s) — %dms',
 			$result['written'],
 			$result['skipped'],
 			$result['assets'],
+			$result['images'],
 			$result['ms']
 		) );
 

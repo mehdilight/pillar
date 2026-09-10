@@ -34,7 +34,7 @@ final class Server {
 			str_starts_with( $path, '/api/' )     => ( new Api( $this->root, new LocalGit( $this->root ) ) )
 				->handle( $request, substr( $path, 4 ) ),
 			str_starts_with( $path, '/preview' )  => $this->preview( $request, substr( $path, 8 ) ),
-			str_starts_with( $path, '/assets/' )  => $this->asset( substr( $path, 8 ) ),
+			str_starts_with( $path, '/assets/' )  => $this->asset( substr( $path, 8 ), (int) $request->query->get( 'w', 0 ) ),
 			str_starts_with( $path, '/_pillar/plugins/' ) => $this->pluginAsset( substr( $path, 17 ) ),
 			str_starts_with( $path, '/_pillar/' ) => $this->dashboardAsset( substr( $path, 9 ) ),
 			default                               => $this->dashboardPage(),
@@ -158,15 +158,26 @@ final class Server {
 		return false === $script ? '' : '<script>' . $script . '</script>';
 	}
 
-	/** Theme assets, straight off disk — the build's hashing is a build concern. */
-	private function asset( string $file ): Response {
+	/**
+	 * Theme assets, straight off disk — the build's hashing is a build concern.
+	 * `?w=640` is an image's resized copy, made on request (see Media\Images).
+	 */
+	private function asset( string $file, int $width = 0 ): Response {
 		try {
 			$relative = PathPolicy::normalise( 'assets/' . $file );
 		} catch ( PillarException ) {
 			return new Response( 'Not found', 404 );
 		}
 
-		$path = Pillar::forSite( $this->root, compile: false )->site->layers()->resolve( $relative );
+		$pillar = Pillar::forSite( $this->root, compile: false );
+
+		if ( $width > 0 ) {
+			$copy = $pillar->images->devCopy( substr( $relative, 7 ), $width );
+
+			return null === $copy ? new Response( 'Not found', 404 ) : $this->file( $copy );
+		}
+
+		$path = $pillar->site->layers()->resolve( $relative );
 
 		return null === $path ? new Response( 'Not found', 404 ) : $this->file( $path );
 	}

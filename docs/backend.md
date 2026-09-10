@@ -85,12 +85,28 @@ Pillar resolves `sections/`, `blocks/` and `snippets/` across several layers.
 
 **`EnvironmentFactory`** builds one liqx `Environment` per build (or per dev
 request): the standard filters, plus Pillar's — `markdownify`, `asset_url`
-(content-hashed), `image_url` / `image_tag` (build-time resize, cached by
-source hash), `image_alt`, `absolute_url`, `excerpt`, `t` — plus globals (`section()`,
+(content-hashed), `image_url` / `image_srcset` / `image_tag` (build-time
+resize, see below), `image_alt`, `absolute_url`, `excerpt`, `t` — plus globals (`section()`,
 `render()`, `content_for_layout`, `now`), both file systems, and
 `setCompiledTemplateDir('.pillar/compiled')` **from day one**. That last call
 is the difference between a 500-page build taking seconds and taking minutes.
 Every registered plugin extension is applied here, last (§10).
+
+**Images are resized by the build.** Every JPEG, PNG and WebP under
+`assets/` is copied at each width in `site.json` → `images.widths` (default
+320, 640, 960, 1280, 1920) narrower than itself, as WebP unless
+`images.format` is `original`, and cached in `.pillar/images/` so a copy is
+made once. All copies are made up front rather than as pages ask: the set of
+files is then a function of the assets, so incremental builds and cleanup
+need no record of which page used which image. `image_url(700)` rounds up to
+the nearest copy; `image_srcset` lists them; `image_tag(alt, class, sizes,
+loading)` writes `srcset`, `sizes`, the original's `width`/`height` and
+`loading="lazy"` (pass `'eager'` for an image at the top of the page).
+Markdown images get the same, with `images.sizes` as their `sizes`. In the
+dev preview a copy is `/assets/photo.jpg?w=640`, made on request. Without GD,
+images are served at their original size. A theme must give images
+`height: auto` wherever it constrains their width, or the `height` attribute
+stretches them.
 
 **Alt text** is written once per image in the media library and kept in
 `config/media.json`, keyed by the image's path under `assets/`

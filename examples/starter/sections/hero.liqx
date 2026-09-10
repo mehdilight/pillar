@@ -6,7 +6,7 @@
     <a class="button" href={section.settings.cta_url}>{section.settings.cta_label}</a>
   </if>
   <if {section.settings.image}>
-    <figure class="hero-media">{section.settings.image | image_tag(section.settings.image_alt, 'hero-image')}</figure>
+    <figure class="hero-media">{section.settings.image | image_tag(section.settings.image_alt, 'hero-image', '(min-width: 1200px) 1152px, calc(100vw - 48px)', 'eager')}</figure>
   </if>
 </div>
 <schema>

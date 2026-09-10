@@ -5,6 +5,7 @@ namespace Pillar\Render;
 
 use League\CommonMark\CommonMarkConverter;
 use Pillar\Media\AltText;
+use Pillar\Media\Images;
 use Pillar\Site\Site;
 
 /**
@@ -12,7 +13,7 @@ use Pillar\Site\Site;
  *
  * Liqx already provides some sixty — `date`, `slugify`, `truncatewords`,
  * `strip_html`, `where`, `sort`, `money` — so this is only the gap: markdown,
- * URLs, and assets.
+ * URLs, assets, and images at the size a page needs (see `Media\Images`).
  */
 final class Filters {
 
@@ -20,6 +21,7 @@ final class Filters {
 		private readonly Site $site,
 		private readonly CommonMarkConverter $markdown,
 		private readonly AltText $alt,
+		private readonly Images $images,
 		/** Content hashes for built assets, filled by the asset pipeline. */
 		private array $assetHashes = [],
 	) {}
@@ -35,7 +37,8 @@ final class Filters {
 			'markdownify'  => fn ( mixed $value ): string => $this->markdown->convert( (string) $value )->getContent(),
 			'asset_url'    => fn ( mixed $value ): string => $this->assetUrl( (string) $value ),
 			'image_url'    => fn ( mixed $value, mixed $width = null ): string => $this->imageUrl( $value, $width ),
-			'image_tag'    => fn ( mixed $value, mixed $alt = '', mixed $class = '' ): string => $this->imageTag( $value, $alt, $class ),
+			'image_tag'    => fn ( mixed $value, mixed $alt = '', mixed $class = '', mixed $sizes = '', mixed $loading = 'lazy' ): string => $this->imageTag( $value, $alt, $class, $sizes, $loading ),
+			'image_srcset' => fn ( mixed $value ): string => Images::srcset( $this->images->candidates( self::source( $value ) ) ),
 			'image_alt'    => fn ( mixed $value ): string => $this->alt->for( self::source( $value ) ),
 			'absolute_url' => fn ( mixed $value ): string => $this->absoluteUrl( (string) $value ),
 			'excerpt'      => fn ( mixed $value, mixed $length = 200 ): string => $this->excerpt( (string) $value, (int) $length ),
@@ -64,6 +67,10 @@ final class Filters {
 			: (string) $value;
 	}
 
+	/**
+	 * `{image | image_url(640)}` → the resized copy at least 640px wide, or
+	 * the original when there is none (an SVG, a small image, no GD).
+	 */
 	private function imageUrl( mixed $value, mixed $width ): string {
 		$url = self::source( $value );
 
@@ -71,27 +78,48 @@ final class Filters {
 			return '';
 		}
 
-		$url = str_starts_with( $url, '/assets/' ) || str_starts_with( $url, 'assets/' ) || ( ! str_starts_with( $url, 'http' ) && ! str_starts_with( $url, '/' ) ) ? $this->assetUrl( $url ) : $url;
+		$resized = null === $width || '' === $width ? null : $this->images->url( $url, (int) $width );
 
-		return null === $width || '' === $width ? $url : $url . '?w=' . (int) $width;
+		if ( null !== $resized ) {
+			return $resized;
+		}
+
+		return str_starts_with( $url, '/assets/' ) || str_starts_with( $url, 'assets/' ) || ( ! str_starts_with( $url, 'http' ) && ! str_starts_with( $url, '/' ) ) ? $this->assetUrl( $url ) : $url;
 	}
 
-	/** `alt` falls back to the media library's, so an image described once is described everywhere. */
-	private function imageTag( mixed $value, mixed $alt, mixed $class ): string {
+	/**
+	 * `{image | image_tag(alt, class, sizes, loading)}` — every argument optional.
+	 *
+	 * The browser gets every resized copy in `srcset` and picks by `sizes`
+	 * (the full viewport unless the theme says how wide the image is shown),
+	 * plus the original's width and height so the page does not jump as it
+	 * loads. `alt` falls back to the media library's, so an image described
+	 * once is described everywhere. Lazy unless `loading` is `eager` — which
+	 * an image at the top of the page should be.
+	 */
+	private function imageTag( mixed $value, mixed $alt, mixed $class, mixed $sizes, mixed $loading ): string {
 		$url = $this->imageUrl( $value, null );
 
 		if ( '' === $url ) {
 			return '';
 		}
 
-		$alt = '' === (string) $alt ? $this->alt->for( self::source( $value ) ) : $alt;
+		$source     = self::source( $value );
+		$attributes = [ 'src' => $url, 'alt' => '' === (string) $alt ? $this->alt->for( $source ) : (string) $alt ];
 
-		return sprintf(
-			'<img src="%s" alt="%s"%s>',
-			htmlspecialchars( $url, ENT_QUOTES ),
-			htmlspecialchars( (string) $alt, ENT_QUOTES ),
-			'' === (string) $class ? '' : sprintf( ' class="%s"', htmlspecialchars( (string) $class, ENT_QUOTES ) )
-		);
+		if ( '' !== (string) $class ) {
+			$attributes['class'] = (string) $class;
+		}
+
+		$attributes += $this->images->attributes( $source, '' === (string) $sizes ? '100vw' : (string) $sizes, (string) $loading );
+
+		$html = '<img';
+
+		foreach ( $attributes as $name => $attribute ) {
+			$html .= sprintf( ' %s="%s"', $name, htmlspecialchars( $attribute, ENT_QUOTES ) );
+		}
+
+		return $html . '>';
 	}
 
 	private function absoluteUrl( string $path ): string {

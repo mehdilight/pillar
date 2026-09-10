@@ -30,7 +30,7 @@ final class Builder {
 	/**
 	 * @param callable(string, bool): void|null $progress called with (url, rebuilt)
 	 *
-	 * @return array{written: int, skipped: int, assets: int, ms: int}
+	 * @return array{written: int, skipped: int, assets: int, images: int, ms: int}
 	 */
 	public function build( ?callable $progress = null ): array {
 		$started = microtime( true );
@@ -47,7 +47,13 @@ final class Builder {
 
 		$this->pillar->filters->setAssetHashes( $assets );
 
-		$fingerprint = $this->fingerprint( $assets );
+		// Resized copies of every image, before any page asks for one — see
+		// Media\Images for why up front rather than on demand.
+		$copies = $this->pillar->images->generate( $output, $assets );
+
+		$this->pillar->images->useBuild( $copies );
+
+		$fingerprint = $this->fingerprint( $assets, $copies );
 		$stale       = $this->force || $fingerprint !== $this->manifest->fingerprint;
 
 		$routes  = ( new RouteTable( $this->pillar->site, $this->pillar->content ) )->all();
@@ -94,10 +100,11 @@ final class Builder {
 		// Remove only files owned by the previous build. Disabling a plugin
 		// must remove its sitemap; deleting a post must remove its public page.
 		// Both copies of each asset are the build's: the hashed name and the
-		// plain one (see Assets) — so a deleted asset takes both with it.
+		// plain one (see Assets) — so a deleted asset takes both with it, and
+		// its resized copies with it too.
 		$assetOutputs = array_map(
 			static fn ( string $file ): string => 'assets/' . $file,
-			array_merge( array_values( $assets ), array_map( 'strval', array_keys( $assets ) ) )
+			array_merge( array_values( $assets ), array_map( 'strval', array_keys( $assets ) ), array_merge( [], ...array_map( 'array_values', array_values( $copies ) ) ) )
 		);
 		$active = array_merge( $outputs, $artifacts, $assetOutputs );
 		$activeUrls = array_fill_keys( array_column( $routes, 'url' ), true );
@@ -120,6 +127,7 @@ final class Builder {
 			'written' => $written,
 			'skipped' => $skipped,
 			'assets'  => count( $assets ),
+			'images'  => array_sum( array_map( 'count', $copies ) ),
 			'ms'      => (int) round( ( microtime( true ) - $started ) * 1000 ),
 		];
 	}
@@ -185,15 +193,20 @@ final class Builder {
 	/**
 	 * What invalidates every page at once.
 	 *
-	 * Site settings, the template JSONs, the asset map, the media library's
-	 * alt text, and Pillar's own version. Plugins join this list in B5: a plugin that changes output must
+	 * Site settings, the template JSONs, the asset map and its resized copies,
+	 * the media library's alt text, and Pillar's own version. Plugins join this list in B5: a plugin that changes output must
 	 * change the fingerprint, or an incremental build will keep serving pages
 	 * it rendered before the plugin existed.
 	 *
-	 * @param array<string, string> $assets
+	 * @param array<string, string>             $assets
+	 * @param array<string, array<int, string>> $copies
 	 */
-	private function fingerprint( array $assets ): string {
-		$parts = [ 'pillar:' . \Pillar\Cli\Application::VERSION, 'assets:' . md5( (string) json_encode( $assets ) ) ];
+	private function fingerprint( array $assets, array $copies ): string {
+		$parts = [
+			'pillar:' . \Pillar\Cli\Application::VERSION,
+			'assets:' . md5( (string) json_encode( $assets ) ),
+			'images:' . md5( (string) json_encode( $copies ) . '|' . $this->pillar->images->config->sizes ),
+		];
 
 		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json', 'config/media.json', 'data/menus.json', 'layout/theme.liqx' ] as $file ) {
 			$path    = $this->pillar->site->layers()->resolve( $file );

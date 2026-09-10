@@ -52,7 +52,7 @@ final class StarterTest extends SiteTestCase {
 
 		$html = Pillar::forSite( $this->root, compile: false )->render( 'index' );
 
-		self::assertMatchesRegularExpression( '#<figure class="hero-media"><img src="/assets/uploads/team\.png" alt="The team" class="hero-image"></figure>#', $html );
+		self::assertMatchesRegularExpression( '#<figure class="hero-media"><img src="/assets/uploads/team\.png" alt="The team" class="hero-image" width="1" height="1" loading="eager" decoding="async"></figure>#', $html );
 
 		$template['sections'][ $hero ]['settings']['image_alt'] = 'Us, in 2026';
 		file_put_contents( $this->root . '/templates/index.json', (string) json_encode( $template ) );

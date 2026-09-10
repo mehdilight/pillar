@@ -6,5 +6,8 @@
   "addons": [],
   "plugins": [
     "seo"
-  ]
+  ],
+  "images": {
+    "sizes": "(min-width: 768px) 720px, calc(100vw - 48px)"
+  }
 }

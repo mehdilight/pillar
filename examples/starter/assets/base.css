@@ -154,7 +154,7 @@ a.button:hover { color: var(--color-paper-white); text-decoration: none; }
   color: var(--color-stone-gray);
 }
 .prose blockquote p:last-child { margin-bottom: 0; }
-.prose img { max-width: 100%; border-radius: var(--radius-cards); }
+.prose img { max-width: 100%; height: auto; border-radius: var(--radius-cards); }
 
 .site-footer { padding-block: var(--section-gap) 48px; }
 .footer { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 64px; }

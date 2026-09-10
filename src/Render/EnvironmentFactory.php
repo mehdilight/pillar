@@ -5,6 +5,8 @@ namespace Pillar\Render;
 
 use League\CommonMark\CommonMarkConverter;
 use Pillar\Media\AltText;
+use Pillar\Media\ImageConfig;
+use Pillar\Media\Images;
 use Phpmystic\Liqx\Environment;
 use Pillar\Site\Site;
 
@@ -25,6 +27,7 @@ final class EnvironmentFactory {
 		private readonly Site $site,
 		private readonly CommonMarkConverter $markdown,
 		private readonly ?AltText $alt = null,
+		private readonly ?Images $images = null,
 	) {}
 
 	/**
@@ -47,7 +50,12 @@ final class EnvironmentFactory {
 		$snippets = new LayeredFileSystem( $layers, 'snippets', 'blocks' );
 
 		$environment = Environment::create();
-		$filters     = new Filters( $this->site, $this->markdown, $this->alt ?? new AltText( $this->site ) );
+		$filters     = new Filters(
+			$this->site,
+			$this->markdown,
+			$this->alt ?? new AltText( $this->site ),
+			$this->images ?? new Images( $this->site, ImageConfig::fromSite( $this->site ) ),
+		);
 		$state       = new PageState();
 
 		foreach ( $filters->all() as $name => $filter ) {
