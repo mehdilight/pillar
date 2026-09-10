@@ -6,15 +6,27 @@ import ContentPanel from '../components/ContentPanel';
 import ContentEditor from '../components/ContentEditor';
 import Canvas from '../components/Canvas';
 import MediaLibrary from '../components/MediaLibrary';
-import Toast from '../components/ui/Toast';
+import Toast, { showToast } from '../components/ui/Toast';
 import * as editor from '../store/editor';
-import { isOffline } from '../api/client';
+import { api, isOffline } from '../api/client';
+import { installHost, loadPlugins } from '../plugins/host';
 import type { ContentItem } from '../types';
 
 export default function Edit() {
   const [item, setItem] = createSignal<ContentItem | null>(null);
 
   onMount(async () => {
+    // Plugins' dashboard bundles, for the plugins this site enables. The host
+    // runtime is published first: a bundle reads it the moment it executes.
+    installHost();
+
+    void api
+      .editorPlugins()
+      .then(loadPlugins)
+      .then((failures) =>
+        failures.forEach(({ slug, error }) => showToast(`Plugin "${slug}" did not load: ${error}`, 'error'))
+      );
+
     editor.setOfflineFlag(await isOffline());
     await editor.load(location.hash.replace(/^#\/?/, '') || 'index');
   });

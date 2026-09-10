@@ -1,7 +1,8 @@
 import { For, Show, createResource, createSignal } from 'solid-js';
+import { Dynamic } from 'solid-js/web';
+import { slotsFor } from '../plugins/host';
 import { ChevronDown } from 'lucide-solid';
 import SettingInput from './SettingInput';
-import SeoSettingsPanel from '../../../../plugins/seo/frontend/src/SeoSettingsPanel';
 import { showToast } from './ui/Toast';
 import { api } from '../api/client';
 import * as editor from '../store/editor';
@@ -10,6 +11,10 @@ import * as editor from '../store/editor';
  * `config/settings_schema.json` on the left, `config/settings_data.json`
  * underneath. Site-wide values every template can read as `settings.*`.
  */
+/** The panel a plugin registered for its own settings, if it registered one. */
+const custom = (plugin: string | undefined) =>
+  plugin === undefined ? undefined : slotsFor('settings.panel', plugin)[0];
+
 export default function SiteSettingsPanel() {
   const [schema] = createResource(api.settingsSchema);
   const [saved] = createResource(api.settings);
@@ -59,18 +64,31 @@ export default function SiteSettingsPanel() {
 
               <Show when={open() === panel.name}>
                 <div class="px-3 pb-3">
-                  <Show when={panel.plugin === 'seo'} fallback={
-                  <For each={panel.settings}>
-                    {(setting) => (
-                      <SettingInput
-                        setting={setting}
-                        value={current()[setting.id]}
-                        onChange={(value) => change(setting.id, value)}
-                      />
-                    )}
-                  </For>
-                  }>
-                    <SeoSettingsPanel fields={panel.settings} values={current()} onChange={change} />
+                  {/*
+                    A plugin may replace the generic form for its own panel.
+                    Read through a function rather than a <Show> accessor —
+                    see Canvas.tsx for what nesting those does.
+                  */}
+                  <Show
+                    when={custom(panel.plugin)}
+                    fallback={
+                      <For each={panel.settings}>
+                        {(setting) => (
+                          <SettingInput
+                            setting={setting}
+                            value={current()[setting.id]}
+                            onChange={(value) => change(setting.id, value)}
+                          />
+                        )}
+                      </For>
+                    }
+                  >
+                    <Dynamic
+                      component={custom(panel.plugin)!.component}
+                      fields={panel.settings}
+                      values={current()}
+                      onChange={change}
+                    />
                   </Show>
                 </div>
               </Show>

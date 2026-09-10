@@ -1,0 +1,14 @@
+/*
+ * The panel's own utilities.
+ *
+ * A plugin cannot rely on the dashboard's stylesheet having generated the
+ * classes it uses — the dashboard is built without ever seeing plugin source.
+ * So a plugin ships the utilities it needs and nothing more: no preflight
+ * (the dashboard's reset already applies), just theme values and utilities.
+ * Classes from the dashboard's own design system (`ed-*`, `sam-*`) are global
+ * and can be used directly.
+ */
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+@source './';

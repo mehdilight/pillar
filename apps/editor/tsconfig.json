@@ -30,10 +30,17 @@
       ],
       "solid-js/*": [
         "./node_modules/solid-js/*"
+      ],
+      "@pillar/editor": [
+        "./src/plugins/public.ts"
       ]
     }
   },
   "include": [
-    "src"
+    "src",
+    "../../plugins/*/frontend/src"
+  ],
+  "exclude": [
+    "../../plugins/*/frontend/src/**/*.test.ts"
   ]
 }

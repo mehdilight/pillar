@@ -10,7 +10,6 @@ export default defineConfig({
   base: '/editor/',
   resolve: {
     alias: { '@editor': path.resolve(__dirname, './src') },
-    dedupe: ['solid-js'],
   },
   server: {
     port: 7777,

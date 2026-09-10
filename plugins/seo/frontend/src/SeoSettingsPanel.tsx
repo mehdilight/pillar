@@ -1,10 +1,11 @@
 import { For, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js';
-import Field, { controlClass } from '../../../../apps/editor/src/components/ui/Field';
-import SettingInput from '../../../../apps/editor/src/components/SettingInput';
-import { api } from '../../../../apps/editor/src/api/client';
-import type { SchemaSetting } from '../../../../apps/editor/src/types';
+import { Field, controlClass } from '@pillar/editor';
+import { SettingInput } from '@pillar/editor';
+import { api } from '@pillar/editor';
+import type { SchemaSetting } from '@pillar/editor';
 import ImageField from './ImageField';
 import SearchPreview from './SearchPreview';
+import type { SeoPreview } from './SeoPanel';
 
 /** Everyday settings first; template syntax and crawler settings stay in Advanced. */
 export default function SeoSettingsPanel(props: {
@@ -20,7 +21,7 @@ export default function SeoSettingsPanel(props: {
     const timer = window.setTimeout(() => setInput({ kind: 'home', settings }), 200);
     onCleanup(() => window.clearTimeout(timer));
   });
-  const [preview] = createResource(input, (data) => api.pluginPreview('seo', data));
+  const [preview] = createResource(input, (data) => api.preview<SeoPreview>('seo', data));
   const resolved = () => preview.error ? undefined : preview();
   const advanced = () => props.fields.filter((field) => !['site_name', 'home_description', 'social_image'].includes(field.id.split(':').pop()!));
 

@@ -1,6 +1,6 @@
 import { For, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js';
-import Field, { controlClass } from '../../../../apps/editor/src/components/ui/Field';
-import SettingInput from '../../../../apps/editor/src/components/SettingInput';
+import { Field, controlClass } from '@pillar/editor';
+import { SettingInput } from '@pillar/editor';
 import { analyse, type Assessment } from './analysis';
 import en from './locales/en.json';
 import SearchPreview from './SearchPreview';

@@ -56,6 +56,7 @@ final class Api {
 				'editor' === ( $segments[0] ?? '' ) && 'preview' === ( $segments[1] ?? '' ) && 3 === count( $segments ) && 'POST' === $method
 					=> $this->json( $this->pillar()->editor->resolvePreview( $segments[2], $this->body( $request ) ) ),
 				[ 'editor', 'panels' ] === $segments => $this->json( (object) $this->pillar()->editor->contentPanels() ),
+				[ 'editor', 'plugins' ] === $segments => $this->json( $this->editorPlugins() ),
 
 				[ 'settings', 'schema' ] === $segments => $this->json( $this->settingsSchema() ),
 				[ 'settings' ] === $segments && 'GET' === $method => $this->json( $this->settings() ),
@@ -469,6 +470,49 @@ final class Api {
 		}
 
 		return $this->json( [ 'ok' => true ] );
+	}
+
+	/**
+	 * The dashboard bundles the dashboard should load: one per enabled plugin
+	 * that ships one. A disabled plugin is not in the list, so its panels do
+	 * not exist — there is no flag to check anywhere in the frontend.
+	 *
+	 * Versioned by content hash, so a rebuilt bundle is never served stale.
+	 *
+	 * A plugin that declares a bundle it has not built is listed with no script,
+	 * so the dashboard can say so rather than its panels silently not being
+	 * there.
+	 *
+	 * @return list<array{slug: string, script: string|null, style: string|null}>
+	 */
+	private function editorPlugins(): array {
+		$out = [];
+
+		foreach ( $this->pillar()->plugins as $plugin ) {
+			if ( null === $plugin->manifest->editor ) {
+				continue;
+			}
+
+			$script = $plugin->manifest->editorScript();
+
+			if ( null === $script ) {
+				$out[] = [ 'slug' => $plugin->manifest->slug, 'script' => null, 'style' => null ];
+
+				continue;
+			}
+
+			$slug  = $plugin->manifest->slug;
+			$style = substr( $script, 0, -3 ) . '.css';
+			$base  = '/editor/plugins/' . rawurlencode( $slug ) . '/';
+
+			$out[] = [
+				'slug'   => $slug,
+				'script' => $base . basename( $script ) . '?v=' . substr( (string) md5_file( $script ), 0, 10 ),
+				'style'  => is_file( $style ) ? $base . basename( $style ) . '?v=' . substr( (string) md5_file( $style ), 0, 10 ) : null,
+			];
+		}
+
+		return $out;
 	}
 
 	/** @param array<string, mixed> $body */

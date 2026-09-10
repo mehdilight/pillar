@@ -107,7 +107,11 @@ export const api = {
   editorPanels: (): Promise<Record<string, { name: string }>> =>
     request('/editor/panels', undefined, () => ({})),
 
-  pluginPreview: (slug: string, input: Record<string, unknown>): Promise<import('../../../../plugins/seo/frontend/src/SeoPanel').SeoPreview> =>
+  /** Dashboard bundles of the plugins this site enables — loaded at runtime, never compiled in. */
+  editorPlugins: (): Promise<Array<{ slug: string; script: string | null; style: string | null }>> =>
+    request('/editor/plugins', undefined, () => []),
+
+  pluginPreview: (slug: string, input: Record<string, unknown>): Promise<Record<string, any>> =>
     request(`/editor/preview/${encodeURIComponent(slug)}`, { method: 'POST', body: JSON.stringify(input) }, () => {
       throw new Error('Plugin preview needs the local server.');
     }),

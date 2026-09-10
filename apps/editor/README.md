@@ -52,6 +52,18 @@ What is not React here, and what replaced it:
 | react-router | none yet — one screen; the template lives in the hash |
 | i18next | none yet — English strings inline |
 
+## Plugin panels
+
+Plugins' dashboard UI is loaded at runtime from their own bundles, never
+compiled in — `src/plugins/host.ts` publishes `window.PillarHost`, loads the
+bundles the site's enabled plugins ship, and collects the slots they register;
+`src/plugins/public.ts` is `@pillar/editor`, the only thing a plugin may
+import. `npm run build` builds the bundled plugins too (`build-plugins.mjs`).
+The contract is in `docs/backend.md` §10.1.
+
+Nothing under `src/` may import from `plugins/`. `grep -r "plugins/" src` should
+only find `src/plugins/`.
+
 ## Two things worth knowing before editing this
 
 **Never read a `<Show>` accessor inside a nested `<Show>`'s condition.**

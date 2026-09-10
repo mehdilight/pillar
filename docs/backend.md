@@ -325,9 +325,7 @@ plugin_class: Pillar\Seo\Plugin
 namespace: Pillar\Seo\
 src: src/
 theme: theme/              # optional addon
-editor_entry: editor/dist/panel.js
-editor_slots: editor/dist/slots.js
-editor_slot_targets: [content.item.sidebar, settings.panel]
+editor: editor/dist/editor.js   # the dashboard bundle — see "Dashboard panels"
 ```
 
 Discovery: `plugins/` in the site, plus any composer package of type
@@ -381,14 +379,49 @@ Re-registering a built-in filter name overrides it, because core's extensions
 apply first. That is deliberate, and a real footgun — allowed for the same
 reason a plugin may run arbitrary PHP: it is your machine and your site.
 
-**Dashboard panels.** `editor_entry` gives a plugin a whole page in the
-dashboard. `editor_slots` is the other kind — a panel *inside* an existing
-form, which is what an SEO panel actually needs, since it has to sit next to
-the title it analyses and save with it. Targets to start with:
-`content.item.sidebar`, `content.item.main`, `settings.panel`,
-`section.settings.footer`. The host exposes its Solid runtime, its design
-system and a namespaced `i18n` on the `host` object — **take the framework
-from the host, never bundle a second copy.**
+**Dashboard panels.** A plugin's UI is loaded at runtime, never compiled into
+the dashboard. The dashboard's own bundle contains no plugin code at all; it
+asks `GET /api/editor/plugins` which bundles the site's *enabled* plugins
+ship, and loads those. A disabled plugin's panels therefore do not exist —
+there is no flag to check anywhere in the frontend.
+
+The contract a bundle meets, whatever it is built with:
+
+1. It is a classic script (an IIFE), declared as `editor:` in `plugin.yaml`. A
+   stylesheet beside it with the same name and `.css` is loaded too.
+2. It **takes Solid from the host**: `solid-js`, `solid-js/web`,
+   `solid-js/store` and `@pillar/editor` are read from `window.PillarHost`,
+   never bundled. A second Solid in the page is a second reactive runtime —
+   effects in a plugin's component would never re-run for the dashboard's
+   signals, and nothing reports it.
+3. It ends by calling `PillarHost.define(slug, { register })`. `register(host)`
+   receives a host scoped to that plugin and fills slots:
+
+```ts
+export function register(host: ScopedHost) {
+  host.registerSlot('settings.panel', MySettingsPanel);        // replaces the generic form for this plugin's panel
+  host.registerSlot('content.item.sidebar', MyEntrySidebar);   // beside an entry in the content editor
+}
+```
+
+`@pillar/editor` (`apps/editor/src/plugins/public.ts`) is the whole public
+surface: `Field`, `SettingInput`, `ImagePicker`, `controlClass`, `mediaUrl`,
+`api.preview()`, `api.markdown()`, and the slot prop types. It is also what a
+plugin's TypeScript resolves the import to, so the dashboard's type-check
+compiles bundled plugins against exactly that API. Adding an export is adding
+to a public API; removing one breaks plugins.
+
+A plugin ships the CSS utilities it uses — the dashboard is built without ever
+seeing plugin source, so it cannot have generated them. Tailwind's theme and
+utilities layers only, no reset; the dashboard's `ed-*` and `sam-*` classes
+are global and can be used directly.
+
+Bundled plugins are built by `npm run build` in `apps/editor`
+(`build-plugins.mjs`: Vite, externals mapped to the host globals, the
+`define()` call appended as a footer). A third-party plugin ships its bundle
+prebuilt. Every failure is contained to its plugin: a bundle that 404s, never
+calls `define()`, or throws in `register()` is reported in the dashboard and
+skipped — it cannot blank the page for everyone else.
 
 ### 10.2 Theme addons
 

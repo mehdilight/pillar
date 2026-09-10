@@ -6,3 +6,5 @@ namespace: Pillar\Seo
 plugin_class: Pillar\Seo\Plugin
 src: src
 theme: theme
+# The dashboard bundle, built by `npm run build` in apps/editor.
+editor: editor/dist/editor.js

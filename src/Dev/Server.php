@@ -35,6 +35,7 @@ final class Server {
 				->handle( $request, substr( $path, 4 ) ),
 			str_starts_with( $path, '/preview' )  => $this->preview( $request, substr( $path, 8 ) ),
 			str_starts_with( $path, '/assets/' )  => $this->asset( substr( $path, 8 ) ),
+			str_starts_with( $path, '/editor/plugins/' ) => $this->pluginAsset( substr( $path, 16 ) ),
 			str_starts_with( $path, '/editor/' )  => $this->dashboardAsset( substr( $path, 8 ) ),
 			default                               => $this->dashboardPage(),
 		};
@@ -168,6 +169,36 @@ final class Server {
 		$path = Pillar::forSite( $this->root, compile: false )->site->layers()->resolve( $relative );
 
 		return null === $path ? new Response( 'Not found', 404 ) : $this->file( $path );
+	}
+
+	/**
+	 * A plugin's dashboard bundle or its stylesheet.
+	 *
+	 * Only files beside the script the plugin's manifest declares, only `.js`,
+	 * `.css` and `.map`, and only for plugins this site enables — a request
+	 * cannot name its way to anything else in the plugin's directory.
+	 */
+	private function pluginAsset( string $rest ): Response {
+		[ $slug, $file ] = array_pad( explode( '/', $rest, 2 ), 2, '' );
+
+		$file = basename( $file );
+
+		if ( '' === $file || ! in_array( strtolower( pathinfo( $file, PATHINFO_EXTENSION ) ), [ 'js', 'css', 'map' ], true ) ) {
+			return new Response( 'Not found', 404 );
+		}
+
+		foreach ( Pillar::forSite( $this->root, compile: false )->plugins as $plugin ) {
+			if ( $plugin->manifest->slug !== $slug ) {
+				continue;
+			}
+
+			$script = $plugin->manifest->editorScript();
+			$path   = null === $script ? null : dirname( $script ) . '/' . $file;
+
+			return null !== $path && is_file( $path ) ? $this->file( $path ) : new Response( 'Not found', 404 );
+		}
+
+		return new Response( 'Not found', 404 );
 	}
 
 	private function dashboardAsset( string $file ): Response {
