@@ -2,6 +2,7 @@ import { Match, Show, Switch, createResource } from 'solid-js';
 import type { SchemaSetting } from '../types';
 import { api } from '../api/client';
 import TextInput from './ui/TextInput';
+import LinkPicker from './ui/LinkPicker';
 import TextArea from './ui/TextArea';
 import NumberInput from './ui/NumberInput';
 import SelectInput from './ui/SelectInput';
@@ -77,7 +78,7 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'url'}>
-        <TextInput
+        <LinkPicker
           label={setting().label}
           info={setting().info}
           value={value() ?? ''}
