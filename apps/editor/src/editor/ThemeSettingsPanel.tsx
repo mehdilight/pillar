@@ -25,8 +25,17 @@ export default function ThemeSettingsPanel() {
 
   const change = (id: string, value: any) => {
     const next = { ...current(), [id]: value };
+    const setting = panels()
+      .flatMap((panel) => panel.settings)
+      .find((entry) => entry.id === id);
 
     setValues(next);
+
+    // Shown in the preview straight away; the save below re-renders it for real.
+    if (setting?.css_var && value !== null && value !== undefined && value !== '') {
+      editor.patchPreviewCss(setting.css_var, `${value}${setting.css_unit ?? ''}`);
+    }
+
     window.clearTimeout(timer);
     timer = window.setTimeout(async () => {
       try {

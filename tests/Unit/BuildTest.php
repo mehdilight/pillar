@@ -19,6 +19,15 @@ final class BuildTest extends SiteTestCase {
 		self::assertFileExists( $this->root . '/dist/posts/why-static/index.html' );
 	}
 
+	public function test_an_empty_declared_collection_does_not_make_its_entry_template_a_page(): void {
+		file_put_contents( $this->root . '/schemas/guides.json', '{"label": "Guides", "fields": [{"id": "title", "type": "text"}]}' );
+		copy( $this->root . '/templates/post.json', $this->root . '/templates/guide.json' );
+
+		$urls = array_map( static fn ( $route ): string => $route->url, ( new \Pillar\Build\RouteTable( $this->pillar()->site, $this->pillar()->content ) )->all() );
+
+		self::assertNotContains( '/guide/', $urls );
+	}
+
 	public function test_a_content_item_renders_through_its_collection_template(): void {
 		$this->build();
 

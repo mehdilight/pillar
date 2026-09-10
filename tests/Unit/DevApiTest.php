@@ -34,6 +34,19 @@ final class DevApiTest extends SiteTestCase {
 		self::assertSame( 'Content', $byName['post']['group'] );
 	}
 
+	public function test_a_section_accepting_theme_blocks_is_offered_every_public_block_file(): void {
+		@mkdir( $this->root . '/blocks', 0777, true );
+		file_put_contents( $this->root . '/blocks/card.liqx', "<div>{block.settings.title}</div>\n<schema>{\"name\": \"Card\", \"settings\": [{\"id\": \"title\", \"type\": \"text\"}]}</schema>" );
+		file_put_contents( $this->root . '/blocks/_internal.liqx', "<div></div>\n<schema>{\"name\": \"Internal\"}</schema>" );
+		file_put_contents( $this->root . '/sections/cards.liqx', "<div></div>\n<schema>{\"name\": \"Cards\", \"accepts\": [\"@theme\"]}</schema>" );
+
+		$payload   = $this->json( 'GET', '/api/templates/index' );
+		$available = array_column( $payload['availableSections'], null, 'type' );
+
+		self::assertSame( [ 'card' ], $available['cards']['accepts'] );
+		self::assertContains( 'card', array_column( $payload['availableBlocks'], 'type' ) );
+	}
+
 	public function test_a_template_carries_its_sections_and_their_schemas(): void {
 		$payload = $this->json( 'GET', '/api/templates/index' );
 		$hero    = $payload['sections'][0];

@@ -138,6 +138,15 @@ export const setActive = (id: string | null, fromPreview = false) => {
   if (!fromPreview) tellPreview({ type: 'PILLAR_SELECT_SECTION', sectionId: id });
 };
 
+/**
+ * Set a CSS custom property in the preview, now — a theme setting declaring
+ * `css_var` shows a dragged colour at once instead of after the save and
+ * reload that follow.
+ */
+export const patchPreviewCss = (name: string, value: string) => {
+  tellPreview({ type: 'PILLAR_CSS_VAR', name, value });
+};
+
 export const closeSettings = () => {
   batch(() => {
     setActiveSectionId(null);
@@ -341,6 +350,7 @@ export function addSection(type: string) {
       settings: definition.settings,
       blocks: definition.blocks,
       max_blocks: definition.max_blocks,
+      accepts: definition.accepts,
     },
   };
 

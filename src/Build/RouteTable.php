@@ -20,6 +20,9 @@ use Pillar\Template\PageTemplate;
  */
 final class RouteTable {
 
+	/** @var list<string>|null collections declared in `schemas/`, entries or not */
+	private ?array $declared = null;
+
 	public function __construct(
 		private readonly Site $site,
 		private readonly ContentStore $content,
@@ -129,8 +132,15 @@ final class RouteTable {
 		return null;
 	}
 
+	/**
+	 * Whether a template renders a collection's entries — for a collection
+	 * with entries, or one only declared in `schemas/` so far: a new, empty
+	 * collection's entry template is not a page of its own either.
+	 */
 	private function isContentTemplate( string $name ): bool {
-		foreach ( $this->content->collectionNames() as $collection ) {
+		$this->declared ??= array_map( 'strval', array_keys( \Pillar\Schema\ContentSchema::all( $this->site->layers() ) ) );
+
+		foreach ( array_unique( array_merge( $this->content->collectionNames(), $this->declared ) ) as $collection ) {
 			if ( $this->singular( $collection ) === $name ) {
 				return true;
 			}

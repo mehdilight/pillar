@@ -29,6 +29,13 @@ final class SectionSchema {
 		public readonly string $description = '',
 		/** Sections the site owner may not remove or reorder — header, footer. */
 		public readonly bool $static = false,
+		/**
+		 * Block files (`blocks/*.liqx`) this section also takes, beside its own
+		 * `blocks` — by type, or `@theme` for every public one.
+		 *
+		 * @var list<string>
+		 */
+		public readonly array $accepts = [],
 	) {}
 
 	/**
@@ -80,6 +87,7 @@ final class SectionSchema {
 			enabledOn: array_values( array_map( 'strval', (array) ( $raw['enabled_on'] ?? [] ) ) ),
 			description: (string) ( $raw['description'] ?? '' ),
 			static: (bool) ( $raw['static'] ?? false ),
+			accepts: array_values( array_map( 'strval', (array) ( $raw['accepts'] ?? [] ) ) ),
 		);
 	}
 
@@ -119,6 +127,7 @@ final class SectionSchema {
 			'presets'     => $this->presets,
 			'max_blocks'  => $this->maxBlocks,
 			'enabled_on'  => $this->enabledOn,
+			'accepts'     => $this->accepts,
 		];
 	}
 }

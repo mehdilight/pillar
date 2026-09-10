@@ -119,6 +119,13 @@
   window.addEventListener('message', function (event) {
     var data = event.data || {};
 
+    // A theme setting's live value — a custom property on :root, which wins
+    // over the stylesheet's until the saved page replaces this one. Only a
+    // `--name` and a plain value: this channel sets variables, nothing else.
+    if (data.type === 'PILLAR_CSS_VAR' && /^--[a-zA-Z0-9-]+$/.test(String(data.name)) && /^[^;{}<>]*$/.test(String(data.value))) {
+      document.documentElement.style.setProperty(data.name, String(data.value));
+    }
+
     if (data.type === 'PILLAR_SELECT_SECTION') {
       select(data.sectionId, false);
 

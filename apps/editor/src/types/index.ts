@@ -129,6 +129,8 @@ export interface AvailableSection {
   settings?: SchemaSetting[];
   blocks?: BlockType[];
   max_blocks?: number;
+  /** Block files it takes beside its own blocks — `@theme` already expanded. */
+  accepts?: string[];
 }
 
 /** A page the editor can open — one `templates/*.json`. */

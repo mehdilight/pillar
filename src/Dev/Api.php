@@ -159,22 +159,32 @@ final class Api {
 		$errors = [];
 		$schemas = $pillar->schemas->allSections( $errors );
 
+		$files = $pillar->schemas->allBlocks( $errors );
+
+		// `@theme` in an `accepts` list means every public block file — one
+		// whose type does not start with `_` — expanded here, once, so the
+		// dashboard only ever sees type names.
+		$public = array_values( array_filter( array_map( 'strval', array_keys( $files ) ), static fn ( string $type ): bool => ! str_starts_with( $type, '_' ) ) );
+		$expand = static fn ( array $accepts ): array => array_values( array_unique( array_merge(
+			...array_map( static fn ( string $type ): array => '@theme' === $type ? $public : [ $type ], $accepts )
+		) ) );
+
 		$available = [];
 
 		foreach ( $schemas as $type => $schema ) {
-			$available[] = $schema->toArray();
+			$available[] = [ 'accepts' => $expand( $schema->accepts ) ] + $schema->toArray();
 		}
 
 		$blocks = [];
 
-		foreach ( $pillar->schemas->allBlocks( $errors ) as $type => $schema ) {
-			$blocks[] = $schema->toArray();
+		foreach ( $files as $type => $schema ) {
+			$blocks[] = [ 'accepts' => $expand( $schema->accepts ) ] + $schema->toArray();
 		}
 
 		return [
 			'name'              => $name,
-			'sections'          => $this->sectionsOf( $name, $schemas ),
-			'layout'            => $this->sectionsOf( 'layout', $schemas, isLayout: true ),
+			'sections'          => $this->sectionsOf( $name, $schemas, $expand ),
+			'layout'            => $this->sectionsOf( 'layout', $schemas, $expand, isLayout: true ),
 			'availableSections' => $available,
 			'availableBlocks'   => $blocks,
 			'allTemplates'      => $this->templates(),
@@ -185,11 +195,12 @@ final class Api {
 	}
 
 	/**
-	 * @param array<string, SectionSchema> $schemas
+	 * @param array<string, SectionSchema>          $schemas
+	 * @param callable(list<string>): list<string>  $expand  resolves `@theme` in an accepts list
 	 *
 	 * @return list<array<string, mixed>>
 	 */
-	private function sectionsOf( string $name, array $schemas, bool $isLayout = false ): array {
+	private function sectionsOf( string $name, array $schemas, callable $expand, bool $isLayout = false ): array {
 		$path = $this->pillar()->site->layers()->resolve( 'templates/' . $name . '.json' );
 
 		if ( null === $path ) {
@@ -215,6 +226,7 @@ final class Api {
 					'settings'   => array_map( static fn ( Setting $s ): array => $s->toArray(), $schema->settings ),
 					'blocks'     => array_map( static fn ( $b ): array => $b->toArray(), $schema->blocks ),
 					'max_blocks' => $schema->maxBlocks,
+					'accepts'    => $expand( $schema->accepts ),
 				],
 			];
 		}
