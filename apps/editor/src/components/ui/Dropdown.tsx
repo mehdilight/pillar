@@ -1,37 +1,25 @@
-import { Show, createSignal, onCleanup, type JSX } from 'solid-js';
+import { createSignal, type JSX } from 'solid-js';
+import { Popover } from '@kobalte/core';
 
 interface DropdownProps {
-  trigger: (open: () => void, isOpen: () => boolean) => JSX.Element;
+  trigger: JSX.Element;
   children: (close: () => void) => JSX.Element;
   contentClass?: string;
   align?: 'left' | 'right';
 }
 
-/** A click-outside popover. Radix's role, without Radix. */
+/** A portaled Kobalte popover for dropdown-style pickers. */
 export default function Dropdown(props: DropdownProps) {
-  const [isOpen, setIsOpen] = createSignal(false);
-  let root: HTMLDivElement | undefined;
-
-  const onDocumentDown = (event: MouseEvent) => {
-    if (root && !root.contains(event.target as Node)) setIsOpen(false);
-  };
-
-  document.addEventListener('mousedown', onDocumentDown);
-  onCleanup(() => document.removeEventListener('mousedown', onDocumentDown));
+  const [open, setOpen] = createSignal(false);
 
   return (
-    <div class="relative" ref={root}>
-      {props.trigger(() => setIsOpen((open) => !open), isOpen)}
-      <Show when={isOpen()}>
-        <div
-          class={`absolute top-full mt-1.5 z-50 bg-white rounded-xl border border-[#e1e3e5] shadow-[0_12px_32px_rgba(0,0,0,0.14)] overflow-hidden ${
-            props.contentClass ?? 'w-64'
-          }`}
-          classList={{ 'right-0': props.align === 'right', 'left-0': props.align !== 'right' }}
-        >
-          {props.children(() => setIsOpen(false))}
-        </div>
-      </Show>
-    </div>
+    <Popover.Root open={open()} onOpenChange={setOpen} placement={props.align === 'right' ? 'bottom-end' : 'bottom-start'} gutter={6} fitViewport overflowPadding={12}>
+      <Popover.Trigger asChild>{props.trigger}</Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content class={`z-[100] overflow-hidden rounded-xl border border-[#e1e3e5] bg-white shadow-[0_12px_32px_rgba(0,0,0,0.14)] ${props.contentClass ?? 'w-64'}`}>
+          {props.children(() => setOpen(false))}
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
   );
 }

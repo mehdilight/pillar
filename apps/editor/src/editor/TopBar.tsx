@@ -128,10 +128,9 @@ export default function TopBar() {
 
         <Dropdown
           contentClass="w-72"
-          trigger={(open) => (
+          trigger={(
             <button
               type="button"
-              onClick={open}
               class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-gray-200 hover:bg-[#2c2d30] cursor-pointer transition-colors"
             >
               <FileText size={14} class="text-gray-400" />
@@ -220,10 +219,9 @@ export default function TopBar() {
         </Tooltip>
 
         <Menu
-          trigger={(open) => (
+          trigger={(
             <button
               type="button"
-              onClick={open}
               class="p-1.5 rounded-lg text-gray-400 hover:bg-[#2c2d30] hover:text-white transition-colors cursor-pointer"
               title="More actions"
             >
