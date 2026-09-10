@@ -6,12 +6,19 @@
     "dev": "vite",
     "build": "vite build && node build-plugins.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "esbuild src/lib/blocks.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/blocks.test.mjs --log-level=error && node --test .test/blocks.test.mjs",
+    "test": "esbuild src/lib/blocks.test.ts src/lib/markdown.test.ts --bundle --format=esm --platform=node --external:node:* --outdir=.test --log-level=error && node --test .test/blocks.test.js .test/markdown.test.js",
     "test:seo": "esbuild ../../plugins/seo/frontend/src/analysis.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/seo.test.mjs --log-level=error && node --test .test/seo.test.mjs",
     "build:plugins": "node build-plugins.mjs"
   },
   "dependencies": {
     "@solidjs/router": "^0.15.4",
+    "@tiptap/core": "^3.31.3",
+    "@tiptap/extension-image": "^3.31.3",
+    "@tiptap/extension-table": "^3.31.3",
+    "@tiptap/extensions": "^3.31.3",
+    "@tiptap/markdown": "^3.31.3",
+    "@tiptap/pm": "^3.31.3",
+    "@tiptap/starter-kit": "^3.31.3",
     "lucide-solid": "^0.544.0",
     "solid-js": "^1.9.3"
   },

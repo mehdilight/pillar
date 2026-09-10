@@ -11,6 +11,12 @@ use Pillar\Site\Site;
  * file so `asset_url` can hand out a URL that changes when the file does and
  * never otherwise.
  *
+ * Each file is also written under its own name. A template goes through
+ * `asset_url` and gets the hashed file, but markdown cannot: an image inserted
+ * into an entry is `![](/assets/uploads/photo.png)`, and with only the hashed
+ * copy written, every such image was a broken link on the built site while
+ * working fine in the preview.
+ *
  * Lower layers are copied first, so the site's own asset shadows an addon's of
  * the same name — the same precedence templates get.
  */
@@ -47,6 +53,7 @@ final class Assets {
 
 				@mkdir( dirname( $target . '/' . $hashed ), 0777, true );
 				copy( $file->getPathname(), $target . '/' . $hashed );
+				copy( $file->getPathname(), $target . '/' . $relative );
 
 				$hashes[ $relative ] = $hashed;
 			}

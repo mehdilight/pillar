@@ -4,7 +4,7 @@ import { A, useBeforeLeave, useNavigate, useParams, type BeforeLeaveEventArgs } 
 import { ExternalLink } from 'lucide-solid';
 import Page from '../ui/Page';
 import { Button, Input, Label, Loading, Notice, Postbox, SidebarLayout, buttonClass } from '../ui/ds';
-import MarkdownEditor from '../../components/ui/MarkdownEditor';
+import RichEditor from '../../components/ui/LazyRichEditor';
 import SettingInput from '../../components/SettingInput';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { showToast } from '../../components/ui/Toast';
@@ -210,7 +210,7 @@ export default function Entry() {
 
                 <Postbox title="Content" flush>
                   <div class="p-3">
-                    <MarkdownEditor value={body()} onValue={setBody} minHeight={420} placeholder="Write in markdown…" />
+                    <RichEditor value={body()} onValue={setBody} minHeight={420} placeholder="Start writing…" />
                   </div>
                 </Postbox>
               </div>

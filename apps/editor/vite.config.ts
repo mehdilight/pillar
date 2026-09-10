@@ -28,6 +28,10 @@ export default defineConfig(({ command }) => ({
     outDir: '../../public/editor',
     emptyOutDir: true,
     manifest: true,
+    // The rich editor (TipTap + ProseMirror + marked) is one ~510 KB chunk, on
+    // purpose: it is lazy-loaded, so it costs nothing until an editor opens.
+    // Anything else over this is worth a look.
+    chunkSizeWarningLimit: 560,
     rollupOptions: {
       input: { app: path.resolve(__dirname, 'index.html') },
     },

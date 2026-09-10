@@ -49,6 +49,26 @@ final class BuildTest extends SiteTestCase {
 		);
 	}
 
+	public function test_an_image_referenced_from_markdown_by_its_plain_path_exists_in_the_build(): void {
+		// What the rich editor's image button writes. Only the hashed copy used
+		// to be built, so this was a broken image on every built page.
+		@mkdir( $this->root . '/assets/uploads', 0777, true );
+		file_put_contents( $this->root . '/assets/uploads/photo.png', "\x89PNG\r\n\x1a\n" );
+		file_put_contents( $this->root . '/content/posts/pictured.md', "---\ntitle: Pictured\n---\n![A photo](/assets/uploads/photo.png)\n" );
+
+		$this->build();
+
+		self::assertStringContainsString( 'src="/assets/uploads/photo.png"', (string) file_get_contents( $this->root . '/dist/posts/pictured/index.html' ) );
+		self::assertFileExists( $this->root . '/dist/assets/uploads/photo.png' );
+		self::assertCount( 1, glob( $this->root . '/dist/assets/uploads/photo.*.png' ) ?: [], 'the hashed copy is still there for asset_url' );
+
+		unlink( $this->root . '/assets/uploads/photo.png' );
+		$this->build();
+
+		self::assertFileDoesNotExist( $this->root . '/dist/assets/uploads/photo.png', 'a deleted asset takes both copies with it' );
+		self::assertSame( [], glob( $this->root . '/dist/assets/uploads/photo.*.png' ) ?: [] );
+	}
+
 	public function test_a_second_build_rebuilds_nothing(): void {
 		$this->build();
 

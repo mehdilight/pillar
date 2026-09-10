@@ -93,7 +93,12 @@ final class Builder {
 		}
 		// Remove only files owned by the previous build. Disabling a plugin
 		// must remove its sitemap; deleting a post must remove its public page.
-		$assetOutputs = array_map( static fn ( string $file ): string => 'assets/' . $file, array_values( $assets ) );
+		// Both copies of each asset are the build's: the hashed name and the
+		// plain one (see Assets) — so a deleted asset takes both with it.
+		$assetOutputs = array_map(
+			static fn ( string $file ): string => 'assets/' . $file,
+			array_merge( array_values( $assets ), array_map( 'strval', array_keys( $assets ) ) )
+		);
 		$active = array_merge( $outputs, $artifacts, $assetOutputs );
 		$activeUrls = array_fill_keys( array_column( $routes, 'url' ), true );
 		foreach ( $this->manifest->pages as $url => $page ) {

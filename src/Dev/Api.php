@@ -7,6 +7,7 @@ use League\CommonMark\CommonMarkConverter;
 use Pillar\Build\Builder;
 use Pillar\Content\ContentStore;
 use Pillar\Content\ContentType;
+use Pillar\Content\FrontmatterWriter;
 use Pillar\Content\MarkdownFile;
 use Pillar\Git\LocalGit;
 use Pillar\Pillar;
@@ -21,7 +22,6 @@ use Pillar\Template\SectionInstance;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Yaml\Yaml;
 
 /**
  * The JSON API the dashboard drives, over the working tree.
@@ -439,13 +439,17 @@ final class Api {
 		$frontmatter = (array) ( $body['frontmatter'] ?? [] );
 		$content     = (string) ( $body['body'] ?? '' );
 
-		// Written back as YAML frontmatter plus body: the file stays a normal
-		// markdown file that a developer can edit in an editor, which is the
-		// whole point of content living in the repo.
-		$yaml = trim( Yaml::dump( $frontmatter, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK ) );
-		$file = "---\n" . $yaml . "\n---\n" . ltrim( $content, "\n" );
-
 		$relative = 'content/' . $this->safe( $collection ) . '/' . $this->safe( $slug ) . '.md';
+		$existing = $this->root . '/' . PathPolicy::normalise( $relative );
+
+		// Written back as a normal markdown file a developer can edit by hand —
+		// and without restyling it: frontmatter lines whose values did not
+		// change are kept exactly as they were written. See FrontmatterWriter.
+		$file = FrontmatterWriter::write(
+			! $createOnly && is_file( $existing ) ? (string) file_get_contents( $existing ) : '',
+			$frontmatter,
+			$content
+		);
 		if ( $createOnly ) {
 			if ( '' === trim( (string) ( $frontmatter['title'] ?? '' ) ) ) { throw new PillarException( 'Give this entry a title.' ); }
 			$path = $this->root . '/' . PathPolicy::normalise( $relative );

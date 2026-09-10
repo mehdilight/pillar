@@ -961,52 +961,96 @@ input[type='radio'].ed-radio:checked::after {
     will-change: transform, opacity;
 }
 
-/* ── Markdown preview ───────────────────────────────────────────────── */
+/* ── Rich editor (TipTap) ───────────────────────────────────────────── */
+/* Ported from bastet's `.ds-tiptap-editor`, extended for what markdown
+   carries: tables, images, code blocks. Deliberately close to how the site
+   renders prose, without pretending to be the site's own theme. */
 
-.prose-preview {
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--text);
+/* The editable area fills its box, so a click in the empty space below the
+   last paragraph lands in the document — ProseMirror puts the caret at the
+   nearest position — instead of on a dead margin that takes no focus. */
+.rich-editor-body {
+    display: flex;
+    flex-direction: column;
 }
 
-.prose-preview > :first-child { margin-top: 0; }
-.prose-preview > :last-child { margin-bottom: 0; }
+.rich-editor-body .tiptap-content {
+    flex: 1;
+    padding: 14px 16px;
+    color: var(--text);
+    outline: none;
+    font-size: 14px;
+    line-height: 1.65;
+}
 
-.prose-preview h1 { font-size: 20px; }
-.prose-preview h2 { font-size: 16px; }
-.prose-preview h3 { font-size: 14px; }
-.prose-preview h1, .prose-preview h2, .prose-preview h3 { margin: 1.2em 0 0.4em; line-height: 1.25; }
+/* Siblings are spaced by this one rule. A `p { margin: 0 }` beside it would
+   outrank it (0,1,1 beats 0,1,0) and run paragraphs together — it did. */
+.tiptap-content > * + * { margin-top: 0.75em; }
 
-.prose-preview p, .prose-preview ul, .prose-preview ol, .prose-preview blockquote { margin: 0 0 0.9em; }
-.prose-preview ul, .prose-preview ol { padding-left: 1.3em; }
-.prose-preview a { color: var(--brand); }
+.tiptap-content h1, .tiptap-content h2, .tiptap-content h3, .tiptap-content h4 {
+    margin: 1.2em 0 0.4em;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+.tiptap-content h1 { font-size: 1.6em; }
+.tiptap-content h2 { font-size: 1.3em; }
+.tiptap-content h3 { font-size: 1.1em; }
+.tiptap-content > :first-child { margin-top: 0; }
 
-.prose-preview code {
+.tiptap-content ul, .tiptap-content ol { padding-left: 1.4em; }
+.tiptap-content ul { list-style: disc; }
+.tiptap-content ol { list-style: decimal; }
+.tiptap-content li > p { margin: 0; }
+
+.tiptap-content a { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+
+.tiptap-content blockquote {
+    margin-left: 0;
+    padding-left: 0.85em;
+    border-left: 3px solid var(--brand);
+    color: var(--text-muted);
+}
+
+.tiptap-content code {
     font-family: var(--font-mono);
-    font-size: 12px;
+    font-size: 0.88em;
     background: var(--bg-surface-3);
     border: 1px solid var(--border);
     border-radius: 4px;
     padding: 1px 4px;
 }
 
-.prose-preview pre {
-    background: var(--bg-surface-3);
-    border: 1px solid var(--border);
+.tiptap-content pre {
+    background: #1a1a1a;
+    color: #f5f5f5;
     border-radius: 8px;
-    padding: 10px 12px;
+    padding: 12px 14px;
     overflow-x: auto;
 }
+.tiptap-content pre code { background: none; border: 0; padding: 0; color: inherit; font-size: 12.5px; }
 
-.prose-preview pre code { background: none; border: 0; padding: 0; }
+.tiptap-content hr { border: 0; border-top: 1px solid var(--border-strong); margin: 1.4em 0; }
 
-.prose-preview blockquote {
-    padding-left: 12px;
-    border-left: 3px solid var(--border);
-    color: var(--text-muted);
+.tiptap-content img { max-width: 100%; height: auto; border-radius: 6px; }
+.tiptap-content img.ProseMirror-selectednode { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+.tiptap-content table { border-collapse: collapse; width: 100%; font-size: 13px; table-layout: fixed; }
+.tiptap-content th, .tiptap-content td {
+    border: 1px solid var(--border);
+    padding: 6px 9px;
+    text-align: left;
+    vertical-align: top;
+}
+.tiptap-content th { background: var(--bg-surface-3); font-weight: 600; }
+.tiptap-content .selectedCell { background: var(--brand-tint); }
+
+/* The empty-document hint. */
+.tiptap-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--text-faint);
+    pointer-events: none;
 }
 
-.prose-preview img { max-width: 100%; border-radius: 6px; }
-
-.prose-preview table { border-collapse: collapse; width: 100%; font-size: 12px; }
-.prose-preview th, .prose-preview td { border: 1px solid var(--border); padding: 5px 8px; text-align: left; }
