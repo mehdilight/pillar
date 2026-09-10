@@ -150,7 +150,10 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
       <DragDropSensors>
         <SortableProvider ids={props.items.map(sortableId)}>
           <div class={props.depth ? 'border-l-2 border-brand/15 bg-surface-muted/30' : ''}>
-            <For each={props.items}>{(item) => <SortableMenuRow item={item} id={sortableId(item)} onChange={(next) => props.onChange(props.items.map((current) => current === item ? retainSortableId(item, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => current !== item))} isExpanded={() => props.isExpanded(sortableId(item))} onExpandedChange={props.onExpandedChange} depth={props.depth} />}</For>
+            <For each={props.items}>{(item) => {
+              const id = sortableId(item);
+              return <SortableMenuRow item={item} id={id} onChange={(next) => props.onChange(props.items.map((current) => current === item ? retainSortableId(item, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => current !== item))} isExpanded={() => props.isExpanded(id)} onExpandedChange={props.onExpandedChange} depth={props.depth} />;
+            }}</For>
             <Show when={props.items.length === 0}><div class="flex flex-col items-center px-5 py-10 text-center"><Link2 size={22} class="mb-2 text-text-faint" /><p class="text-[13px] font-medium text-text">This menu has no links.</p><p class="mt-1 text-xs text-text-muted">Add a destination for people to navigate to.</p></div></Show>
           </div>
         </SortableProvider>
@@ -175,7 +178,7 @@ function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: M
       <Show when={props.isExpanded()}>
         <div class="border-t border-border bg-surface-muted/35 px-4 py-4 sm:pl-12">
           <div class="grid max-w-2xl items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"><div><Label>Label</Label><Input value={props.item.title} placeholder="For example, About" onInput={(event) => props.onChange({ ...props.item, title: event.currentTarget.value })} /></div><div><Label>Link</Label><LinkPicker compact value={props.item.url} onValue={(url) => props.onChange({ ...props.item, url })} /></div></div>
-          <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><Button size="sm" variant="link" class="shrink-0" onClick={() => props.onChange({ ...props.item, items: [...(props.item.items ?? []), blankLink()] })}><Plus size={13} /> Add sublink</Button></div>
+          <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={() => props.onChange({ ...props.item, items: [...(props.item.items ?? []), blankLink()] })}><Plus size={13} class="shrink-0" /><span>Add sublink</span></button></div>
           <Show when={(props.item.items ?? []).length}><div class="mt-3 rounded-ds border border-border bg-surface"><MenuRows items={props.item.items ?? []} depth={(props.depth ?? 0) + 1} onChange={(items) => props.onChange({ ...props.item, items })} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} /></div></Show>
         </div>
       </Show>
