@@ -42,17 +42,24 @@ final class PageSubject {
 
 	public readonly string $image;
 
+	/** The sharing image's alt text, from the site's media library — `''` when it has none. */
+	public readonly string $imageAlt;
+
 	public readonly bool $noindex;
 
 	public readonly bool $nofollow;
 
 	public readonly Replacements $replacements;
 
-	/** @param (callable(string): string)|null $assetUrl resolves a theme asset to its built URL */
+	/**
+	 * @param (callable(string): string)|null $assetUrl resolves a theme asset to its built URL
+	 * @param (callable(string): string)|null $imageAlt the media library's alt text for an image
+	 */
 	public function __construct(
 		public readonly HeadContext $context,
 		public readonly SeoSettings $settings,
 		?callable $assetUrl = null,
+		?callable $imageAlt = null,
 	) {
 		$drop       = $context->drop( 'page' );
 		$this->page = $drop instanceof PageDrop ? $drop : null;
@@ -76,6 +83,7 @@ final class PageSubject {
 		$this->description = $this->replacements->apply( $this->descriptionPattern() );
 		$this->canonical   = CanonicalUrl::resolve( $context->site->baseUrl, $context->url, $this->string( 'canonical' ) );
 		$this->image       = $this->resolveImage( $assetUrl );
+		$this->imageAlt    = '' !== $this->image && null !== $imageAlt ? trim( (string) $imageAlt( $this->imageSource() ) ) : '';
 
 		// The editor's canvas, a 404 and a draft are not pages anyone should
 		// find through a search engine, whatever the settings say.
@@ -175,10 +183,15 @@ final class PageSubject {
 		return $this->settings->pattern( 'description', $this->type );
 	}
 
+	/** The sharing image as written — the entry's override, its own image, or the site default. */
+	private function imageSource(): string {
+		return $this->string( 'og_image' )
+			?: (string) ( $this->page?->beforeMethod( 'image' ) ?: $this->settings->string( 'social_image' ) );
+	}
+
 	/** @param (callable(string): string)|null $assetUrl */
 	private function resolveImage( ?callable $assetUrl ): string {
-		$image = $this->string( 'og_image' )
-			?: (string) ( $this->page?->beforeMethod( 'image' ) ?: $this->settings->string( 'social_image' ) );
+		$image = $this->imageSource();
 
 		// A bare asset path goes through `asset_url`, so a shared card points at
 		// the hashed file the build actually wrote.

@@ -72,6 +72,12 @@ final class MetaTagsContributor implements HeadContributor {
 		if ( '' !== $subject->image ) {
 			$tags[] = HeadTag::property( 'og:image', $subject->image );
 			$tags[] = HeadTag::meta( 'twitter:image', $subject->image );
+
+			// Described once in the media library, the card is described here too.
+			if ( '' !== $subject->imageAlt ) {
+				$tags[] = HeadTag::property( 'og:image:alt', $subject->imageAlt );
+				$tags[] = HeadTag::meta( 'twitter:image:alt', $subject->imageAlt );
+			}
 		}
 
 		$tags[] = HeadTag::meta( 'twitter:card', '' !== $subject->image ? 'summary_large_image' : 'summary' );

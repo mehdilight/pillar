@@ -202,6 +202,20 @@ final class SeoTest extends SiteTestCase {
 		self::assertMatchesRegularExpression( '#property="og:image" content="https://example.test/assets/uploads/my-picture-[a-f0-9]+\.[a-f0-9]+\.png"#', $html );
 	}
 
+	public function test_a_sharing_image_carries_its_media_library_alt_text(): void {
+		$image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=';
+		$url   = json_decode( $this->api( '/api/media', 'POST', [ 'name' => 'Card.png', 'data' => $image ] )->getContent(), true )['url'];
+		$this->post( [ 'og_image' => $url ] );
+
+		self::assertStringNotContainsString( 'og:image:alt', $this->renderPost() );
+
+		self::assertSame( 200, $this->api( '/api/media/alt', 'PUT', [ 'url' => $url, 'alt' => 'A card "for" sharing' ] )->getStatusCode() );
+
+		$html = $this->renderPost();
+		self::assertStringContainsString( '<meta property="og:image:alt" content="A card &quot;for&quot; sharing">', $html );
+		self::assertStringContainsString( '<meta name="twitter:image:alt" content="A card &quot;for&quot; sharing">', $html );
+	}
+
 	public function test_an_upload_must_be_an_image_even_with_an_image_filename(): void {
 		$response = $this->api( '/api/media', 'POST', [ 'name' => 'photo.png', 'data' => base64_encode( '<?php echo 123;' ) ] );
 		self::assertSame( 422, $response->getStatusCode() );

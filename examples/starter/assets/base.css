@@ -97,6 +97,8 @@ a.button:hover { color: var(--color-paper-white); text-decoration: none; }
 .hero .lede { margin: 20px auto 28px; max-width: 54ch; color: var(--color-stone-gray); font-size: 1.0625rem; }
 .hero .button { margin-top: 4px; }
 .hero[style*="left"] .lede { margin-inline: 0; }
+.hero-media { margin: 48px 0 0; }
+.hero-image { display: block; width: 100%; height: auto; border-radius: var(--radius-cards); }
 
 .features { padding-block: var(--section-gap); }
 .section-head { display: grid; gap: 8px; margin-bottom: 40px; }

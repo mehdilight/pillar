@@ -39,6 +39,27 @@ final class StarterTest extends SiteTestCase {
 		self::assertFileExists( $this->root . '/dist/sitemap.xml' );
 	}
 
+	public function test_the_hero_image_takes_its_alt_from_the_media_library_unless_given_one(): void {
+		@mkdir( $this->root . '/assets/uploads', 0777, true );
+		file_put_contents( $this->root . '/assets/uploads/team.png', (string) base64_decode( 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', true ) );
+		file_put_contents( $this->root . '/config/media.json', '{"uploads/team.png": {"alt": "The team"}}' );
+
+		$template = json_decode( (string) file_get_contents( $this->root . '/templates/index.json' ), true );
+		$hero     = $template['order'][0];
+
+		$template['sections'][ $hero ]['settings']['image'] = '/assets/uploads/team.png';
+		file_put_contents( $this->root . '/templates/index.json', (string) json_encode( $template ) );
+
+		$html = Pillar::forSite( $this->root, compile: false )->render( 'index' );
+
+		self::assertMatchesRegularExpression( '#<figure class="hero-media"><img src="/assets/uploads/team\.png" alt="The team" class="hero-image"></figure>#', $html );
+
+		$template['sections'][ $hero ]['settings']['image_alt'] = 'Us, in 2026';
+		file_put_contents( $this->root . '/templates/index.json', (string) json_encode( $template ) );
+
+		self::assertStringContainsString( 'alt="Us, in 2026"', Pillar::forSite( $this->root, compile: false )->render( 'index' ) );
+	}
+
 	public function test_every_color_and_layout_setting_reaches_the_page(): void {
 		// A settings panel whose controls change nothing is worse than none —
 		// which is what the redesign briefly shipped.

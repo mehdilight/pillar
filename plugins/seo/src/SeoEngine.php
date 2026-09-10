@@ -25,7 +25,7 @@ final class SeoEngine implements LiqxExtension {
 	public function __construct( public readonly SeoSettings $settings ) {}
 
 	public function subject( HeadContext $context ): PageSubject {
-		return new PageSubject( $context, $this->settings, $this->environment?->filter( 'asset_url' ) );
+		return new PageSubject( $context, $this->settings, $this->environment?->filter( 'asset_url' ), $this->environment?->filter( 'image_alt' ) );
 	}
 
 	/** An image setting — an asset path or a URL — as an absolute URL, or `''`. */
