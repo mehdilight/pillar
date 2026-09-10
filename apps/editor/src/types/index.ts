@@ -198,6 +198,10 @@ export interface MediaItem {
   width: number | null;
   height: number | null;
   readonly: boolean;
+  /** Unix time the file last changed. */
+  modified: number;
+  /** Site files that mention the image — content, settings, templates, stylesheets. */
+  used_in: string[];
 }
 
 export interface IconProps {

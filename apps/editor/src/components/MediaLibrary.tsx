@@ -1,79 +1,44 @@
-import { For, Show, createMemo, createResource, createSignal } from 'solid-js';
+import { For, Show, createMemo, createSignal } from 'solid-js';
 import { ImagePlus, Upload } from 'lucide-solid';
-import { api } from '../api/client';
-import * as editor from '../store/editor';
+import { ACCEPTED, bytes, createMediaLibrary, mediaUrl, plural } from '../lib/media';
 import type { MediaItem } from '../types';
 import { controlClass } from './ui/Field';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { showToast } from './ui/Toast';
 
-export function mediaUrl(value: string): string {
-  if (/^https?:\/\//i.test(value) || value.startsWith('/assets/')) return value;
-  return value ? `/assets/${value.replace(/^\/?assets\//, '')}` : '';
-}
-const bytes = (size: number) => size >= 1024 * 1024 ? `${(size / (1024 * 1024)).toFixed(1)} MB` : `${Math.max(1, Math.round(size / 1024))} KB`;
+export { mediaUrl };
 
-/** Shared library for the Media tab and every image picker. */
+/** The image picker's library: choose an image, or upload one and choose it. */
 export default function MediaLibrary(props: { onChoose?: (url: string) => void; compact?: boolean }) {
-  const [images, { refetch }] = createResource(api.media);
+  const { images, all, refetch, upload: uploadFiles, remove: removeImage, progress, error, setError } = createMediaLibrary();
   const [query, setQuery] = createSignal('');
   const [format, setFormat] = createSignal('');
   const [page, setPage] = createSignal(1);
   const [selected, setSelected] = createSignal<MediaItem>();
-  const [progress, setProgress] = createSignal('');
-  const [error, setError] = createSignal('');
   const [confirm, setConfirm] = createSignal(false);
   const [deleting, setDeleting] = createSignal(false);
   let uploadInput!: HTMLInputElement;
-  const all = () => images.error ? [] : images() ?? [];
   const matching = createMemo(() => all().filter((image) => image.name.toLowerCase().includes(query().trim().toLowerCase()) && (!format() || image.url.toLowerCase().endsWith(`.${format()}`))));
   const pages = () => Math.max(1, Math.ceil(matching().length / 24));
   const current = () => Math.min(page(), pages());
   const visible = () => matching().slice((current() - 1) * 24, current() * 24);
   const upload = async (files: File[]) => {
-    if (progress()) return;
-    setError('');
-    let succeeded = 0;
-    const failures: string[] = [];
-    for (const [index, file] of files.entries()) {
-      setProgress(`Uploading ${index + 1} of ${files.length}…`);
-      try {
-        if (file.size > 10 * 1024 * 1024) throw new Error('Choose a file smaller than 10 MB.');
-        const data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(String(reader.result).split(',')[1]);
-          reader.onerror = () => reject(new Error('Could not read the image.'));
-          reader.readAsDataURL(file);
-        });
-        setSelected(await api.uploadImage(file.name, data));
-        succeeded++;
-      } catch (cause) { failures.push(`${file.name}: ${cause instanceof Error ? cause.message : 'Upload failed.'}`); }
-    }
-    try { await refetch(); await editor.refreshStatus(); } catch { failures.push('Could not refresh the library. Reopen it to try again.'); }
-    setProgress('');
+    const uploaded = await uploadFiles(files);
     uploadInput.value = '';
-    if (succeeded) showToast(`Uploaded ${succeeded} image${succeeded === 1 ? '' : 's'}`, 'success');
-    setError(failures.join('\n'));
+    if (uploaded.length) setSelected(uploaded[uploaded.length - 1]);
   };
   const remove = async () => {
     const image = selected();
     if (!image) return;
     setDeleting(true);
-    try {
-      await api.deleteMedia(image.url);
-      setSelected(undefined);
-      await refetch();
-      await editor.refreshStatus();
-      editor.reloadPreview();
-      showToast('Image deleted', 'success');
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not delete the image.'); }
-    finally { setDeleting(false); }
+    if (await removeImage(image)) setSelected(undefined);
+    setDeleting(false);
   };
   return <div class="flex-1 min-h-0 flex flex-col bg-[#f1f2f4]" classList={{ 'min-h-[440px]': props.compact }}
     onDragOver={(e) => { e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); void upload(Array.from(e.dataTransfer?.files ?? [])); }}>
     <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-[#e1e3e5] bg-white">
-      <div><h1 class="text-sm font-semibold text-[#202223]">Media library</h1><p class="ed-hint">{all().length} images · Upload once, use anywhere.</p></div>
-      <input ref={uploadInput} type="file" multiple accept="image/png,image/jpeg,image/gif,image/webp,image/avif" class="hidden" aria-label="Upload images" onChange={(e) => void upload(Array.from(e.currentTarget.files ?? []))} />
+      <div><h1 class="text-sm font-semibold text-[#202223]">Media library</h1><p class="ed-hint">{plural(all().length, 'image')} · Upload once, use anywhere.</p></div>
+      <input ref={uploadInput} type="file" multiple accept={ACCEPTED} class="hidden" aria-label="Upload images" onChange={(e) => void upload(Array.from(e.currentTarget.files ?? []))} />
       <button type="button" class="sam-btn primary" disabled={!!progress()} onClick={() => uploadInput.click()}><Upload size={14} />{progress() || 'Upload images'}</button>
     </div>
     <div class="flex flex-1 min-h-0 overflow-y-auto flex-col md:flex-row">

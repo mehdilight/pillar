@@ -28,7 +28,10 @@ final class Media {
 	 * same name. Images from an addon or theme are listed read-only — they
 	 * belong to their package, and deleting one would be undone on update.
 	 *
-	 * @return list<array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool}>
+	 * Each carries the site files that mention it, so the library can say an
+	 * image is in use before someone deletes it.
+	 *
+	 * @return list<array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>}>
 	 */
 	public function all(): array {
 		$images = [];
@@ -56,6 +59,12 @@ final class Media {
 
 		ksort( $images );
 
+		$sources = $this->sources();
+
+		foreach ( $images as $name => $image ) {
+			$images[ $name ]['used_in'] = self::mentions( $name, $sources );
+		}
+
 		return array_values( $images );
 	}
 
@@ -69,7 +78,7 @@ final class Media {
 	 *
 	 * @param array<string, mixed> $input `name` and base64 `data`
 	 *
-	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool}
+	 * @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>}
 	 */
 	public function upload( array $input ): array {
 		$encoded = (string) ( $input['data'] ?? '' );
@@ -144,11 +153,65 @@ final class Media {
 		}
 	}
 
+	/**
+	 * The site's own text files, by path: what an image can be referenced
+	 * from — content, settings, templates, stylesheets.
+	 *
+	 * @return array<string, string>
+	 */
+	private function sources(): array {
+		$sources = [];
+		$text    = [ 'liqx', 'json', 'md', 'yaml', 'yml', 'css', 'js', 'txt' ];
+
+		foreach ( PathPolicy::ROOT_FILES as $file ) {
+			if ( is_file( $this->site->root . '/' . $file ) ) {
+				$sources[ $file ] = (string) file_get_contents( $this->site->root . '/' . $file );
+			}
+		}
+
+		foreach ( PathPolicy::FOLDERS as $folder ) {
+			$root = $this->site->root . '/' . $folder;
+
+			if ( ! is_dir( $root ) ) {
+				continue;
+			}
+
+			$files = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root, \FilesystemIterator::SKIP_DOTS ) );
+
+			foreach ( $files as $file ) {
+				/** @var \SplFileInfo $file */
+				if ( $file->isFile() && $file->getSize() <= 1024 * 1024 && in_array( strtolower( $file->getExtension() ), $text, true ) ) {
+					$sources[ $folder . substr( $file->getPathname(), strlen( $root ) ) ] = (string) file_get_contents( $file->getPathname() );
+				}
+			}
+		}
+
+		ksort( $sources );
+
+		return $sources;
+	}
+
+	/**
+	 * Which sources name an image, by its path under `assets/` — which is how
+	 * every form of reference ends: `/assets/uploads/a.png`, `assets/…`, or the
+	 * bare `uploads/a.png` an image setting may hold. The name must not be the
+	 * tail of a longer one: `logo.png` is not mentioned by `site-logo.png`.
+	 *
+	 * @param array<string, string> $sources
+	 *
+	 * @return list<string>
+	 */
+	private static function mentions( string $name, array $sources ): array {
+		$pattern = '~(?<![\w.-])' . preg_quote( $name, '~' ) . '(?![\w.-]*\w)~';
+
+		return array_keys( array_filter( $sources, static fn ( string $text ): bool => 1 === preg_match( $pattern, $text ) ) );
+	}
+
 	private static function isImage( string $path ): bool {
 		return in_array( strtolower( pathinfo( $path, PATHINFO_EXTENSION ) ), self::IMAGE_EXTENSIONS, true );
 	}
 
-	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool} */
+	/** @return array{name: string, url: string, size: int, width: int|null, height: int|null, readonly: bool, modified: int, used_in: list<string>} */
 	private function describe( string $path, string $url, bool $readonly ): array {
 		$dimensions = @getimagesize( $path );
 
@@ -159,6 +222,8 @@ final class Media {
 			'width'    => false === $dimensions ? null : $dimensions[0],
 			'height'   => false === $dimensions ? null : $dimensions[1],
 			'readonly' => $readonly,
+			'modified' => (int) filemtime( $path ),
+			'used_in'  => [],
 		];
 	}
 }

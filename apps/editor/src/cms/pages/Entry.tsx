@@ -64,8 +64,15 @@ export default function Entry() {
 
   // A new entry starts from the schema's defaults, as a draft; an existing one
   // from its file. Either way the loaded state is the "saved" baseline.
+  //
+  // The collection is tracked only for arriving — through a memo, since `on`
+  // re-runs whenever a source notifies, equal value or not. A save refreshes
+  // the collection list, and re-running this on that would put the file as it
+  // was when the page opened back into the form, over what was just saved.
+  const hasCollection = createMemo(() => collection() !== null);
+
   createEffect(
-    on([() => params.collection, () => params.slug, existing, collection], () => {
+    on([() => params.collection, () => params.slug, existing, hasCollection], () => {
       if (isNew()) {
         const defaults = Object.fromEntries(
           (collection()?.fields ?? []).filter((field) => field.default !== undefined).map((field) => [field.id, field.default])

@@ -1,5 +1,6 @@
 import { For, Show, createEffect, createSignal, on, onCleanup, onMount, type JSX } from 'solid-js';
 import { Editor } from '@tiptap/core';
+import { Selection } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import { TableKit } from '@tiptap/extension-table';
@@ -103,11 +104,18 @@ export default function RichEditor(props: {
     const content = format() === 'markdown' && instance.markdown ? joinSoftBreaks(instance.markdown.parse(value)) : value;
 
     // Out of the undo history: ⌘Z straight after opening an entry must not
-    // undo the loading of it, leaving an empty document.
+    // undo the loading of it, leaving an empty document. The cursor goes to
+    // the start — left where the empty document's was, it would select a
+    // closing image, and the first key pressed would replace it.
     instance
       .chain()
       .setMeta('addToHistory', false)
       .setContent(content, { contentType: format() === 'markdown' ? 'json' : 'html', emitUpdate: false })
+      .command(({ tr }) => {
+        tr.setSelection(Selection.atStart(tr.doc));
+
+        return true;
+      })
       .run();
   }
 
