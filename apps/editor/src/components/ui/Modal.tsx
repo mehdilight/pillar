@@ -1,6 +1,6 @@
 import { Show, onCleanup, createEffect, type JSX } from 'solid-js';
 import { Portal } from 'solid-js/web';
-import { X } from 'lucide-solid';
+import { X } from './Icons';
 
 interface ModalProps {
   open: boolean;

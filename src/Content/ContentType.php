@@ -146,11 +146,14 @@ final class ContentType {
 	/** @param list<array<string, mixed>> $fields */
 	private function writeSchema( string $name, string $label, array $fields ): string {
 		$relative = 'schemas/' . $name . '.json';
+		$existing = $this->site->layers()->resolve( $relative );
+		$raw = null !== $existing ? json_decode( (string) file_get_contents( $existing ), true ) : [];
+		$metadata = is_array( $raw ) ? $raw : [];
 
 		$this->put(
 			$relative,
 			(string) json_encode(
-				[ 'label' => $label, 'fields' => $fields ],
+				array_replace( $metadata, [ 'label' => $label, 'fields' => $fields ] ),
 				JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
 			) . "\n"
 		);

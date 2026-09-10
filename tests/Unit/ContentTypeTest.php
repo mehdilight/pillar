@@ -11,6 +11,20 @@ use Pillar\Tests\SiteTestCase;
 /** Creating a content type: the three files, written the way a person would. */
 final class ContentTypeTest extends SiteTestCase {
 
+	public function test_developer_icon_survives_content_type_edits(): void {
+		$this->types()->create( 'guides' );
+		$path = $this->root . '/schemas/guides.json';
+		$raw = json_decode( (string) file_get_contents( $path ), true );
+		$raw['icon'] = 'book-open';
+		file_put_contents( $path, json_encode( $raw ) );
+		$this->types()->update( 'guides', 'Help', $raw['fields'] );
+		$updated = json_decode( (string) file_get_contents( $path ), true );
+		$schema = \Pillar\Schema\ContentSchema::fromArray( 'guides', $updated );
+		self::assertSame( 'book-open', $schema->toArray()['icon'] );
+		self::assertSame( 'Help', $schema->label );
+		self::assertSame( 'file-text', \Pillar\Schema\ContentSchema::fromArray( 'plain', [] )->icon );
+	}
+
 	public function test_it_writes_the_schema_the_folder_and_the_template(): void {
 		$result = $this->types()->create( 'guides', 'Guides' );
 

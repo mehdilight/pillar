@@ -1,5 +1,5 @@
 import { Show, createUniqueId, type JSX } from 'solid-js';
-import { Check } from 'lucide-solid';
+import { Check } from './Icons';
 
 interface CheckboxProps {
   children?: JSX.Element;

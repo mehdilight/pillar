@@ -1,5 +1,5 @@
 import { For, createSignal } from 'solid-js';
-import { X } from 'lucide-solid';
+import { X } from './Icons';
 import Field, { controlClass } from './Field';
 
 interface TagsInputProps {

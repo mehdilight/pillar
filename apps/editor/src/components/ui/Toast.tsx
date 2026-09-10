@@ -1,5 +1,5 @@
 import { For, createSignal } from 'solid-js';
-import { CheckCircle2, AlertCircle, Info } from 'lucide-solid';
+import { CheckCircle2, AlertCircle, Info } from './Icons';
 
 type ToastKind = 'success' | 'error' | 'info';
 

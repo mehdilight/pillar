@@ -2,7 +2,7 @@ import { For, Show, createSignal, onMount, type JSX } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import {
   ExternalLink,
-  FileText,
+  ContentTypeIcon,
   Folder,
   GitBranch,
   House,
@@ -13,7 +13,7 @@ import {
   PaintbrushVertical,
   Settings,
   Upload,
-} from 'lucide-solid';
+} from '../components/ui/Icons';
 import { editorConfig } from '../api/client';
 import { refreshStatus, status } from '../store/status';
 import { collections, loadCollections } from '../store/content';
@@ -146,7 +146,7 @@ function Sidebar(props: { open: boolean; onClose: () => void }) {
               to={`/content/${collection.name}`}
               label={collection.label}
               count={collection.count}
-              icon={(a) => <FileText size={18} class={iconClass(a)} />}
+              icon={(a) => <ContentTypeIcon name={collection.icon} size={18} class={iconClass(a)} />}
             />
           )}
         </For>

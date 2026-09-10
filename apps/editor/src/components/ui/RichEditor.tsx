@@ -24,7 +24,7 @@ import {
   Strikethrough,
   Table,
   Undo2,
-} from 'lucide-solid';
+} from './Icons';
 import Modal from './Modal';
 import MediaLibrary from '../MediaLibrary';
 import { joinSoftBreaks, tidyMarkdown } from '../../lib/markdown';

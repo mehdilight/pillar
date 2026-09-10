@@ -1,5 +1,5 @@
 import { For, createUniqueId } from 'solid-js';
-import { ChevronDown } from 'lucide-solid';
+import { ChevronDown } from './Icons';
 import Field from './Field';
 
 interface SelectInputProps {

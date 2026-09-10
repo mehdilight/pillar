@@ -1,6 +1,6 @@
 import { For, Show, createEffect, createResource, createSignal } from 'solid-js';
 import { A, useNavigate, useParams } from '@solidjs/router';
-import { ChevronRight, GripVertical, Link2, Pencil, Plus, Trash2 } from 'lucide-solid';
+import { ChevronRight, GripVertical, Link2, Pencil, Plus, Trash2 } from '../../components/ui/Icons';
 import { DragDropProvider, DragDropSensors, SortableProvider, createSortable, transformStyle } from '@thisbeyond/solid-dnd';
 import Page from '../ui/Page';
 import { Button, Empty, Input, Label, Postbox } from '../ui/ds';

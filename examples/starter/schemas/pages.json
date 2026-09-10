@@ -1,5 +1,6 @@
 {
   "label": "Pages",
+  "icon": "files",
   "fields": [
     { "id": "title", "type": "text", "label": "Title" }
   ]

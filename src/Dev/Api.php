@@ -346,6 +346,7 @@ final class Api {
 			$out[] = [
 				'name'     => $name,
 				'label'    => $type['label'],
+				'icon'     => $schema->icon ?? 'file-text',
 				'count'    => $type['count'],
 				'template' => ContentType::singular( $name ),
 				// A collection with no `schemas/<name>.json` still lists and

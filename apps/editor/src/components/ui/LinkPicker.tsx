@@ -1,5 +1,5 @@
 import { For, Show, createMemo, createResource, createSignal } from 'solid-js';
-import { ChevronDown, Link2, Search } from 'lucide-solid';
+import { ChevronDown, Link2, Search } from './Icons';
 import { Popover } from '@kobalte/core';
 import { api } from '../../api/client';
 import { entryUrl } from '../../store/content';

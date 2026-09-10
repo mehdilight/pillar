@@ -1,5 +1,5 @@
 import { For, Show, createMemo, createSignal } from 'solid-js';
-import { ImagePlus, Upload } from 'lucide-solid';
+import { ImagePlus, Upload } from './ui/Icons';
 import { ACCEPTED, bytes, createMediaLibrary, mediaUrl, plural } from '../lib/media';
 import type { MediaItem } from '../types';
 import { controlClass } from './ui/Field';

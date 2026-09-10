@@ -1,7 +1,7 @@
 import { For, Show, createEffect, createMemo, createResource, createSignal, on, onCleanup, onMount } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import { A, useBeforeLeave, useNavigate, useParams, type BeforeLeaveEventArgs } from '@solidjs/router';
-import { ExternalLink } from 'lucide-solid';
+import { ExternalLink } from '../../components/ui/Icons';
 import Page from '../ui/Page';
 import { Button, Input, Label, Loading, Notice, Postbox, SidebarLayout, buttonClass } from '../ui/ds';
 import RichEditor from '../../components/ui/LazyRichEditor';

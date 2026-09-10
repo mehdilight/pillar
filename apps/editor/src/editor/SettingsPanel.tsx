@@ -1,5 +1,5 @@
 import { For, Show, createEffect, createSignal, on } from 'solid-js';
-import { ChevronDown, Trash2, X } from 'lucide-solid';
+import { ChevronDown, Trash2, X } from '../components/ui/Icons';
 import { SectionIcon } from '../components/ui/SectionIcon';
 import SettingInput from '../components/SettingInput';
 import * as editor from '../store/editor';

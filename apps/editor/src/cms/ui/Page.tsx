@@ -1,6 +1,6 @@
 import { Show, type JSX } from 'solid-js';
 import { A } from '@solidjs/router';
-import { ArrowLeft } from 'lucide-solid';
+import { ArrowLeft } from '../../components/ui/Icons';
 
 /**
  * A CMS page: title, optional back link, actions, content.

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@kobalte/core": "^0.12.6",
+    "@phosphor-icons/core": "^2.1.1",
     "@solidjs/router": "^0.15.4",
     "@thisbeyond/solid-dnd": "^0.7.5",
     "@tiptap/core": "^3.31.3",
@@ -21,7 +22,6 @@
     "@tiptap/markdown": "^3.31.3",
     "@tiptap/pm": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
-    "lucide-solid": "^0.544.0",
     "solid-js": "^1.9.3"
   },
   "devDependencies": {

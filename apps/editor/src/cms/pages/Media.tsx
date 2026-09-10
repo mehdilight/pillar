@@ -1,6 +1,6 @@
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import { A } from '@solidjs/router';
-import { Copy, ExternalLink, ImagePlus, Trash2, Upload } from 'lucide-solid';
+import { Copy, ExternalLink, ImagePlus, Trash2, Upload } from '../../components/ui/Icons';
 import Page from '../ui/Page';
 import { Badge, Button, Filters, Label, Loading, Notice, Pager, Postbox, SidebarLayout } from '../ui/ds';
 import AltField from '../../components/AltField';

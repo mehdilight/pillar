@@ -144,6 +144,8 @@ export interface TemplatePayload {
 
 /** A content collection declared in `schemas/*.json`. */
 export interface ContentCollection {
+  /** Phosphor regular icon name from the collection schema. */
+  icon?: string;
   name: string;
   label: string;
   /** The frontmatter form, in the same vocabulary as a section's settings. */

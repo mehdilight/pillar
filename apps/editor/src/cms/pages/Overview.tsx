@@ -1,6 +1,6 @@
 import { For, Show, createResource, createSignal } from 'solid-js';
 import { A } from '@solidjs/router';
-import { Hammer } from 'lucide-solid';
+import { Hammer } from '../../components/ui/Icons';
 import Page from '../ui/Page';
 import { Badge, Button, Grid, Loading, Postbox, SidebarLayout, Tile, buttonClass } from '../ui/ds';
 import { showToast } from '../../components/ui/Toast';

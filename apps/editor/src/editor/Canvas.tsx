@@ -1,5 +1,5 @@
 import { Show } from 'solid-js';
-import { Copy, EyeOff, Trash2 } from 'lucide-solid';
+import { Copy, EyeOff, Trash2 } from '../components/ui/Icons';
 import * as editor from '../store/editor';
 
 /**

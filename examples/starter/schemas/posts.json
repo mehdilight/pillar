@@ -1,5 +1,6 @@
 {
   "label": "Posts",
+  "icon": "article",
   "fields": [
     { "id": "title", "type": "text", "label": "Title" },
     { "id": "date", "type": "date", "label": "Date" },

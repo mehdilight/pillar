@@ -19,6 +19,7 @@ final class ContentSchema {
 		public readonly string $collection,
 		public readonly string $label,
 		public readonly array $fields,
+		public readonly string $icon = 'file-text',
 	) {}
 
 	/** @throws SchemaException */
@@ -35,6 +36,7 @@ final class ContentSchema {
 			collection: $collection,
 			label: (string) ( $raw['label'] ?? ucfirst( $collection ) ),
 			fields: $fields,
+			icon: is_string( $raw['icon'] ?? null ) && preg_match( '/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $raw['icon'] ) ? $raw['icon'] : 'file-text',
 		);
 	}
 
@@ -83,6 +85,7 @@ final class ContentSchema {
 		return [
 			'name'   => $this->collection,
 			'label'  => $this->label,
+			'icon'   => $this->icon,
 			'fields' => array_map( static fn ( Setting $f ): array => $f->toArray(), $this->fields ),
 		];
 	}

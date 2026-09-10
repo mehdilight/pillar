@@ -1,5 +1,5 @@
 import { For, Show, createResource, createSignal } from 'solid-js';
-import { ChevronDown } from 'lucide-solid';
+import { ChevronDown } from '../components/ui/Icons';
 import SettingInput from '../components/SettingInput';
 import { showToast } from '../components/ui/Toast';
 import { api } from '../api/client';

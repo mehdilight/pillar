@@ -16,7 +16,7 @@ import {
   Smartphone,
   Undo2,
   Upload,
-} from 'lucide-solid';
+} from '../components/ui/Icons';
 import Dropdown from '../components/ui/Dropdown';
 import Tooltip from '../components/ui/Tooltip';
 import { Menu, MenuItem, MenuSeparator } from '../components/ui/Menu';
