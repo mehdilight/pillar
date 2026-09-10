@@ -5,6 +5,10 @@ import { api } from '../../api/client';
 import { entryUrl } from '../../store/content';
 import Field, { controlClass } from './Field';
 
+// `controlClass` is shared with the visual editor and includes `h-9`. The
+// picker has two deliberate sizes, so remove that fixed height before choosing.
+const pickerControlClass = controlClass.replace('h-9', '');
+
 interface Destination {
   label: string;
   url: string;
@@ -57,7 +61,7 @@ export default function LinkPicker(props: LinkPickerProps) {
   const control = (
     <Popover.Root open={open()} onOpenChange={setOpen} placement="bottom-start" gutter={6} sameWidth fitViewport overflowPadding={12}>
       <Popover.Anchor class="flex">
-        <input type="text" class={`${controlClass} rounded-e-none border-e-0 ${props.compact ? 'h-8' : ''}`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
+        <input type="text" class={`${pickerControlClass} ${props.compact ? 'h-8' : 'h-9'} rounded-e-none border-e-0`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
         <Popover.Trigger
           class={`inline-flex shrink-0 items-center gap-1 rounded-e-lg border border-[#8c9196] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3] ${props.compact ? 'h-8' : 'h-9'}`}
           classList={{ 'bg-[#eef6ff] text-[#005bd3]': open() }}
