@@ -64,6 +64,10 @@ final class Server {
 
 		try {
 			$pillar = Pillar::forSite( $this->root, editor: true, drafts: true, compile: false );
+			$extra = $pillar->routes->find( $url );
+			if ( null !== $extra ) {
+				return new Response( ( $extra['render'] )(), 200, [ 'Content-Type' => $extra['type'], 'X-Robots-Tag' => 'noindex, nofollow' ] );
+			}
 			$routes = ( new RouteTable( $pillar->site, $pillar->content ) )->all();
 			$route  = null;
 
@@ -89,7 +93,7 @@ final class Server {
 
 			$html .= $this->bridge();
 
-			return new Response( $html, 200, [ 'Content-Type' => 'text/html; charset=utf-8' ] );
+			return new Response( $html, 200, [ 'Content-Type' => 'text/html; charset=utf-8', 'X-Robots-Tag' => 'noindex, nofollow' ] );
 		} catch ( PillarException $error ) {
 			return new Response( $this->fatal( $error ), 500, [ 'Content-Type' => 'text/html' ] );
 		}

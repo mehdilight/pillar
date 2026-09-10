@@ -17,6 +17,10 @@ final class BuildManifest {
 	private function __construct(
 		public array $pages = [],
 		public string $fingerprint = '',
+		/** @var list<string> */
+		public array $artifacts = [],
+		/** @var list<string> */
+		public array $assets = [],
 	) {}
 
 	public static function empty(): self {
@@ -34,7 +38,7 @@ final class BuildManifest {
 			return self::empty();
 		}
 
-		return new self( (array) ( $raw['pages'] ?? [] ), (string) ( $raw['fingerprint'] ?? '' ) );
+		return new self( (array) ( $raw['pages'] ?? [] ), (string) ( $raw['fingerprint'] ?? '' ), (array) ( $raw['artifacts'] ?? [] ), (array) ( $raw['assets'] ?? [] ) );
 	}
 
 	public function save( string $path ): void {
@@ -43,7 +47,7 @@ final class BuildManifest {
 		file_put_contents(
 			$path,
 			(string) json_encode(
-				[ 'fingerprint' => $this->fingerprint, 'pages' => $this->pages ],
+				[ 'fingerprint' => $this->fingerprint, 'pages' => $this->pages, 'artifacts' => $this->artifacts, 'assets' => $this->assets ],
 				JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES
 			)
 		);

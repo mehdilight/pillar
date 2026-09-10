@@ -3,6 +3,7 @@ declare( strict_types=1 );
 
 namespace Pillar\Build;
 
+use Pillar\Content\ContentStore;
 use Pillar\Render\LayeredFileSystem;
 
 /**
@@ -17,12 +18,19 @@ final class DependencyRecorder {
 	/** @var array<string, true> */
 	private array $paths = [];
 
-	public function __construct( LayeredFileSystem ...$fileSystems ) {
+	/** The prefix a collection dependency is recorded under, beside file paths. */
+	public const COLLECTION = 'collection:';
+
+	public function __construct( ?ContentStore $content, LayeredFileSystem ...$fileSystems ) {
 		foreach ( $fileSystems as $fileSystem ) {
 			$fileSystem->listen( function ( string $name, string $path ): void {
 				$this->paths[ $path ] = true;
 			} );
 		}
+
+		$content?->listen( function ( string $collection ): void {
+			$this->paths[ self::COLLECTION . $collection ] = true;
+		} );
 	}
 
 	public function start(): void {
@@ -34,16 +42,4 @@ final class DependencyRecorder {
 		return array_keys( $this->paths );
 	}
 
-	/** A hash of everything read, so a changed dependency changes the page's hash. */
-	public function hash(): string {
-		$parts = [];
-
-		foreach ( $this->paths() as $path ) {
-			$parts[] = $path . ':' . FileHash::of( $path );
-		}
-
-		sort( $parts );
-
-		return md5( implode( '|', $parts ) );
-	}
 }

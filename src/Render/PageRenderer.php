@@ -8,6 +8,8 @@ use Phpmystic\Liqx\Template;
 use Pillar\Content\ContentStore;
 use Pillar\PillarException;
 use Pillar\Render\Drops\SiteDrop;
+use Pillar\Render\Head\HeadContext;
+use Pillar\Render\Head\HeadRegistry;
 use Pillar\Site\Layers;
 use Pillar\Site\Site;
 use Pillar\Template\PageTemplate;
@@ -32,6 +34,9 @@ final class PageRenderer {
 		private readonly SectionRenderer $sectionRenderer,
 		private readonly PageState $state,
 		private readonly RenderErrors $errors,
+		private readonly HeadRegistry $head = new HeadRegistry(),
+		/** The editor's canvas: contributors that should not run there can tell. */
+		private readonly bool $preview = false,
 	) {
 		$this->layers = $this->site->layers();
 	}
@@ -63,7 +68,17 @@ final class PageRenderer {
 			$body .= $this->sectionRenderer->render( $section, $scope, $route );
 		}
 
-		return $this->renderLayout( $scope + [ 'content_for_layout' => $body ] );
+		// `{content_for_header}` in a layout is where plugins reach `<head>`.
+		// Rendered after the body so a contributor can read anything the
+		// sections put in scope.
+		$header = $this->head->isEmpty() ? '' : $this->head->render(
+			new HeadContext( $this->site, $template, $route, $scope, $settings, $this->preview )
+		);
+
+		return $this->renderLayout( $scope + [
+			'content_for_layout' => $body,
+			'content_for_header' => $header,
+		] );
 	}
 
 	/** Render one layout section by name — what the `section()` global calls. */

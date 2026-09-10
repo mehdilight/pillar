@@ -17,6 +17,12 @@ use Pillar\Render\SectionRenderer;
 use Pillar\Schema\SchemaParser;
 use Pillar\Schema\SettingsCaster;
 use Pillar\Site\Site;
+use Pillar\Plugin\PluginLoader;
+use Pillar\Plugin\EditorRegistry;
+use Pillar\Build\BuildHooks;
+use Pillar\Build\RouteRegistry;
+use Pillar\Render\Head\HeadRegistry;
+use Pillar\Render\Head\DefaultContributor;
 
 /**
  * The composition root: one site, wired.
@@ -38,6 +44,12 @@ final class Pillar {
 		public readonly LayeredFileSystem $sections,
 		public readonly LayeredFileSystem $snippets,
 		public readonly SchemaParser $schemas,
+		public readonly HeadRegistry $head,
+		public readonly RouteRegistry $routes,
+		public readonly BuildHooks $build,
+		public readonly EditorRegistry $editor,
+		/** @var list<\Pillar\Plugin\PluginContext> */
+		public readonly array $plugins,
 	) {}
 
 	/**
@@ -53,13 +65,24 @@ final class Pillar {
 		$site     = Site::load( $root );
 		$markdown = new CommonMarkConverter( [ 'html_input' => 'allow', 'allow_unsafe_links' => false ] );
 
+		$content = new ContentStore( $site, $markdown, $drafts );
+		$errors = new RenderErrors();
+		$head = new HeadRegistry( $errors );
+		$head->register( new DefaultContributor() );
+		$routes = new RouteRegistry();
+		$build = new BuildHooks();
+		$editorRegistry = new EditorRegistry();
+		$plugins = ( new PluginLoader( $site, $head, $routes, $build, $content, $editorRegistry ) )->load();
+		$site->setPluginLayers( PluginLoader::layersOf( $plugins ) );
+		foreach ( $plugins as $plugin ) {
+			array_push( $extensions, ...$plugin->extensions() );
+		}
+
 		$factory = new EnvironmentFactory( $site, $markdown );
 		$factory->extend( ...$extensions );
 
 		[ $environment, $sections, $snippets, $filters, $state ] = $factory->create( $compile );
 
-		$content  = new ContentStore( $site, $markdown, $drafts );
-		$errors   = new RenderErrors();
 		$schemas  = new SchemaParser( $site->layers() );
 		$renderer = new PageRenderer(
 			$site,
@@ -68,6 +91,8 @@ final class Pillar {
 			new SectionRenderer( $environment, $sections, $schemas, new SettingsCaster(), $errors, $editor ),
 			$state,
 			$errors,
+			$head,
+			$editor,
 		);
 
 		// Overrides Liqx's own `section()`, which renders a bare file with the
@@ -79,7 +104,7 @@ final class Pillar {
 			static fn ( string $name ): string => $renderer->renderLayoutSection( $name )
 		);
 
-		return new self( $site, $environment, $content, $renderer, $errors, $filters, $sections, $snippets, $schemas );
+		return new self( $site, $environment, $content, $renderer, $errors, $filters, $sections, $snippets, $schemas, $head, $routes, $build, $editorRegistry, $plugins );
 	}
 
 	/** @param array<string, mixed> $data */

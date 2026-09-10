@@ -55,14 +55,16 @@ final class BuildTest extends SiteTestCase {
 		self::assertSame( [ 'written' => 0, 'skipped' => 4 ], $this->counts( $this->build() ) );
 	}
 
-	public function test_editing_content_rebuilds_only_that_page(): void {
+	public function test_editing_content_rebuilds_that_page_and_the_listings_showing_it(): void {
 		$this->build();
 
 		// Appended without touching mtimes deliberately: within one second, an
 		// mtime check cannot see this change, and used not to.
 		file_put_contents( $this->root . '/content/posts/hello-world.md', "\nAn edit.\n", FILE_APPEND );
 
-		self::assertSame( [ 'written' => 1, 'skipped' => 3 ], $this->counts( $this->build() ) );
+		// The post itself, and the home page, which lists posts — its title,
+		// date and excerpt come from this file. The about page reads neither.
+		self::assertSame( [ 'written' => 2, 'skipped' => 2 ], $this->counts( $this->build() ) );
 		self::assertStringContainsString( 'An edit.', (string) file_get_contents( $this->root . '/dist/posts/hello-world/index.html' ) );
 	}
 
@@ -73,6 +75,34 @@ final class BuildTest extends SiteTestCase {
 
 		self::assertSame( [ 'written' => 1, 'skipped' => 3 ], $this->counts( $this->build() ) );
 		self::assertStringContainsString( 'edited-card', (string) file_get_contents( $this->root . '/dist/index.html' ) );
+	}
+
+	public function test_adding_an_entry_rebuilds_the_pages_that_list_its_collection(): void {
+		$this->build();
+
+		// The home page lists posts through `collections.posts`. That read is
+		// the dependency — not any template file — and the build used to miss
+		// it, leaving the home page showing the old list.
+		file_put_contents(
+			$this->root . '/content/posts/brand-new.md',
+			"---\ntitle: Brand new\ndate: 2026-09-10\n---\nFresh.\n"
+		);
+
+		$result = $this->build();
+
+		self::assertStringContainsString( 'Brand new', (string) file_get_contents( $this->root . '/dist/index.html' ) );
+		self::assertSame( 2, $result['written'], 'the new post and the home page — not the unrelated pages' );
+	}
+
+	public function test_editing_an_entry_in_another_collection_leaves_a_listing_alone(): void {
+		$this->build();
+
+		// The about page is in `pages`; the home page lists `posts` only, so it
+		// must not rebuild — dependency tracking is precise, not "any content
+		// changed, rebuild every listing".
+		file_put_contents( $this->root . '/content/pages/about.md', "\nEdited.\n", FILE_APPEND );
+
+		self::assertSame( [ 'written' => 1, 'skipped' => 3 ], $this->counts( $this->build() ) );
 	}
 
 	public function test_changing_settings_rebuilds_everything(): void {

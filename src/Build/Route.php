@@ -13,6 +13,14 @@ final class Route {
 		public readonly array $data = [],
 		/** The content file behind this route, when there is one. */
 		public readonly ?string $source = null,
+		/**
+		 * Collections this route read before rendering — a paginated listing
+		 * slices its collection in the route table, where no recorder is
+		 * listening, so it declares the dependency itself.
+		 *
+		 * @var list<string>
+		 */
+		public readonly array $collections = [],
 	) {}
 
 	/**

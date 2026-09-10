@@ -63,7 +63,7 @@ final class Filters {
 			return '';
 		}
 
-		$url = str_starts_with( $url, 'http' ) || str_starts_with( $url, '/' ) ? $url : $this->assetUrl( $url );
+		$url = str_starts_with( $url, '/assets/' ) || str_starts_with( $url, 'assets/' ) || ( ! str_starts_with( $url, 'http' ) && ! str_starts_with( $url, '/' ) ) ? $this->assetUrl( $url ) : $url;
 
 		return null === $width || '' === $width ? $url : $url . '?w=' . (int) $width;
 	}

@@ -24,7 +24,7 @@ final class Builder {
 		private readonly bool $force = false,
 	) {
 		$this->manifest = BuildManifest::load( $this->manifestPath() );
-		$this->recorder = new DependencyRecorder( $this->pillar->sections, $this->pillar->snippets );
+		$this->recorder = new DependencyRecorder( $this->pillar->content, $this->pillar->sections, $this->pillar->snippets );
 	}
 
 	/**
@@ -39,6 +39,7 @@ final class Builder {
 		// A long-lived `pillar dev` builds repeatedly in one process; last
 		// build's content hashes describe files that have since been edited.
 		FileHash::forget();
+		$this->pillar->build->runBefore();
 
 		@mkdir( $output, 0777, true );
 
@@ -64,6 +65,7 @@ final class Builder {
 			$this->recorder->start();
 
 			$html = $this->pillar->render( $route->template, $route->url, $route->data );
+			$html = $this->pillar->build->runEachPage( $html, $route->url );
 			$path = $output . '/' . $route->outputPath();
 
 			@mkdir( dirname( $path ), 0777, true );
@@ -77,7 +79,36 @@ final class Builder {
 			$progress && $progress( $route->url, true );
 		}
 
-		$this->manifest->fingerprint = $fingerprint;
+		$outputs = array_map( static fn ( Route $route ): string => $route->outputPath(), $routes );
+		$artifacts = [];
+		foreach ( $this->pillar->routes->all() as $route ) {
+			$relative = ltrim( $route['url'], '/' );
+			if ( in_array( $relative, $outputs, true ) ) {
+				throw new \Pillar\PillarException( 'Plugin route conflicts with a page: ' . $route['url'] );
+			}
+			$contents = ( $route['render'] )();
+			@mkdir( dirname( $output . '/' . $relative ), 0777, true );
+			file_put_contents( $output . '/' . $relative, $contents );
+			$artifacts[] = $relative;
+		}
+		// Remove only files owned by the previous build. Disabling a plugin
+		// must remove its sitemap; deleting a post must remove its public page.
+		$assetOutputs = array_map( static fn ( string $file ): string => 'assets/' . $file, array_values( $assets ) );
+		$active = array_merge( $outputs, $artifacts, $assetOutputs );
+		$activeUrls = array_fill_keys( array_column( $routes, 'url' ), true );
+		foreach ( $this->manifest->pages as $url => $page ) {
+			if ( ! isset( $activeUrls[ $url ] ) ) {
+				$this->removeOutput( $page['output'], $active, $output );
+				unset( $this->manifest->pages[ $url ] );
+			}
+		}
+		foreach ( array_merge( $this->manifest->artifacts, $this->manifest->assets ) as $relative ) {
+			$this->removeOutput( $relative, $active, $output );
+		}
+		$this->manifest->artifacts = $artifacts;
+		$this->manifest->assets = $assetOutputs;
+		$this->pillar->build->runAfter( $this->manifest );
+		$this->manifest->fingerprint = $this->pillar->errors->isEmpty() ? $fingerprint : '';
 		$this->manifest->save( $this->manifestPath() );
 
 		return [
@@ -117,6 +148,11 @@ final class Builder {
 	private function hash( Route $route, array $dependencies ): string {
 		$parts = [ $route->template, $route->url ];
 
+		// Collections the route read before rendering (a paginated listing).
+		foreach ( $route->collections as $collection ) {
+			$parts[] = DependencyRecorder::COLLECTION . $collection . ':' . $this->pillar->content->hash( $collection );
+		}
+
 		if ( null !== $route->source ) {
 			$parts[] = 'source:' . FileHash::of( $route->source );
 		}
@@ -124,6 +160,15 @@ final class Builder {
 		sort( $dependencies );
 
 		foreach ( $dependencies as $dependency ) {
+			if ( str_starts_with( $dependency, DependencyRecorder::COLLECTION ) ) {
+				// A collection a template read while rendering — `collections.posts`
+				// in a home page's list — hashed by membership and content.
+				$collection = substr( $dependency, strlen( DependencyRecorder::COLLECTION ) );
+				$parts[]    = $dependency . ':' . $this->pillar->content->hash( $collection );
+
+				continue;
+			}
+
 			// A deleted dependency hashes as "gone", so it cannot look the same
 			// as one that is merely unchanged.
 			$parts[] = $dependency . ':' . FileHash::of( $dependency );
@@ -145,7 +190,7 @@ final class Builder {
 	private function fingerprint( array $assets ): string {
 		$parts = [ 'pillar:' . \Pillar\Cli\Application::VERSION, 'assets:' . md5( (string) json_encode( $assets ) ) ];
 
-		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json' ] as $file ) {
+		foreach ( [ 'config/settings_data.json', 'config/settings_schema.json', 'layout/theme.liqx' ] as $file ) {
 			$path    = $this->pillar->site->layers()->resolve( $file );
 			$parts[] = $file . ':' . ( null === $path ? 'none' : FileHash::of( $path ) );
 		}
@@ -154,7 +199,24 @@ final class Builder {
 			$parts[] = 'templates/' . (string) $name . ':' . FileHash::of( $path );
 		}
 
+		$parts[] = 'site:' . FileHash::of( $this->pillar->site->absolute( 'site.json' ) );
+		foreach ( $this->pillar->plugins as $plugin ) {
+			array_push( $parts, ...$plugin->fingerprints() );
+			$dependencies = $plugin->dependencies();
+			sort( $dependencies );
+			foreach ( $dependencies as $path ) { $parts[] = $path . ':' . FileHash::of( $path ); }
+		}
 		return md5( implode( '|', $parts ) );
+	}
+
+	/** @param list<string> $active */
+	private function removeOutput( string $relative, array $active, string $output ): void {
+		if ( str_starts_with( $relative, '/' ) || str_contains( $relative, '..' ) || str_contains( $relative, '\\' ) ) {
+			throw new \Pillar\PillarException( 'Unsafe output in build manifest: ' . $relative );
+		}
+		if ( ! in_array( $relative, $active, true ) && is_file( $output . '/' . $relative ) ) {
+			unlink( $output . '/' . $relative );
+		}
 	}
 
 	private function manifestPath(): string {

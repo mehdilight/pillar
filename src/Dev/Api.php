@@ -53,6 +53,10 @@ final class Api {
 
 				[ 'layout' ] === $segments && 'PUT' === $method => $this->saveTemplate( 'layout', $this->body( $request ) ),
 
+				'editor' === ( $segments[0] ?? '' ) && 'preview' === ( $segments[1] ?? '' ) && 3 === count( $segments ) && 'POST' === $method
+					=> $this->json( $this->pillar()->editor->resolvePreview( $segments[2], $this->body( $request ) ) ),
+				[ 'editor', 'panels' ] === $segments => $this->json( (object) $this->pillar()->editor->contentPanels() ),
+
 				[ 'settings', 'schema' ] === $segments => $this->json( $this->settingsSchema() ),
 				[ 'settings' ] === $segments && 'GET' === $method => $this->json( $this->settings() ),
 				[ 'settings' ] === $segments && 'PUT' === $method => $this->saveSettings( $this->body( $request ) ),
@@ -65,12 +69,18 @@ final class Api {
 				[ 'content-types', 'presets' ] === $segments => $this->json( $this->presets() ),
 
 				[ 'content' ] === $segments => $this->json( $this->collections() ),
-				'content' === ( $segments[0] ?? '' ) && 2 === count( $segments )
+				'content' === ( $segments[0] ?? '' ) && 2 === count( $segments ) && 'POST' === $method
+					=> $this->saveItem( $segments[1], (string) ( $this->body( $request )['slug'] ?? '' ), $this->body( $request ), true ),
+				'content' === ( $segments[0] ?? '' ) && 2 === count( $segments ) && 'GET' === $method
 					=> $this->json( $this->items( $segments[1] ) ),
 				'content' === ( $segments[0] ?? '' ) && 3 === count( $segments ) && 'PUT' === $method
 					=> $this->saveItem( $segments[1], $segments[2], $this->body( $request ) ),
 				'content' === ( $segments[0] ?? '' ) && 3 === count( $segments ) && 'DELETE' === $method
 					=> $this->deleteItem( $segments[1], $segments[2] ),
+
+				[ 'media' ] === $segments && 'GET' === $method => $this->json( ( new Media( $this->pillar()->site ) )->all() ),
+				[ 'media' ] === $segments && 'DELETE' === $method => $this->deleteMedia( $this->body( $request ) ),
+				[ 'media' ] === $segments && 'POST' === $method => $this->json( ( new Media( $this->pillar()->site ) )->upload( $this->body( $request ) ), 201 ),
 
 				[ 'status' ] === $segments => $this->json( $this->status() ),
 				[ 'history' ] === $segments => $this->json( $this->git->history() ),
@@ -242,9 +252,11 @@ final class Api {
 			$order[]         = $id;
 		}
 
+		$path = $this->pillar()->site->layers()->resolve( 'templates/' . $name . '.json' );
+		$existing = null === $path ? [] : json_decode( (string) file_get_contents( $path ), true );
 		$this->write(
 			'templates/' . $name . '.json',
-			(string) json_encode( [ 'sections' => (object) $sections, 'order' => $order ], self::JSON )
+			(string) json_encode( array_replace( (array) $existing, [ 'sections' => (object) $sections, 'order' => $order ] ), self::JSON )
 		);
 
 		return $this->json( [ 'ok' => true ] );
@@ -256,11 +268,7 @@ final class Api {
 	private function settingsSchema(): array {
 		$path = $this->pillar()->site->layers()->resolve( 'config/settings_schema.json' );
 
-		if ( null === $path ) {
-			return [];
-		}
-
-		$raw = json_decode( (string) file_get_contents( $path ), true );
+		$raw = null === $path ? [] : json_decode( (string) file_get_contents( $path ), true );
 
 		if ( ! is_array( $raw ) ) {
 			throw new SchemaException( 'config/settings_schema.json is not valid JSON.' );
@@ -284,7 +292,7 @@ final class Api {
 			$panels[] = [ 'name' => (string) ( $panel['name'] ?? 'Settings' ), 'settings' => $settings ];
 		}
 
-		return $panels;
+		return array_merge( $panels, $this->pillar()->editor->schema() );
 	}
 
 	/** @return array<string, mixed> */
@@ -292,12 +300,16 @@ final class Api {
 		$path = $this->pillar()->site->layers()->resolve( 'config/settings_data.json' );
 		$raw  = null === $path ? [] : json_decode( (string) file_get_contents( $path ), true );
 
-		return is_array( $raw ) ? $raw : [];
+		return ( is_array( $raw ) ? $raw : [] ) + $this->pillar()->editor->values();
 	}
 
 	/** @param array<string, mixed> $body */
 	private function saveSettings( array $body ): Response {
 		$settings = (array) ( $body['settings'] ?? $body );
+
+		foreach ( $this->pillar()->editor->extract( $settings ) as $path => $values ) {
+			$this->write( $path, (string) json_encode( (object) $values, self::JSON ) );
+		}
 
 		$this->write( 'config/settings_data.json', (string) json_encode( (object) $settings, self::JSON ) );
 
@@ -422,7 +434,7 @@ final class Api {
 	}
 
 	/** @param array<string, mixed> $body */
-	private function saveItem( string $collection, string $slug, array $body ): Response {
+	private function saveItem( string $collection, string $slug, array $body, bool $createOnly = false ): Response {
 		$frontmatter = (array) ( $body['frontmatter'] ?? [] );
 		$content     = (string) ( $body['body'] ?? '' );
 
@@ -432,9 +444,21 @@ final class Api {
 		$yaml = trim( Yaml::dump( $frontmatter, 4, 2, Yaml::DUMP_MULTI_LINE_LITERAL_BLOCK ) );
 		$file = "---\n" . $yaml . "\n---\n" . ltrim( $content, "\n" );
 
-		$this->write( 'content/' . $this->safe( $collection ) . '/' . $this->safe( $slug ) . '.md', $file );
-
-		return $this->json( [ 'ok' => true ] );
+		$relative = 'content/' . $this->safe( $collection ) . '/' . $this->safe( $slug ) . '.md';
+		if ( $createOnly ) {
+			if ( '' === trim( (string) ( $frontmatter['title'] ?? '' ) ) ) { throw new PillarException( 'Give this entry a title.' ); }
+			$path = $this->root . '/' . PathPolicy::normalise( $relative );
+			@mkdir( dirname( $path ), 0777, true );
+			// Exclusive creation prevents a new-entry dialog from overwriting an existing file.
+			$handle = @fopen( $path, 'x' );
+			if ( false === $handle ) { throw new PillarException( is_file( $path ) ? 'An entry with this URL name already exists. Choose another.' : 'Could not create the entry. Check folder permissions.' ); }
+			$written = fwrite( $handle, $file );
+			fclose( $handle );
+			if ( $written !== strlen( $file ) ) { unlink( $path ); throw new PillarException( 'Could not save the new entry.' ); }
+		} else {
+			$this->write( $relative, $file );
+		}
+		return $this->json( [ 'ok' => true ], $createOnly ? 201 : 200 );
 	}
 
 	private function deleteItem( string $collection, string $slug ): Response {
@@ -444,6 +468,12 @@ final class Api {
 			unlink( $path );
 		}
 
+		return $this->json( [ 'ok' => true ] );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function deleteMedia( array $body ): Response {
+		( new Media( $this->pillar()->site ) )->delete( (string) ( $body['url'] ?? '' ) );
 		return $this->json( [ 'ok' => true ] );
 	}
 
@@ -503,7 +533,7 @@ final class Api {
 
 	/** @return array<string, mixed> */
 	private function build(): array {
-		$pillar = $this->pillar();
+		$pillar = Pillar::forSite( $this->root );
 		$result = ( new Builder( $pillar ) )->build();
 
 		return [

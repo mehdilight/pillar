@@ -13,6 +13,14 @@ use Pillar\PillarException;
  */
 final class Site {
 
+	/** @var list<array{name: string, root: string}> */
+	private array $pluginLayers = [];
+
+	/** @param list<array{name: string, root: string}> $layers */
+	public function setPluginLayers( array $layers ): void {
+		$this->pluginLayers = $layers;
+	}
+
 	/**
 	 * @param list<string> $addons  paths, relative to the site root, highest precedence first
 	 * @param list<string> $plugins slugs or paths
@@ -63,7 +71,11 @@ final class Site {
 	 * The site itself always wins; a missing theme is not an error, since a
 	 * site may simply keep its own `sections/` and never install one.
 	 */
-	public function layers(): Layers {
+	/**
+	 * @param list<array{name: string, root: string}> $extra layers plugins ship,
+	 *        placed after the site's own addons and before the theme
+	 */
+	public function layers( array $extra = [] ): Layers {
 		$layers = [ [ 'name' => 'site', 'root' => $this->root ] ];
 
 		foreach ( $this->addons as $addon ) {
@@ -74,6 +86,10 @@ final class Site {
 			}
 
 			$layers[] = [ 'name' => 'addon:' . basename( $addon ), 'root' => $path ];
+		}
+
+		foreach ( array_merge( $this->pluginLayers, $extra ) as $layer ) {
+			$layers[] = $layer;
 		}
 
 		if ( null !== $this->theme ) {

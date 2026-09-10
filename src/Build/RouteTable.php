@@ -99,6 +99,7 @@ final class RouteTable {
 				url: $drop->urlFor( $page ),
 				template: $template,
 				data: [ 'paginate' => $drop ],
+				collections: [ $paginate->collection ],
 			);
 		}
 

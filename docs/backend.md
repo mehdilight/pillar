@@ -210,7 +210,15 @@ whatever `RouteRegistry` contributes. Then per route: render → write
 mtimes** — modification times have one-second granularity and the dev loop
 saves and rebuilds inside the same second, so an mtime check silently serves
 the previous render. That is not theoretical: the first implementation used
-mtimes and skipped every page after a real edit (`Build\FileHash`). The dependency set comes
+mtimes and skipped every page after a real edit (`Build\FileHash`).
+
+**Collections are dependencies too.** A page that lists posts reads
+`collections.posts`, which is not a template file, so the file-system recorder
+never sees it — and adding a post used to leave the home page showing the old
+list. `CollectionDrop` reports every read to `ContentStore::listen()`, the
+recorder stores it as `collection:<name>`, and the build hashes that
+collection's membership and contents. It is precise: editing a doc rebuilds the
+pages that list docs, and nothing that only lists posts. The dependency set comes
 free: wrap `LayeredFileSystem` in a `DependencyRecorder` during render and
 every `load()` is a recorded dependency. Persist to `.pillar/manifest.json`.
 
@@ -268,6 +276,18 @@ registry the built-in five use.
 ---
 
 ## 10. Extensibility
+
+**Implemented now:** `Plugin`, `PluginManifest`, `PluginLoader`, `PluginContext`,
+`HeadRegistry`, Liqx extensions, `RouteRegistry`, `BuildHooks`, `EditorRegistry`
+and plugin theme layers. The [SEO port](../plugins/seo/README.md) exercises these
+through the build, preview and Solid dashboard. `dependsOn()` and `fingerprint()`
+are registration-time APIs; declare external inputs while registering a plugin.
+Plugin settings, manifests and PHP source files are fingerprinted automatically.
+
+The broader discovery/lifecycle/registry/JavaScript-slot design below remains the
+roadmap where it goes beyond those implemented surfaces. SEO's Solid panels are
+bundled with the host; plugin PHP never supplies arbitrary executable browser code.
+
 
 Two kinds of extension, deliberately kept apart, because they differ in what
 they can do and therefore in how much they must be trusted.
@@ -336,6 +356,13 @@ them. Core registers first, so a registry is always present:
 | `CommandRegistry` | CLI commands |
 | `EditorSlotRegistry` | dashboard panels and slots |
 
+**Routes that depend on the site's size** — a sitemap split into
+`/sitemap-N.xml` chunks — register a *provider* with `routes->provide()`, not
+the routes themselves. Plugins register on every `pillar dev` API request, and
+the SEO port's first version walked every page at registration to count its
+chunks, so every click in the dashboard paid for a sitemap nobody had asked
+for. A provider runs when a build writes the files or the preview requests one.
+
 Two ordering rules, taken from bastet's `HeadRegistry` because they are what
 make output deterministic regardless of install order:
 
@@ -402,7 +429,7 @@ to point people at. A plugin is for when PHP is genuinely required.
 | **B2** | `Pillar\Schema` + generated field types + `pillar check` | catches a bad field type, an unknown section in a template JSON, a content file violating its schema | **done** |
 | **B3** | `Pillar\Build` — routes, incremental, assets, images; `pillar build` / `serve` | a 500-page site builds; an unchanged rebuild is near-instant | **done** (images and `serve` outstanding) |
 | **B4** | `Pillar\Dev` — the §8 API and `/preview` | the editor drops its fixtures and drives real files | **done** |
-| **B5** | `Pillar\Plugin` + the registries; core's sitemap/feed/search rewritten onto them; **the SEO plugin ported from bastet** | removing the sitemap plugin removes the sitemap, and nothing else changes | next |
+| **B5** | `Pillar\Plugin` + the registries; core's sitemap/feed/search rewritten onto them; **the SEO plugin ported from bastet** | removing the sitemap plugin removes the sitemap, and nothing else changes | SEO and supporting registries done; remaining registries/feed/search pending |
 | **B6** | Theme addons — the cascade, `addon.yaml`, `--why` | an addon adds a section, the site overrides it, and `--why` explains both | cascade + `why` done in B1 |
 | **B7** | `Pillar\Git` + `Pillar\Deploy` | `pillar deploy` puts the same `dist/` on Vercel and on Pages | |
 

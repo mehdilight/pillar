@@ -31,6 +31,9 @@ final class ContentStore {
 	/** @var array<string, PageDrop> */
 	private array $pages = [];
 
+	/** @var list<callable(string): void> */
+	private array $listeners = [];
+
 	public function __construct(
 		private readonly Site $site,
 		private readonly CommonMarkConverter $markdown,
@@ -104,8 +107,44 @@ final class ContentStore {
 	public function collection( string $name ): CollectionDrop {
 		return $this->drops[ $name ] ??= new CollectionDrop(
 			$name,
-			array_map( fn ( MarkdownFile $file ): PageDrop => $this->page( $file ), $this->files()[ $name ] ?? [] )
+			array_map( fn ( MarkdownFile $file ): PageDrop => $this->page( $file ), $this->files()[ $name ] ?? [] ),
+			function ( string $collection ): void {
+				foreach ( $this->listeners as $listener ) {
+					$listener( $collection );
+				}
+			}
 		);
+	}
+
+	/**
+	 * Called with a collection's name whenever a template reads it.
+	 *
+	 * The seam the build's dependency recorder hooks, exactly as it hooks the
+	 * file system for templates.
+	 *
+	 * @param callable(string): void $listener
+	 */
+	public function listen( callable $listener ): void {
+		$this->listeners[] = $listener;
+	}
+
+	/**
+	 * A collection's identity: which entries it has, and what each one says.
+	 *
+	 * Membership and content together, so adding, removing, renaming or
+	 * editing any entry changes it — each of those changes what a listing
+	 * page shows.
+	 */
+	public function hash( string $name ): string {
+		$parts = [];
+
+		foreach ( $this->files()[ $name ] ?? [] as $file ) {
+			$parts[] = $file->path . ':' . \Pillar\Build\FileHash::of( $file->path );
+		}
+
+		sort( $parts );
+
+		return md5( $name . '|' . implode( '|', $parts ) );
 	}
 
 	/** @return array<string, CollectionDrop> */
@@ -127,6 +166,18 @@ final class ContentStore {
 		}
 
 		return null;
+	}
+
+	/**
+	 * A page built from content that is not on disk yet — the editor's preview
+	 * of what is being typed.
+	 *
+	 * Never cached, and deliberately not `page()`: that one memoizes by
+	 * collection and slug, so previewing an edit to an existing entry would
+	 * hand back the saved version the moment anything had already read it.
+	 */
+	public function unsaved( MarkdownFile $file ): PageDrop {
+		return new PageDrop( $file, $this->markdown->convert( $file->body )->getContent() );
 	}
 
 	/** Markdown is converted once per file per build, however many pages read it. */
