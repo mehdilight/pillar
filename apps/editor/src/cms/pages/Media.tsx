@@ -5,6 +5,7 @@ import Page from '../ui/Page';
 import { Badge, Button, Filters, Label, Loading, Notice, Pager, Postbox, SidebarLayout } from '../ui/ds';
 import AltField from '../../components/AltField';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import NativeSelect from '../../components/ui/NativeSelect';
 import { showToast } from '../../components/ui/Toast';
 import { ACCEPTED, bytes, createMediaLibrary, extension, mediaUrl, plural } from '../../lib/media';
 
@@ -224,11 +225,11 @@ export default function Media() {
               setPage(1);
             }}
           />
-          <select aria-label="Sort images" class={`${control} py-0 pl-2.5 pr-8`} value={sort()} onChange={(event) => setSort(event.currentTarget.value as Sort)}>
+          <NativeSelect aria-label="Sort images" class={`${control} py-0 pl-2.5`} value={sort()} onChange={(event) => setSort(event.currentTarget.value as Sort)}>
             <option value="newest">Newest first</option>
             <option value="name">Name</option>
             <option value="size">Largest first</option>
-          </select>
+          </NativeSelect>
         </div>
       </div>
 

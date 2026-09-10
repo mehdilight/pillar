@@ -3,6 +3,7 @@ import { FileText, ImagePlus, Upload } from './ui/Icons';
 import { ACCEPTED, ACCEPTED_FILES, FILE_EXTENSIONS, bytes, createMediaLibrary, extension, mediaUrl, plural } from '../lib/media';
 import type { MediaItem } from '../types';
 import { controlClass } from './ui/Field';
+import NativeSelect from './ui/NativeSelect';
 import AltField from './AltField';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { showToast } from './ui/Toast';
@@ -59,9 +60,9 @@ export default function MediaLibrary(props: {
       <div class="flex-1 min-w-0 p-5">
         <div class="flex flex-wrap gap-2 mb-4">
           <input type="search" aria-label={`Search ${noun()}s`} class={`${controlClass} flex-1 min-w-[140px]`} placeholder={`Search ${noun()}s…`} value={query()} onInput={(e) => { setQuery(e.currentTarget.value); setPage(1); }} />
-          <select aria-label={`${noun()} type`} class={`${controlClass} w-auto!`} value={format()} onChange={(e) => { setFormat(e.currentTarget.value); setPage(1); }}>
-            <option value="">All {noun()} types</option><For each={kind() === 'image' ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg'] : props.extensions?.length ? props.extensions : FILE_EXTENSIONS}>{(type) => <option value={type}>{type.toUpperCase()}</option>}</For>
-          </select>
+          <NativeSelect aria-label={`${noun()} type`} wrapperClass="w-auto" class={controlClass} value={format()} onChange={(e) => { setFormat(e.currentTarget.value); setPage(1); }}>
+            <option value="" selected={format() === ''}>All {noun()} types</option><For each={kind() === 'image' ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg'] : props.extensions?.length ? props.extensions : FILE_EXTENSIONS}>{(type) => <option value={type} selected={format() === type}>{type.toUpperCase()}</option>}</For>
+          </NativeSelect>
         </div>
         <Show when={error()}><p class="text-xs text-red-600 mb-4 whitespace-pre-wrap" role="alert">{error()}</p></Show>
         <Show when={images.error}><div class="text-xs text-red-600 mb-4" role="alert">Could not load images. <button type="button" class="underline" onClick={() => void refetch()}>Try again</button></div></Show>

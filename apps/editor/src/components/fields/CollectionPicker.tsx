@@ -1,5 +1,6 @@
 import { For, Show, createSignal, onMount } from 'solid-js';
 import Field, { controlClass } from '../ui/Field';
+import NativeSelect from '../ui/NativeSelect';
 import { api } from '../../api/client';
 import type { ContentCollection } from '../../types';
 
@@ -22,7 +23,7 @@ export default function CollectionPicker(props: { label?: string; info?: string;
   return (
     <Field label={props.label} info={props.info}>
       {/* `selected` on each option, not `value` on the select: the options arrive after the value, and a select's value set before its options exist is lost. */}
-      <select class={controlClass} onChange={(event) => props.onValue(event.currentTarget.value)}>
+      <NativeSelect class={controlClass} onChange={(event) => props.onValue(event.currentTarget.value)}>
         <option value="" selected={props.value === ''}>
           {collections() === null ? 'Loading…' : 'Choose a collection'}
         </option>
@@ -38,7 +39,7 @@ export default function CollectionPicker(props: { label?: string; info?: string;
             {props.value} (missing)
           </option>
         </Show>
-      </select>
+      </NativeSelect>
     </Field>
   );
 }

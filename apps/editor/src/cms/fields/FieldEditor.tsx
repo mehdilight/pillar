@@ -3,6 +3,7 @@ import { createStore, produce, unwrap } from 'solid-js/store';
 import Drawer from '../../components/ui/Drawer';
 import { NamedIcon, Plus, Trash2 } from '../../components/ui/Icons';
 import SettingInput from '../../components/SettingInput';
+import NativeSelect from '../../components/ui/NativeSelect';
 import { Button, Input, Label, Textarea } from '../ui/ds';
 import { collections } from '../../store/content';
 import { FILE_EXTENSIONS } from '../../lib/media';
@@ -308,16 +309,17 @@ export default function FieldEditor(props: {
             </Show>
             <Show when={draft.type === 'text'}>
               <Row label="Input type" for="field-input-type" hint="The keyboard on a phone — and an email address is checked.">
-                <select
+                <NativeSelect
                   id="field-input-type"
-                  class="h-8 w-full max-w-[200px] rounded-ds border border-border-strong bg-surface px-2.5 py-0 text-[13px] text-text outline-none focus:border-brand focus:ring-2 focus:ring-brand-tint"
+                  wrapperClass="max-w-[200px]"
+                  class="h-8 rounded-ds border border-border-strong bg-surface px-2.5 py-0 text-[13px] text-text outline-none focus:border-brand focus:ring-2 focus:ring-brand-tint"
                   value={draft.input_type ?? 'text'}
                   onChange={(event) => set('input_type', event.currentTarget.value === 'text' ? undefined : (event.currentTarget.value as 'email' | 'tel'))}
                 >
                   <option value="text">Text</option>
                   <option value="email">Email address</option>
                   <option value="tel">Phone number</option>
-                </select>
+                </NativeSelect>
               </Row>
             </Show>
           </Section>
@@ -383,13 +385,13 @@ function ConditionsEditor(props: { rules: VisibilityRule[]; siblings: SchemaSett
             {(rule, index) => (
               <div class="flex flex-wrap items-center gap-2">
                 <span class="w-12 text-xs text-text-muted">{index() === 0 ? 'Show if' : 'and'}</span>
-                <select aria-label="Field" class={`${selectClass} min-w-0 flex-1`} value={rule.field} onChange={(event) => update(index(), { field: event.currentTarget.value, value: undefined })}>
-                  <option value="">Choose a field…</option>
-                  <For each={candidates()}>{(field) => <option value={field.id}>{field.label || field.id}</option>}</For>
-                </select>
-                <select aria-label="Comparison" class={selectClass} value={rule.operator ?? 'equals'} onChange={(event) => update(index(), { operator: event.currentTarget.value as VisibilityOperator })}>
-                  <For each={OPERATORS}>{(operator) => <option value={operator.value}>{operator.label}</option>}</For>
-                </select>
+                <NativeSelect aria-label="Field" wrapperClass="flex-1" class={selectClass} value={rule.field} onChange={(event) => update(index(), { field: event.currentTarget.value, value: undefined })}>
+                  <option value="" selected={!rule.field}>Choose a field…</option>
+                  <For each={candidates()}>{(field) => <option value={field.id} selected={field.id === rule.field}>{field.label || field.id}</option>}</For>
+                </NativeSelect>
+                <NativeSelect aria-label="Comparison" class={selectClass} value={rule.operator ?? 'equals'} onChange={(event) => update(index(), { operator: event.currentTarget.value as VisibilityOperator })}>
+                  <For each={OPERATORS}>{(operator) => <option value={operator.value} selected={operator.value === (rule.operator ?? 'equals')}>{operator.label}</option>}</For>
+                </NativeSelect>
                 <Show when={!['empty', 'not_empty'].includes(rule.operator ?? 'equals')}>
                   <Show
                     when={sibling(rule.field)?.options?.length || sibling(rule.field)?.type === 'checkbox'}
@@ -397,12 +399,12 @@ function ConditionsEditor(props: { rules: VisibilityRule[]; siblings: SchemaSett
                       <Input aria-label="Value" class="max-w-none min-w-0 flex-1" value={String(rule.value ?? '')} onInput={(event) => update(index(), { value: event.currentTarget.value })} />
                     }
                   >
-                    <select aria-label="Value" class={`${selectClass} min-w-0 flex-1`} value={String(rule.value ?? '')} onChange={(event) => update(index(), { value: sibling(rule.field)?.type === 'checkbox' ? event.currentTarget.value === 'true' : event.currentTarget.value })}>
-                      <option value="">Choose…</option>
+                    <NativeSelect aria-label="Value" wrapperClass="flex-1" class={selectClass} value={String(rule.value ?? '')} onChange={(event) => update(index(), { value: sibling(rule.field)?.type === 'checkbox' ? event.currentTarget.value === 'true' : event.currentTarget.value })}>
+                      <option value="" selected={rule.value === undefined || rule.value === ''}>Choose…</option>
                       <For each={sibling(rule.field)?.type === 'checkbox' ? [{ value: 'true', label: 'On' }, { value: 'false', label: 'Off' }] : sibling(rule.field)?.options ?? []}>
-                        {(option) => <option value={option.value}>{option.label}</option>}
+                        {(option) => <option value={option.value} selected={option.value === String(rule.value ?? '')}>{option.label}</option>}
                       </For>
-                    </select>
+                    </NativeSelect>
                   </Show>
                 </Show>
                 <button
