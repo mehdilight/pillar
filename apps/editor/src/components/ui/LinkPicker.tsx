@@ -17,6 +17,8 @@ interface LinkPickerProps {
   label?: string;
   info?: string;
   placeholder?: string;
+  /** Match the compact CMS inputs when the picker appears in a menu row. */
+  compact?: boolean;
 }
 
 /** A URL field with a route browser. Used by menus and theme-editor settings. */
@@ -55,9 +57,9 @@ export default function LinkPicker(props: LinkPickerProps) {
   const control = (
     <Popover.Root open={open()} onOpenChange={setOpen} placement="bottom-start" gutter={6} sameWidth fitViewport overflowPadding={12}>
       <Popover.Anchor class="flex">
-        <input type="text" class={`${controlClass} rounded-e-none border-e-0`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
+        <input type="text" class={`${controlClass} rounded-e-none border-e-0 ${props.compact ? 'h-8' : ''}`} value={props.value} placeholder={props.placeholder ?? '/about/ or https://example.com'} onInput={(event) => props.onValue(event.currentTarget.value)} />
         <Popover.Trigger
-          class="inline-flex h-9 shrink-0 items-center gap-1 rounded-e-lg border border-[#8c9196] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3]"
+          class={`inline-flex shrink-0 items-center gap-1 rounded-e-lg border border-[#8c9196] bg-[#f6f6f7] px-2.5 text-xs font-medium text-[#303030] transition hover:bg-[#eeeeef] focus:border-[#005bd3] focus:outline-none focus:ring-1 focus:ring-[#005bd3] ${props.compact ? 'h-8' : 'h-9'}`}
           classList={{ 'bg-[#eef6ff] text-[#005bd3]': open() }}
           aria-label="Browse link destinations"
         ><Link2 size={14} /> Browse <ChevronDown size={14} /></Popover.Trigger>
