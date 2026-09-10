@@ -25,7 +25,9 @@
 /* Map samsara tokens to Tailwind utilities (bg-surface, text-ink-muted, …) */
 @theme inline {
     --color-deep: var(--bg-deep);
-    --color-base: var(--bg);
+    /* No `--color-base`: it would make `text-base` a colour as well as a size,
+       and Tailwind emits both — the CMS's `text-base` headings came out
+       near-white. Nothing used `bg-base`. */
     --color-surface: var(--bg-surface);
     --color-surface-2: var(--bg-surface-2);
     --color-surface-3: var(--bg-surface-3);
@@ -49,6 +51,79 @@
     --color-danger: var(--danger);
     --color-danger-tint: var(--danger-tint);
     --color-warning: var(--warning);
+}
+
+/* The CMS's tokens — bastet's design system (apps/design-system), carried
+   over with its variable names so its class strings port unchanged. The
+   visual editor keeps samsara's; both resolve to the same palette. */
+:root {
+    --ds-canvas: #f6f6f7;
+    --ds-surface: #ffffff;
+    --ds-surface-muted: #f1f2f4;
+    --ds-border: #e1e3e5;
+    --ds-border-strong: #c9cccf;
+    --ds-text: #202223;
+    --ds-text-secondary: #303030;
+    --ds-text-muted: #6d7175;
+    --ds-text-faint: #8c9196;
+    --ds-brand: #005bd3;
+    --ds-brand-hover: #004bb5;
+    --ds-brand-tint: rgba(0, 91, 211, 0.08);
+    --ds-success: #008060;
+    --ds-success-tint: rgba(0, 128, 96, 0.08);
+    --ds-warning: #b98900;
+    --ds-warning-tint: rgba(185, 137, 0, 0.08);
+    --ds-danger: #d82c0d;
+    --ds-danger-tint: rgba(216, 44, 13, 0.08);
+    --ds-radius: 8px;
+    --ds-radius-sm: 6px;
+    --ds-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --ds-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --ds-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.12);
+}
+
+@theme inline {
+    --color-canvas: var(--ds-canvas);
+    --color-surface-muted: var(--ds-surface-muted);
+    --color-border: var(--ds-border);
+    --color-border-strong: var(--ds-border-strong);
+    --color-text: var(--ds-text);
+    --color-text-secondary: var(--ds-text-secondary);
+    --color-text-muted: var(--ds-text-muted);
+    --color-text-faint: var(--ds-text-faint);
+    --color-warning-tint: var(--ds-warning-tint);
+    --radius-ds: var(--ds-radius);
+    --radius-ds-sm: var(--ds-radius-sm);
+    --shadow-ds-sm: var(--ds-shadow-sm);
+    --shadow-ds-md: var(--ds-shadow-md);
+    --shadow-ds-lg: var(--ds-shadow-lg);
+}
+
+@layer base {
+    :where(.ds-root) {
+        color: var(--ds-text);
+        background: var(--ds-canvas);
+        font-size: 13px;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    :where(.ds-root button, .ds-root input, .ds-root select, .ds-root textarea) {
+        font: inherit;
+    }
+
+    :where(.ds-root button, .ds-root select, .ds-root label[for]) {
+        cursor: pointer;
+    }
+
+    :where(.ds-root button:disabled, .ds-root select:disabled) {
+        cursor: not-allowed;
+    }
+
+    :where(.ds-root :focus-visible) {
+        outline: 2px solid var(--ds-brand);
+        outline-offset: 2px;
+    }
 }
 
 body {

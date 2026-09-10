@@ -90,7 +90,7 @@ src/                  the PHP package (Pillar\)
   Cli/                the `pillar` command
   Plugin/             manifests, loading and editor integration
 plugins/seo/          SEO plugin ported from Bastet
-apps/editor/          the dashboard SPA (SolidJS)
+apps/editor/          the dashboard (SolidJS): a CMS, and the visual editor at /editor
 examples/starter/     a real site: landing page, blog, docs
 schema/               field-types.json — PHP and TypeScript are generated from it
 tests/                phpunit, against a real fixture site

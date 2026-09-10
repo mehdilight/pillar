@@ -149,6 +149,8 @@ export interface ContentCollection {
   /** The frontmatter form, in the same vocabulary as a section's settings. */
   fields: SchemaSetting[];
   count: number;
+  /** The template its entries render through — `posts` through `post`. */
+  template?: string;
 }
 
 export interface ContentItem {
@@ -186,7 +188,8 @@ export interface HistoryEntry {
 
 export type DevicePreview = 'desktop' | 'mobile';
 
-export type EditorTab = 'sections' | 'settings' | 'content' | 'media';
+/** The visual editor's panels. Content and media belong to the CMS. */
+export type EditorTab = 'sections' | 'settings';
 
 export interface MediaItem {
   name: string;

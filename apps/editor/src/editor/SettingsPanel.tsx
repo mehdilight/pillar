@@ -1,7 +1,7 @@
 import { For, Show, createEffect, createSignal, on } from 'solid-js';
 import { ChevronDown, Trash2, X } from 'lucide-solid';
-import { SectionIcon } from './ui/SectionIcon';
-import SettingInput from './SettingInput';
+import { SectionIcon } from '../components/ui/SectionIcon';
+import SettingInput from '../components/SettingInput';
 import * as editor from '../store/editor';
 import type { PageSection } from '../types';
 

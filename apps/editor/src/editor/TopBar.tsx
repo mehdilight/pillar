@@ -1,4 +1,5 @@
 import { For, Show, createSignal } from 'solid-js';
+import { A, useNavigate } from '@solidjs/router';
 import {
   ArrowLeftFromLine,
   ChevronDown,
@@ -7,7 +8,6 @@ import {
   Hammer,
   History,
   Layers,
-  Images,
   MoreHorizontal,
   Palette,
   Redo2,
@@ -16,25 +16,24 @@ import {
   Undo2,
   Upload,
 } from 'lucide-solid';
-import Dropdown from './ui/Dropdown';
-import Tooltip from './ui/Tooltip';
-import { Menu, MenuItem, MenuSeparator } from './ui/Menu';
-import ConfirmDialog from './ui/ConfirmDialog';
+import Dropdown from '../components/ui/Dropdown';
+import Tooltip from '../components/ui/Tooltip';
+import { Menu, MenuItem, MenuSeparator } from '../components/ui/Menu';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
 import PublishDialog from './PublishDialog';
 import HistoryModal from './HistoryModal';
-import { showToast } from './ui/Toast';
+import { showToast } from '../components/ui/Toast';
 import { api, editorConfig } from '../api/client';
 import * as editor from '../store/editor';
 import type { EditorTab } from '../types';
 
 const TABS: Array<{ id: EditorTab; label: string; shortcut: string; icon: () => any }> = [
   { id: 'sections', label: 'Sections', shortcut: '⌘ 1', icon: () => <Layers size={18} /> },
-  { id: 'settings', label: 'Site settings', shortcut: '⌘ 2', icon: () => <Palette size={18} /> },
-  { id: 'content', label: 'Content', shortcut: '⌘ 3', icon: () => <FileText size={18} /> },
-  { id: 'media', label: 'Media library', shortcut: '⌘ 4', icon: () => <Images size={18} /> },
+  { id: 'settings', label: 'Theme settings', shortcut: '⌘ 2', icon: () => <Palette size={18} /> },
 ];
 
 export default function TopBar() {
+  const navigate = useNavigate();
   const [showPublish, setShowPublish] = createSignal(false);
   const [showHistory, setShowHistory] = createSignal(false);
   const [showDiscard, setShowDiscard] = createSignal(false);
@@ -61,13 +60,13 @@ export default function TopBar() {
       {/* Left: exit and the panels */}
       <div class="flex items-center gap-2">
         <Tooltip content="Exit">
-          <a
+          <A
             href="/"
             class="p-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-[#2c2d30] transition-colors inline-flex items-center justify-center"
             aria-label="Exit"
           >
             <ArrowLeftFromLine size={16} />
-          </a>
+          </A>
         </Tooltip>
 
         <div class="flex items-center gap-1">
@@ -151,7 +150,9 @@ export default function TopBar() {
                     classList={{ 'bg-[#f1f2f4] font-medium': entry.name === editor.templateName() }}
                     onClick={() => {
                       close();
-                      void editor.openTemplate(entry.name);
+                      // The page is the route: switching templates navigates,
+                      // so the URL always says what is being edited.
+                      navigate(entry.name === 'index' ? '/editor' : `/editor/${entry.name}`);
                     }}
                   >
                     <span class="ed-pick-title">{entry.label}</span>

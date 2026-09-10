@@ -31,8 +31,8 @@ final class EditorPluginsTest extends SiteTestCase {
 	public function test_enabled_plugins_with_a_bundle_are_listed_with_a_versioned_url(): void {
 		$bundles = array_column( $this->json( '/api/editor/plugins' ), null, 'slug' );
 
-		self::assertMatchesRegularExpression( '#^/editor/plugins/hello/editor\.js\?v=[0-9a-f]{10}$#', $bundles['hello']['script'] );
-		self::assertMatchesRegularExpression( '#^/editor/plugins/hello/editor\.css\?v=#', (string) $bundles['hello']['style'] );
+		self::assertMatchesRegularExpression( '#^/_pillar/plugins/hello/editor\.js\?v=[0-9a-f]{10}$#', $bundles['hello']['script'] );
+		self::assertMatchesRegularExpression( '#^/_pillar/plugins/hello/editor\.css\?v=#', (string) $bundles['hello']['style'] );
 	}
 
 	public function test_a_declared_but_unbuilt_bundle_is_listed_so_the_dashboard_can_say_so(): void {
@@ -50,12 +50,12 @@ final class EditorPluginsTest extends SiteTestCase {
 		$this->enable( [ 'unbuilt' ] );
 
 		self::assertArrayNotHasKey( 'hello', array_column( $this->json( '/api/editor/plugins' ), null, 'slug' ) );
-		self::assertSame( 404, $this->request( '/editor/plugins/hello/editor.js' )->getStatusCode() );
+		self::assertSame( 404, $this->request( '/_pillar/plugins/hello/editor.js' )->getStatusCode() );
 	}
 
 	public function test_the_bundle_and_its_stylesheet_are_served_with_real_types(): void {
-		$script = $this->request( '/editor/plugins/hello/editor.js' );
-		$style  = $this->request( '/editor/plugins/hello/editor.css' );
+		$script = $this->request( '/_pillar/plugins/hello/editor.js' );
+		$style  = $this->request( '/_pillar/plugins/hello/editor.css' );
 
 		self::assertSame( 200, $script->getStatusCode() );
 		self::assertSame( 'text/javascript; charset=utf-8', $script->headers->get( 'Content-Type' ) );
@@ -66,10 +66,10 @@ final class EditorPluginsTest extends SiteTestCase {
 		file_put_contents( $this->root . '/plugins/hello/editor/dist/secret.php', '<?php echo "no";' );
 
 		foreach ( [
-			'/editor/plugins/hello/secret.php',
-			'/editor/plugins/hello/..%2F..%2Fplugin.yaml',
-			'/editor/plugins/hello/../../plugin.yaml',
-			'/editor/plugins/nope/editor.js',
+			'/_pillar/plugins/hello/secret.php',
+			'/_pillar/plugins/hello/..%2F..%2Fplugin.yaml',
+			'/_pillar/plugins/hello/../../plugin.yaml',
+			'/_pillar/plugins/nope/editor.js',
 		] as $url ) {
 			self::assertSame( 404, $this->request( $url )->getStatusCode(), $url );
 		}

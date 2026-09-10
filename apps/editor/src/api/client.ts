@@ -181,6 +181,21 @@ export const api = {
       return { name, singular, files: [], notes: [] };
     }),
 
+  /** The field presets a content type can be made of — the server's list, so both sides agree. */
+  fieldPresets: (): Promise<Array<{ key: string; default: boolean; id: string; type: string; label: string }>> =>
+    request('/content-types/presets', undefined, () => [
+      { key: 'title', default: true, id: 'title', type: 'text', label: 'Title' },
+      { key: 'date', default: true, id: 'date', type: 'date', label: 'Date' },
+      { key: 'tags', default: true, id: 'tags', type: 'tags', label: 'Tags' },
+      { key: 'draft', default: true, id: 'draft', type: 'checkbox', label: 'Draft' },
+    ]),
+
+  /** Replace a type's label and fields: preset keys, or whole field definitions to keep as they are. */
+  updateCollection: (name: string, body: { label: string; fields: Array<string | Record<string, unknown>> }): Promise<void> =>
+    request(`/content-types/${encodeURIComponent(name)}`, { method: 'PUT', body: JSON.stringify(body) }, () => {
+      throw new Error('Editing a content type needs the local server.');
+    }),
+
   collections: (): Promise<ContentCollection[]> =>
     request('/content', undefined, () =>
       fixtures.collections.map((collection) => ({

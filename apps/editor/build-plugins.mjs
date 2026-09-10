@@ -15,7 +15,7 @@
 import { build } from 'vite';
 import solid from 'vite-plugin-solid';
 import tailwindcss from '@tailwindcss/vite';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -47,6 +47,39 @@ const resolveTailwind = {
     return code.replace(/(@import\s+['"])tailwindcss\//g, `$1${tailwindFrom}`);
   },
 };
+
+/**
+ * Confine a plugin's utilities to its own markup.
+ *
+ * Two Tailwind builds in one page collide: the plugin's stylesheet loads after
+ * the dashboard's, both put rules in the `utilities` layer, and so the
+ * plugin's plain `.hidden` beat the dashboard's `md:block` — the CMS rail and
+ * header lost their desktop layout the moment the SEO bundle loaded.
+ *
+ * The utilities layer's rules are wrapped in `@scope` rooted at the element the
+ * dashboard renders every plugin slot into (`data-pillar-plugin="<slug>"`).
+ * Outside it they match nothing; inside it a scoped rule beats the dashboard's
+ * unscoped one of equal specificity, so the plugin's own classes still win on
+ * the plugin's own elements.
+ */
+function scopeUtilities(css, slug) {
+  const marker = '@layer utilities{';
+  const start = css.indexOf(marker);
+
+  if (start === -1) return css;
+
+  let depth = 1;
+  let index = start + marker.length;
+
+  for (; index < css.length && depth > 0; index++) {
+    if (css[index] === '{') depth++;
+    if (css[index] === '}') depth--;
+  }
+
+  const inner = css.slice(start + marker.length, index - 1);
+
+  return `${css.slice(0, start)}${marker}@scope ([data-pillar-plugin=${JSON.stringify(slug)}]){${inner}}}${css.slice(index)}`;
+}
 
 const slugs = readdirSync(pluginsDir).filter((slug) =>
   existsSync(path.join(pluginsDir, slug, 'frontend/src/index.tsx'))
@@ -84,6 +117,12 @@ for (const slug of slugs) {
       },
     },
   });
+
+  const cssPath = path.join(root, 'editor/dist/editor.css');
+
+  if (existsSync(cssPath)) {
+    writeFileSync(cssPath, scopeUtilities(readFileSync(cssPath, 'utf8'), slug));
+  }
 
   console.log(`built plugins/${slug}/editor/dist/editor.js`);
 }

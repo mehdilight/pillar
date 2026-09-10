@@ -1,7 +1,7 @@
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { Search } from 'lucide-solid';
-import Modal from './ui/Modal';
-import { SectionIcon } from './ui/SectionIcon';
+import Modal from '../components/ui/Modal';
+import { SectionIcon } from '../components/ui/SectionIcon';
 import * as editor from '../store/editor';
 
 /**

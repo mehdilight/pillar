@@ -1,10 +1,10 @@
 import { batch, createMemo, createSignal } from 'solid-js';
 import { api, editorConfig } from '../api/client';
+import { refreshStatus as refreshSharedStatus, setStatus, status } from './status';
 import type {
   AvailableSection,
   BlockType,
   DevicePreview,
-  DraftStatus,
   EditorTab,
   PageSection,
   TemplateSummary,
@@ -36,7 +36,6 @@ const [showSettings, setShowSettings] = createSignal(false);
 const [tab, setTab] = createSignal<EditorTab>('sections');
 const [device, setDevice] = createSignal<DevicePreview>('desktop');
 const [previewNonce, setPreviewNonce] = createSignal(Date.now());
-const [status, setStatus] = createSignal<DraftStatus | null>(null);
 const [loading, setLoading] = createSignal(true);
 const [offline, setOffline] = createSignal(false);
 
@@ -391,5 +390,5 @@ export async function discard() {
 }
 
 export async function refreshStatus() {
-  setStatus(await api.draftStatus());
+  await refreshSharedStatus();
 }

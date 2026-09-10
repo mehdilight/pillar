@@ -1,6 +1,6 @@
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { ChevronDown, ChevronRight, Eye, EyeOff, GripVertical, Plus, Trash2 } from 'lucide-solid';
-import { SectionIcon } from './ui/SectionIcon';
+import { SectionIcon } from '../components/ui/SectionIcon';
 import SettingsPanel from './SettingsPanel';
 import AddSectionModal from './AddSectionModal';
 import * as editor from '../store/editor';

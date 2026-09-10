@@ -1,6 +1,6 @@
 import { For, Show, createSignal } from 'solid-js';
-import Modal from './ui/Modal';
-import { showToast } from './ui/Toast';
+import Modal from '../components/ui/Modal';
+import { showToast } from '../components/ui/Toast';
 import * as editor from '../store/editor';
 
 /**

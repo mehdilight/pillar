@@ -503,7 +503,7 @@ final class Api {
 
 			$slug  = $plugin->manifest->slug;
 			$style = substr( $script, 0, -3 ) . '.css';
-			$base  = '/editor/plugins/' . rawurlencode( $slug ) . '/';
+			$base  = '/_pillar/plugins/' . rawurlencode( $slug ) . '/';
 
 			$out[] = [
 				'slug'   => $slug,

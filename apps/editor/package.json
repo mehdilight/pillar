@@ -11,6 +11,7 @@
     "build:plugins": "node build-plugins.mjs"
   },
   "dependencies": {
+    "@solidjs/router": "^0.15.4",
     "lucide-solid": "^0.544.0",
     "solid-js": "^1.9.3"
   },

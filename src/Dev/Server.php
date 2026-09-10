@@ -35,8 +35,8 @@ final class Server {
 				->handle( $request, substr( $path, 4 ) ),
 			str_starts_with( $path, '/preview' )  => $this->preview( $request, substr( $path, 8 ) ),
 			str_starts_with( $path, '/assets/' )  => $this->asset( substr( $path, 8 ) ),
-			str_starts_with( $path, '/editor/plugins/' ) => $this->pluginAsset( substr( $path, 16 ) ),
-			str_starts_with( $path, '/editor/' )  => $this->dashboardAsset( substr( $path, 8 ) ),
+			str_starts_with( $path, '/_pillar/plugins/' ) => $this->pluginAsset( substr( $path, 17 ) ),
+			str_starts_with( $path, '/_pillar/' ) => $this->dashboardAsset( substr( $path, 9 ) ),
 			default                               => $this->dashboardPage(),
 		};
 	}

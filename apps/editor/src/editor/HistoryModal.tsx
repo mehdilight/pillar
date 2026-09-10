@@ -1,5 +1,5 @@
 import { For, Show, createResource } from 'solid-js';
-import Modal from './ui/Modal';
+import Modal from '../components/ui/Modal';
 import { api } from '../api/client';
 
 /** Version history is `git log` over the editor-owned paths. */

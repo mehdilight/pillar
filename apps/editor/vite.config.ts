@@ -3,11 +3,12 @@ import solid from 'vite-plugin-solid';
 import tailwindcss from '@tailwindcss/vite';
 import path from 'node:path';
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [solid(), tailwindcss()],
-  // `pillar dev` serves the built dashboard's files under /editor/, keeping
-  // /assets/ free for the previewed site's own assets.
-  base: '/editor/',
+  // `pillar dev` serves the built dashboard's own files under /_pillar/ — a
+  // prefix no site or route would choose — so /assets/ stays the previewed
+  // site's, and every other path (/editor, /content/posts, …) is the router's.
+  base: command === 'build' ? '/_pillar/' : '/',
   resolve: {
     alias: { '@editor': path.resolve(__dirname, './src') },
   },
@@ -31,4 +32,4 @@ export default defineConfig({
       input: { app: path.resolve(__dirname, 'index.html') },
     },
   },
-});
+}));

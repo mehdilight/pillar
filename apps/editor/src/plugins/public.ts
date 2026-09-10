@@ -41,6 +41,13 @@ export const api = {
  */
 export type SlotTarget = 'settings.panel' | 'content.item.sidebar';
 
+/*
+ * Every slot renders inside an element carrying `data-pillar-plugin="<slug>"`,
+ * and a bundled plugin's utilities are scoped to it (build-plugins.mjs). A
+ * plugin shipping its own stylesheet should scope it the same way, or its
+ * classes will restyle the dashboard.
+ */
+
 export interface SettingsPanelProps {
   /** The panel's fields, ids namespaced `plugin:<slug>:<field>`. */
   fields: import('../types').SchemaSetting[];
