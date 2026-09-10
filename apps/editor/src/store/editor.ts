@@ -1,8 +1,23 @@
 import { batch, createMemo, createSignal } from 'solid-js';
 import { api, editorConfig } from '../api/client';
 import { refreshStatus as refreshSharedStatus, setStatus, status } from './status';
+import {
+  acceptedTypes,
+  blockAt,
+  canHoldChildren,
+  defaultSettings,
+  insertBlockAt,
+  isAncestorPath,
+  newBlockId,
+  removeBlockAt,
+  reorderChildren,
+  samePath,
+  updateBlockAt,
+  type BlockPath,
+} from '../lib/blocks';
 import type {
   AvailableSection,
+  BlockInstance,
   BlockType,
   DevicePreview,
   EditorTab,
@@ -32,6 +47,8 @@ const [availableSections, setAvailableSections] = createSignal<AvailableSection[
 const [availableBlocks, setAvailableBlocks] = createSignal<BlockType[]>([]);
 
 const [activeSectionId, setActiveSectionId] = createSignal<string | null>(null);
+/** The block being edited inside the active section, by path — null for the section itself. */
+const [activeBlockPath, setActiveBlockPath] = createSignal<BlockPath | null>(null);
 const [showSettings, setShowSettings] = createSignal(false);
 const [tab, setTab] = createSignal<EditorTab>('sections');
 const [device, setDevice] = createSignal<DevicePreview>('desktop');
@@ -73,6 +90,7 @@ export const canUndo = createMemo(() => past().length > 0);
 export const canRedo = createMemo(() => future().length > 0);
 
 export {
+  activeBlockPath,
   activeSectionId,
   availableBlocks,
   availableSections,
@@ -110,6 +128,7 @@ const tellPreview = (message: Record<string, unknown>) => {
 export const setActive = (id: string | null, fromPreview = false) => {
   batch(() => {
     setActiveSectionId(id);
+    setActiveBlockPath(null);
     setShowSettings(id !== null);
   });
 
@@ -122,6 +141,7 @@ export const setActive = (id: string | null, fromPreview = false) => {
 export const closeSettings = () => {
   batch(() => {
     setActiveSectionId(null);
+    setActiveBlockPath(null);
     setShowSettings(false);
   });
 
@@ -372,6 +392,127 @@ export function moveSection(id: string, toIndex: number) {
 
   list.splice(toIndex, 0, moved);
   updateSections([...layout(), ...list]);
+}
+
+/* ── Block operations ────────────────────────────────────────────────── */
+
+/**
+ * Every block type a section can name: its own `blocks`, and the site's block
+ * files (`blocks/*.liqx`) it or its containers accept.
+ */
+export function blockCatalogue(section: PageSection): BlockType[] {
+  return [...(section.schema?.blocks ?? []), ...availableBlocks().filter((type) => !(section.schema?.blocks ?? []).some((own) => own.type === type.type))];
+}
+
+export const blockTypeOf = (section: PageSection, type: string): BlockType | undefined =>
+  blockCatalogue(section).find((entry) => entry.type === type);
+
+/**
+ * What may be added inside `parentPath`: at the top, the section's own block
+ * types plus what it accepts; inside a container, what that block accepts.
+ * Underscore-prefixed types render but are never offered.
+ */
+export function allowedBlockTypes(section: PageSection, parentPath: BlockPath): BlockType[] {
+  const offered =
+    parentPath.length === 0
+      ? [...(section.schema?.blocks ?? []), ...acceptedTypes(section.schema?.accepts, availableBlocks())]
+      : acceptedTypes(blockTypeOf(section, blockAt(section.blocks, parentPath)?.type ?? '')?.accepts, blockCatalogue(section));
+
+  return offered.filter((type, index, all) => type.public !== false && !type.type.startsWith('_') && all.findIndex((other) => other.type === type.type) === index);
+}
+
+/** Whether another block fits at `parentPath` — `max_blocks` counts the section's top level. */
+export function canAddBlock(section: PageSection, parentPath: BlockPath): boolean {
+  const max = section.schema?.max_blocks;
+
+  return allowedBlockTypes(section, parentPath).length > 0 && (parentPath.length > 0 || !max || (section.blocks ?? []).length < max);
+}
+
+const sectionById = (id: string) => allSections().find((section) => section.section_id === id);
+
+const setBlocks = (sectionId: string, blocks: BlockInstance[]) => updateSection(sectionId, { blocks });
+
+export function selectBlock(sectionId: string, path: BlockPath) {
+  setActive(sectionId);
+  setActiveBlockPath(path);
+}
+
+/** Back from a block's form to its section's. */
+export const selectSection = () => setActiveBlockPath(null);
+
+export function addBlock(sectionId: string, parentPath: BlockPath, type: string) {
+  const section = sectionById(sectionId);
+  const blockType = section ? allowedBlockTypes(section, parentPath).find((entry) => entry.type === type) : undefined;
+
+  if (!section || !blockType || !canAddBlock(section, parentPath)) return;
+
+  const block: BlockInstance = {
+    id: newBlockId(type),
+    type,
+    settings: defaultSettings(blockType),
+    ...(canHoldChildren(blockType) ? { blocks: [] } : {}),
+  };
+
+  setBlocks(sectionId, insertBlockAt(section.blocks ?? [], parentPath, block));
+  selectBlock(sectionId, [...parentPath, block.id]);
+}
+
+export function updateBlockSettings(sectionId: string, path: BlockPath, settings: Record<string, unknown>) {
+  const section = sectionById(sectionId);
+
+  if (section) setBlocks(sectionId, updateBlockAt(section.blocks ?? [], path, (block) => ({ ...block, settings })));
+}
+
+export function removeBlock(sectionId: string, path: BlockPath) {
+  const section = sectionById(sectionId);
+
+  if (!section) return;
+
+  setBlocks(sectionId, removeBlockAt(section.blocks ?? [], path));
+
+  const active = activeBlockPath();
+
+  if (active && (samePath(active, path) || isAncestorPath(path, active))) setActiveBlockPath(null);
+}
+
+export function toggleBlock(sectionId: string, path: BlockPath) {
+  const section = sectionById(sectionId);
+
+  if (section) setBlocks(sectionId, updateBlockAt(section.blocks ?? [], path, (block) => ({ ...block, disabled: !block.disabled })));
+}
+
+/** One step up or down among its siblings. */
+export function nudgeBlock(sectionId: string, path: BlockPath, delta: -1 | 1) {
+  const section = sectionById(sectionId);
+
+  if (!section) return;
+
+  const parentPath = path.slice(0, -1);
+  const siblings = parentPath.length ? blockAt(section.blocks, parentPath)?.blocks ?? [] : section.blocks ?? [];
+  const from = siblings.findIndex((block) => block.id === path[path.length - 1]);
+  const to = from + delta;
+
+  if (from === -1 || to < 0 || to >= siblings.length) return;
+
+  setBlocks(sectionId, reorderChildren(section.blocks ?? [], parentPath, from, to));
+}
+
+export function duplicateBlock(sectionId: string, path: BlockPath) {
+  const section = sectionById(sectionId);
+  const source = section ? blockAt(section.blocks, path) : null;
+
+  if (!section || !source || !canAddBlock(section, path.slice(0, -1))) return;
+
+  // Fresh ids all the way down: two blocks with one id could not be told apart.
+  const reid = (block: BlockInstance): BlockInstance => ({ ...block, id: newBlockId(block.type), blocks: block.blocks?.map(reid) });
+  const copy = reid(structuredClone(source));
+  const parentPath = path.slice(0, -1);
+  const siblings = parentPath.length ? blockAt(section.blocks, parentPath)?.blocks ?? [] : section.blocks ?? [];
+  const index = siblings.findIndex((block) => block.id === source.id);
+  const inserted = insertBlockAt(section.blocks ?? [], parentPath, copy);
+
+  setBlocks(sectionId, reorderChildren(inserted, parentPath, siblings.length, index + 1));
+  selectBlock(sectionId, [...parentPath, copy.id]);
 }
 
 /* ── Git-backed actions ──────────────────────────────────────────────── */

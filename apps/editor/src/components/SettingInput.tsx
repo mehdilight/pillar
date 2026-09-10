@@ -2,6 +2,7 @@ import { Match, Show, Switch, createResource } from 'solid-js';
 import type { SchemaSetting } from '../types';
 import { api } from '../api/client';
 import TextInput from './ui/TextInput';
+import DateInput from './ui/DateInput';
 import LinkPicker from './ui/LinkPicker';
 import TextArea from './ui/TextArea';
 import NumberInput from './ui/NumberInput';
@@ -13,7 +14,7 @@ import Checkbox from './ui/Checkbox';
 import CodeInput from './ui/CodeInput';
 import TagsInput from './ui/TagsInput';
 import ImagePicker from './ui/ImagePicker';
-import Field, { controlClass } from './ui/Field';
+import Field from './ui/Field';
 import RichEditor from './ui/LazyRichEditor';
 import CheckboxGroup from './fields/CheckboxGroup';
 import GroupInput from './fields/GroupInput';
@@ -24,7 +25,9 @@ import FilePicker from './fields/FilePicker';
 import GalleryInput from './fields/GalleryInput';
 import RelationshipInput from './fields/RelationshipInput';
 import CollectionPicker from './fields/CollectionPicker';
+import AnyEntryInput from './fields/AnyEntryInput';
 import ButtonGroup from './fields/ButtonGroup';
+import VideoPicker from './fields/VideoPicker';
 
 interface SettingInputProps {
   setting: SchemaSetting;
@@ -228,10 +231,14 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'file'}>
-        <FilePicker label={label()} info={setting().info} value={value() ?? null} onValue={props.onChange} />
+        <FilePicker label={label()} info={setting().info} extensions={setting().extensions} value={value() ?? null} onValue={props.onChange} />
       </Match>
 
-      <Match when={setting().type === 'image' || setting().type === 'video'}>
+      <Match when={setting().type === 'video'}>
+        <VideoPicker label={label()} info={setting().info} value={value() ?? null} onValue={props.onChange} />
+      </Match>
+
+      <Match when={setting().type === 'image'}>
         <ImagePicker
           label={label()}
           info={setting().info}
@@ -250,21 +257,12 @@ export default function SettingInput(props: SettingInputProps) {
       </Match>
 
       <Match when={setting().type === 'date'}>
-        <Field label={label()} info={setting().info}>
-          <input
-            type={setting().time ? 'datetime-local' : 'date'}
-            class={controlClass}
-            value={String(value() ?? '').slice(0, setting().time ? 16 : 10)}
-            onInput={(event) => props.onChange(event.currentTarget.value)}
-          />
-        </Field>
+        <DateInput label={label()} info={setting().info} time={setting().time} value={String(value() ?? '')} onValue={props.onChange} />
       </Match>
 
       {/*
-        A reference to something else in the site — a collection, an item, a
-        page, a menu. Resolved against the site's own data once `pillar dev`
-        serves it; a free-text handle until then, which is what gets written to
-        the JSON either way.
+        A reference to something else in the site — a menu, a collection, an
+        entry, a page — always chosen from what the site has, never typed.
       */}
       <Match when={setting().type === 'menu'}>
         <SelectInput
@@ -330,15 +328,8 @@ export default function SettingInput(props: SettingInputProps) {
         />
       </Match>
 
-      <Match when={setting().type === 'collection' || setting().type === 'collection_item' || setting().type === 'page'}>
-        <TextInput
-          label={label()}
-          info={setting().info ?? `Handle of the ${setting().type.replace('_', ' ')}.`}
-          value={value() ?? ''}
-          placeholder={setting().placeholder ?? setting().default}
-          class="font-mono text-xs"
-          onValue={props.onChange}
-        />
+      <Match when={setting().type === 'collection_item'}>
+        <AnyEntryInput label={label()} info={setting().info} multiple={setting().multiple} max={setting().max} value={value()} onValue={props.onChange} />
       </Match>
     </Switch>
   );

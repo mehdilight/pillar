@@ -3,16 +3,84 @@ import { ChevronDown, Trash2, X } from '../components/ui/Icons';
 import { SectionIcon } from '../components/ui/SectionIcon';
 import FormFields from '../components/fields/FormFields';
 import * as editor from '../store/editor';
+import { blockAt, type BlockPath } from '../lib/blocks';
 import type { PageSection } from '../types';
 
 /**
- * The settings form for one section.
+ * The settings form for the selected section — or, with one of its blocks
+ * selected, for that block.
  *
  * Values are held locally and committed on a debounce: a colour picker fires on
  * every drag, and a save per frame would rewrite the template JSON — and reload
  * the preview — dozens of times a second.
  */
 export default function SettingsPanel(props: { section: PageSection }) {
+  return (
+    <Show when={editor.activeBlockPath()} keyed fallback={<SectionSettings section={props.section} />}>
+      {(path) => <BlockSettings section={props.section} path={path} />}
+    </Show>
+  );
+}
+
+/**
+ * One block's settings, from its type's schema — reached by clicking the
+ * block in the page tree, and left by the section name above it.
+ */
+function BlockSettings(props: { section: PageSection; path: BlockPath }) {
+  const block = () => blockAt(props.section.blocks, props.path);
+  const type = () => editor.blockTypeOf(props.section, block()?.type ?? '');
+  const [local, setLocal] = createSignal<Record<string, unknown>>({ ...(block()?.settings ?? {}) });
+
+  let timer: number | undefined;
+
+  const change = (id: string, value: unknown) => {
+    const next = { ...local(), [id]: value };
+
+    setLocal(next);
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => editor.updateBlockSettings(props.section.section_id, props.path, next), 300);
+  };
+
+  return (
+    <div class="flex flex-col h-full bg-white select-none">
+      <div class="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-[#e1e3e5] shrink-0 bg-white">
+        <div class="min-w-0">
+          <button type="button" class="flex items-center gap-1 text-[11px] text-gray-500 hover:text-gray-900" onClick={editor.selectSection}>
+            <ChevronDown size={11} class="rotate-90" />
+            {props.section.schema?.name ?? props.section.section_type}
+          </button>
+          <div class="truncate text-xs font-semibold text-gray-900">{type()?.name ?? block()?.type ?? 'Block'}</div>
+        </div>
+        <button type="button" onClick={editor.closeSettings} class="p-1 rounded-md text-gray-500 hover:text-gray-800 hover:bg-[#f1f2f4] transition-colors" title="Close">
+          <X size={14} />
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto min-h-0">
+        <div class="px-3 py-3">
+          <Show
+            when={block()}
+            fallback={<div class="py-6 text-center text-xs text-gray-400">This block is no longer here.</div>}
+          >
+            <Show when={(type()?.settings ?? []).length} fallback={<div class="py-6 text-center text-xs text-gray-400">This block declares no settings.</div>}>
+              <FormFields fields={type()?.settings ?? []} values={local()} onChange={change} />
+            </Show>
+            <button
+              type="button"
+              class="mt-2 flex items-center gap-1.5 text-xs text-red-600 hover:underline"
+              onClick={() => editor.removeBlock(props.section.section_id, props.path)}
+            >
+              <Trash2 size={12} />
+              Remove block
+            </button>
+          </Show>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SectionSettings(props: { section: PageSection }) {
   const [local, setLocal] = createSignal<Record<string, any>>({});
   const [cssOpen, setCssOpen] = createSignal(false);
   const [css, setCss] = createSignal('');

@@ -24,6 +24,7 @@ final class Setting {
 	 * @param list<Setting>                             $fields  a group's or a repeater row's fields
 	 * @param list<string>                              $collections
 	 * @param list<array{field: string, operator: string, value: mixed}> $visibleIf
+	 * @param list<string>                              $extensions
 	 */
 	public function __construct(
 		public readonly string $id,
@@ -59,6 +60,8 @@ final class Setting {
 		public readonly bool $hidden = false,
 		/** Shown only when every rule holds for its sibling field. */
 		public readonly array $visibleIf = [],
+		/** `file`: the extensions it takes — `[pdf]` for a brochure; any download when empty. */
+		public readonly array $extensions = [],
 	) {}
 
 	/**
@@ -149,6 +152,9 @@ final class Setting {
 			display: FieldType::Radio === $type && 'buttons' === ( $raw['display'] ?? '' ) ? 'buttons' : '',
 			hidden: true === ( $raw['hidden'] ?? false ),
 			visibleIf: self::conditionsOf( $id, $raw ),
+			extensions: FieldType::File === $type
+				? array_values( array_unique( array_filter( array_map( static fn ( mixed $item ): string => strtolower( (string) $item ), (array) ( $raw['extensions'] ?? [] ) ), static fn ( string $item ): bool => 1 === preg_match( '/^[a-z0-9]{1,8}$/', $item ) ) ) )
+				: [],
 		);
 	}
 
@@ -288,6 +294,7 @@ final class Setting {
 				'display'     => $this->display,
 				'hidden'      => $this->hidden ?: null,
 				'visible_if'  => $this->visibleIf,
+				'extensions'  => $this->extensions,
 			] as $key => $value
 		) {
 			if ( null !== $value && '' !== $value && [] !== $value ) {

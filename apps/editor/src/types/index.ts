@@ -95,6 +95,8 @@ export interface SchemaSetting {
   display?: 'buttons';
   /** Kept in the file, never shown in the form. */
   hidden?: boolean;
+  /** `file`: the extensions it takes — `[pdf]` for a brochure. Every download type when absent. */
+  extensions?: string[];
   /** Shown only when every rule holds for its sibling field. */
   visible_if?: VisibilityRule[];
 }

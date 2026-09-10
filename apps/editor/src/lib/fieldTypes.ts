@@ -132,6 +132,7 @@ export function cleanField(field: SchemaSetting): SchemaSetting {
   if (!['text', 'textarea', 'markdown', 'richtext'].includes(field.type)) delete out.character_limit;
   if (field.type !== 'text' || out.input_type === 'text') delete out.input_type;
   if (field.type !== 'radio') delete out.display;
+  if (field.type !== 'file') delete out.extensions;
   if (isDecorative(field.type)) {
     delete out.required;
     delete out.visible_if;

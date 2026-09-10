@@ -40,6 +40,7 @@ final class Filters {
 			'image_tag'    => fn ( mixed $value, mixed $alt = '', mixed $class = '', mixed $sizes = '', mixed $loading = 'lazy' ): string => $this->imageTag( $value, $alt, $class, $sizes, $loading ),
 			'image_srcset' => fn ( mixed $value ): string => Images::srcset( $this->images->candidates( self::source( $value ) ) ),
 			'image_alt'    => fn ( mixed $value ): string => $this->alt->for( self::source( $value ) ),
+			'video_tag'    => fn ( mixed $value, mixed $title = '', mixed $class = '' ): string => $this->videoTag( self::source( $value ), (string) $title, (string) $class ),
 			'absolute_url' => fn ( mixed $value ): string => $this->absoluteUrl( (string) $value ),
 			'excerpt'      => fn ( mixed $value, mixed $length = 200 ): string => $this->excerpt( (string) $value, (int) $length ),
 			't'            => static fn ( mixed $value ): string => (string) $value,
@@ -120,6 +121,40 @@ final class Filters {
 		}
 
 		return $html . '>';
+	}
+
+	/**
+	 * `{video | video_tag('Launch', 'hero-video')}` — a player for whatever a
+	 * `video` field holds: YouTube and Vimeo links as embeds (YouTube through
+	 * its no-cookie domain), a file as a `<video>` that loads only its
+	 * metadata until played.
+	 */
+	private function videoTag( string $url, string $title, string $class ): string {
+		if ( '' === trim( $url ) ) {
+			return '';
+		}
+
+		$attributes = '' === $class ? '' : sprintf( ' class="%s"', htmlspecialchars( $class, ENT_QUOTES ) );
+		$label      = htmlspecialchars( '' === $title ? 'Video' : $title, ENT_QUOTES );
+
+		if ( 1 === preg_match( '~(?:youtube\.com/(?:watch\?(?:.*&)?v=|shorts/|embed/)|youtu\.be/)([\w-]{11})~', $url, $youtube ) ) {
+			$embed = 'https://www.youtube-nocookie.com/embed/' . $youtube[1];
+		} elseif ( 1 === preg_match( '~vimeo\.com/(?:video/)?(\d+)~', $url, $vimeo ) ) {
+			$embed = 'https://player.vimeo.com/video/' . $vimeo[1];
+		}
+
+		if ( isset( $embed ) ) {
+			return sprintf(
+				'<iframe src="%s" title="%s" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen%s></iframe>',
+				htmlspecialchars( $embed, ENT_QUOTES ),
+				$label,
+				$attributes
+			);
+		}
+
+		$source = str_starts_with( $url, 'http' ) ? $url : $this->assetUrl( $url );
+
+		return sprintf( '<video src="%s" controls preload="metadata" playsinline aria-label="%s"%s></video>', htmlspecialchars( $source, ENT_QUOTES ), $label, $attributes );
 	}
 
 	private function absoluteUrl( string $path ): string {

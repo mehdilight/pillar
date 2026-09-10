@@ -5,6 +5,7 @@ import { NamedIcon, Plus, Trash2 } from '../../components/ui/Icons';
 import SettingInput from '../../components/SettingInput';
 import { Button, Input, Label, Textarea } from '../ui/ds';
 import { collections } from '../../store/content';
+import { FILE_EXTENSIONS } from '../../lib/media';
 import { FIELD_TYPES, cleanField, handleFrom, holdsFields, isDecorative, needsOptions, validHandle } from '../../lib/fieldTypes';
 import type { FieldType, SchemaSetting, VisibilityOperator, VisibilityRule } from '../../types';
 import FieldList from './FieldList';
@@ -13,7 +14,7 @@ import FieldList from './FieldList';
 const MAX_DEPTH = 3;
 
 /** Types whose default can be chosen with their own control. */
-const DEFAULTABLE: FieldType[] = ['text', 'textarea', 'url', 'number', 'range', 'checkbox', 'select', 'radio', 'checkboxes', 'color', 'date', 'icon'];
+const DEFAULTABLE: FieldType[] = ['text', 'textarea', 'url', 'number', 'range', 'checkbox', 'select', 'radio', 'checkboxes', 'color', 'date', 'icon', 'tags'];
 
 /**
  * One field's settings, in a drawer over the list it belongs to.
@@ -228,6 +229,30 @@ export default function FieldEditor(props: {
                 />
               </Row>
             </Show>
+          </Section>
+        </Show>
+
+        <Show when={draft.type === 'file'}>
+          <Section title="File types" hint="Leave all unticked to take any download the media library holds.">
+            <div class="flex flex-wrap gap-1.5">
+              <For each={FILE_EXTENSIONS}>
+                {(extension) => {
+                  const on = () => (draft.extensions ?? []).includes(extension);
+
+                  return (
+                    <button
+                      type="button"
+                      aria-pressed={on()}
+                      class="rounded-full border px-2.5 py-1 font-mono text-[11.5px] uppercase transition-colors"
+                      classList={{ 'border-brand bg-brand text-white': on(), 'border-border-strong bg-surface text-text-secondary hover:border-brand': !on() }}
+                      onClick={() => set('extensions', FILE_EXTENSIONS.filter((item) => (item === extension ? !on() : (draft.extensions ?? []).includes(item))))}
+                    >
+                      {extension}
+                    </button>
+                  );
+                }}
+              </For>
+            </div>
           </Section>
         </Show>
 

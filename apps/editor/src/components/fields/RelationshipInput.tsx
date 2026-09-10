@@ -32,12 +32,14 @@ export default function RelationshipInput(props: {
   max?: number;
   value: string | string[] | null | undefined;
   onValue: (value: string | string[] | null) => void;
+  /** Always store `collection/slug` — for a field that names no collections, whose bare slug could not be resolved. */
+  qualify?: boolean;
 }) {
   const [entries, setEntries] = createSignal<Entry[] | null>(null);
   const [selecting, setSelecting] = createSignal(false);
   const current = useContext(CurrentEntry);
 
-  const qualified = () => props.collections.length > 1;
+  const qualified = () => Boolean(props.qualify) || props.collections.length > 1;
   const referenceOf = (item: ContentItem) => (qualified() ? `${item.collection}/${item.slug}` : item.slug);
 
   createEffect(

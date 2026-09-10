@@ -129,6 +129,19 @@ final class FieldTypesTest extends SiteTestCase {
 		self::assertSame( [ 'repeater', 'icon', 'file' ], array_map( static fn ( Setting $field ): string => $field->type->value, $schema->fields ) );
 	}
 
+	public function test_video_tag_embeds_links_and_plays_files(): void {
+		$tag = $this->pillar()->filters->all()['video_tag'];
+
+		self::assertSame(
+			'<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" title="Launch" loading="lazy" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen class="hero"></iframe>',
+			$tag( 'https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=10', 'Launch', 'hero' )
+		);
+		self::assertStringContainsString( 'src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"', $tag( 'https://youtu.be/dQw4w9WgXcQ' ) );
+		self::assertStringContainsString( 'src="https://player.vimeo.com/video/76979871"', $tag( 'https://vimeo.com/76979871' ) );
+		self::assertSame( '<video src="/assets/uploads/demo.mp4" controls preload="metadata" playsinline aria-label="Video"></video>', $tag( '/assets/uploads/demo.mp4' ) );
+		self::assertSame( '', $tag( '' ) );
+	}
+
 	public function test_files_upload_when_their_bytes_match_their_extension(): void {
 		$media = new Media( $this->pillar()->site );
 

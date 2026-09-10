@@ -55,6 +55,14 @@ final class RulesTest extends SiteTestCase {
 		);
 	}
 
+	public function test_a_file_must_be_one_of_the_types_its_field_takes(): void {
+		$brochure = [ Setting::fromArray( [ 'id' => 'brochure', 'type' => 'file', 'label' => 'Brochure', 'extensions' => [ 'PDF', 'docx', '../x' ] ] ) ];
+
+		self::assertSame( [ 'pdf', 'docx' ], $brochure[0]->extensions );
+		self::assertSame( [], Rules::violations( $brochure, [ 'brochure' => '/assets/uploads/menu.pdf' ] ) );
+		self::assertSame( 'Brochure must be a PDF or DOCX file.', Rules::violations( $brochure, [ 'brochure' => '/assets/uploads/menu.zip' ] )[0]['message'] );
+	}
+
 	public function test_a_hidden_field_is_never_required(): void {
 		$paths = array_column( Rules::violations( self::form(), [ 'title' => 'Launch', 'kind' => 'talk' ] ), 'path' );
 

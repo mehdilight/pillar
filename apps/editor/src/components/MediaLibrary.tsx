@@ -13,11 +13,18 @@ export { mediaUrl };
  * The picker's library: choose an image — or, with `kind="file"`, a download —
  * or upload one and choose it.
  */
-export default function MediaLibrary(props: { onChoose?: (url: string) => void; compact?: boolean; kind?: 'image' | 'file' }) {
+export default function MediaLibrary(props: {
+  onChoose?: (url: string) => void;
+  compact?: boolean;
+  kind?: 'image' | 'file';
+  /** Only these file extensions — a video field offers mp4 and webm, a brochure field pdf. */
+  extensions?: string[];
+}) {
   const { images, all: everything, refetch, upload: uploadFiles, remove: removeImage, saveAlt, progress, error, setError } = createMediaLibrary();
   const kind = () => props.kind ?? 'image';
   const noun = () => (kind() === 'image' ? 'image' : 'file');
-  const all = () => everything().filter((item) => (item.kind ?? 'image') === kind());
+  const allowed = (url: string) => !props.extensions?.length || props.extensions.includes(url.split('.').pop()?.toLowerCase() ?? '');
+  const all = () => everything().filter((item) => (item.kind ?? 'image') === kind() && allowed(item.url));
   const [query, setQuery] = createSignal('');
   const [format, setFormat] = createSignal('');
   const [page, setPage] = createSignal(1);
@@ -45,7 +52,7 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
     onDragOver={(e) => { e.preventDefault(); }} onDrop={(e) => { e.preventDefault(); void upload(Array.from(e.dataTransfer?.files ?? [])); }}>
     <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-[#e1e3e5] bg-white">
       <div><h1 class="text-sm font-semibold text-[#202223]">Media library</h1><p class="ed-hint">{plural(all().length, noun())} · Upload once, use anywhere.</p></div>
-      <input ref={uploadInput} type="file" multiple  accept={kind() === 'image' ? ACCEPTED : ACCEPTED_FILES} class="hidden" aria-label={`Upload ${noun()}s`} onChange={(e) => void upload(Array.from(e.currentTarget.files ?? []))} />
+      <input ref={uploadInput} type="file" multiple  accept={kind() === 'image' ? ACCEPTED : props.extensions?.length ? props.extensions.map((extension) => `.${extension}`).join(',') : ACCEPTED_FILES} class="hidden" aria-label={`Upload ${noun()}s`} onChange={(e) => void upload(Array.from(e.currentTarget.files ?? []))} />
       <button type="button" class="sam-btn primary" disabled={!!progress()} onClick={() => uploadInput.click()}><Upload size={14} />{progress() || `Upload ${noun()}s`}</button>
     </div>
     <div class="flex flex-1 min-h-0 overflow-y-auto flex-col md:flex-row">
@@ -53,7 +60,7 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
         <div class="flex flex-wrap gap-2 mb-4">
           <input type="search" aria-label={`Search ${noun()}s`} class={`${controlClass} flex-1 min-w-[140px]`} placeholder={`Search ${noun()}s…`} value={query()} onInput={(e) => { setQuery(e.currentTarget.value); setPage(1); }} />
           <select aria-label={`${noun()} type`} class={`${controlClass} w-auto!`} value={format()} onChange={(e) => { setFormat(e.currentTarget.value); setPage(1); }}>
-            <option value="">All {noun()} types</option><For each={kind() === 'image' ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg'] : FILE_EXTENSIONS}>{(type) => <option value={type}>{type.toUpperCase()}</option>}</For>
+            <option value="">All {noun()} types</option><For each={kind() === 'image' ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg'] : props.extensions?.length ? props.extensions : FILE_EXTENSIONS}>{(type) => <option value={type}>{type.toUpperCase()}</option>}</For>
           </select>
         </div>
         <Show when={error()}><p class="text-xs text-red-600 mb-4 whitespace-pre-wrap" role="alert">{error()}</p></Show>
@@ -61,7 +68,7 @@ export default function MediaLibrary(props: { onChoose?: (url: string) => void; 
         <Show when={images.loading}><p class="ed-hint" role="status">Loading images…</p></Show>
         <Show when={visible().length} fallback={
           <Show when={!images.loading && !images.error}><div class="rounded-xl border-2 border-dashed border-[#c9cccf] p-10 text-center flex flex-col items-center gap-3">
-            <ImagePlus size={28} class="text-gray-400" /><p class="text-sm font-medium text-[#303030]">{all().length ? `No ${noun()}s match your search` : `Add your first ${noun()}`}</p>
+            {kind() === 'image' ? <ImagePlus size={28} class="text-gray-400" /> : <FileText size={28} class="text-gray-400" />}<p class="text-sm font-medium text-[#303030]">{all().length ? `No ${noun()}s match your search` : `Add your first ${noun()}`}</p>
             <p class="text-xs text-gray-500">{all().length ? `Try another name or ${noun()} type.` : `Drop ${noun()}s here, or choose them from your computer.`}</p>
             <Show when={!all().length}><button type="button" class="sam-btn" onClick={() => uploadInput.click()}>Choose {noun()}s</button></Show>
           </div></Show>

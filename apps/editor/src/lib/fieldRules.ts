@@ -74,6 +74,12 @@ export function violations(fields: SchemaSetting[], values: Record<string, unkno
       out.push({ path: where, message: `${name} is not an email address.` });
     }
 
+    const extension = typeof value === 'string' ? value.split('?')[0].split('.').pop()?.toLowerCase() ?? '' : '';
+
+    if (field.type === 'file' && field.extensions?.length && typeof value === 'string' && value !== '' && !field.extensions.includes(extension)) {
+      out.push({ path: where, message: `${name} must be a ${field.extensions.map((item) => item.toUpperCase()).join(' or ')} file.` });
+    }
+
     const many = field.type === 'repeater' || (field.type === 'collection_item' && field.multiple);
 
     if (many && field.max !== undefined && Array.isArray(value) && value.length > field.max) {

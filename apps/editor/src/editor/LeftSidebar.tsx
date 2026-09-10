@@ -1,9 +1,10 @@
 import { For, Show, createMemo, createSignal } from 'solid-js';
-import { ChevronDown, ChevronRight, Eye, EyeOff, GripVertical, Plus, Trash2 } from '../components/ui/Icons';
+import { ChevronDown, ChevronRight, Copy, Eye, EyeOff, GripVertical, Plus, Trash2 } from '../components/ui/Icons';
 import { SectionIcon } from '../components/ui/SectionIcon';
 import SettingsPanel from './SettingsPanel';
 import AddSectionModal from './AddSectionModal';
 import * as editor from '../store/editor';
+import { flattenBlocks, samePath, type BlockPath } from '../lib/blocks';
 import type { BlockInstance, PageSection } from '../types';
 
 /**
@@ -237,30 +238,160 @@ function SectionRow(props: SectionRowProps) {
       </div>
 
       <Show when={hasBlocks() && props.expanded}>
-        <div class="ml-5 mt-0.5 space-y-0.5 border-l border-gray-100 pl-2">
-          <For each={blocks()}>
-            {(block) => (
-              <div class="flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] text-gray-600 hover:bg-[#f1f2f4] transition-colors">
-                <span class="truncate flex-1">{block.settings?.title || block.type}</span>
-              </div>
-            )}
-          </For>
-
-          <Show
-            when={
-              !section().schema?.max_blocks || blocks().length < (section().schema?.max_blocks ?? 0)
-            }
-          >
-            <button
-              type="button"
-              class="flex items-center gap-1.5 px-2 py-1 text-[11px] text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4] rounded-md transition-colors w-full"
-            >
-              <Plus size={11} />
-              <span>Add block</span>
-            </button>
-          </Show>
-        </div>
+        <BlockTree section={section()} />
       </Show>
+    </div>
+  );
+}
+
+/**
+ * A section's blocks, nested: click one to edit it, hover for its actions,
+ * and add — at the top or inside a container — only the types allowed there.
+ */
+function BlockTree(props: { section: PageSection }) {
+  const [collapsed, setCollapsed] = createSignal<Set<string>>(new Set());
+  // The container an "Add block" menu is open for, by path key ('' is the top level).
+  const [adding, setAdding] = createSignal<string | null>(null);
+
+  const rows = () => flattenBlocks(props.section.blocks, collapsed());
+  const id = () => props.section.section_id;
+  const isActive = (path: BlockPath) => editor.activeSectionId() === id() && samePath(editor.activeBlockPath() ?? [], path);
+
+  const labelOf = (block: BlockInstance) => {
+    const settings = block.settings ?? {};
+    const text = [settings.title, settings.heading, settings.label, settings.text].find((value) => typeof value === 'string' && value.trim());
+
+    return (text as string | undefined) ?? editor.blockTypeOf(props.section, block.type)?.name ?? block.type;
+  };
+
+  const add = (parentPath: BlockPath) => {
+    const types = editor.allowedBlockTypes(props.section, parentPath);
+
+    if (types.length === 1) {
+      editor.addBlock(id(), parentPath, types[0].type);
+      setAdding(null);
+    } else {
+      setAdding(adding() === parentPath.join('/') ? null : parentPath.join('/'));
+    }
+  };
+
+  const toggle = (key: string) => {
+    const next = new Set(collapsed());
+
+    next.has(key) ? next.delete(key) : next.add(key);
+    setCollapsed(next);
+  };
+
+  const action = 'p-0.5 rounded hover:bg-black/10 transition-colors';
+
+  return (
+    <div class="ml-5 mt-0.5 space-y-0.5 border-l border-gray-100 pl-2">
+      <For each={rows()}>
+        {(row) => {
+          const container = () => Boolean(editor.blockTypeOf(props.section, row.block.type)?.accepts?.length);
+          const key = () => row.path.join('/');
+
+          return (
+            <>
+              <div
+                class="group flex items-center gap-1 rounded-md py-1 pr-1.5 text-[11px] cursor-pointer transition-colors"
+                classList={{
+                  'bg-[#005bd3] text-white': isActive(row.path),
+                  'text-gray-600 hover:bg-[#f1f2f4]': !isActive(row.path),
+                }}
+                style={{ 'padding-left': `${6 + row.depth * 12}px`, opacity: row.block.disabled ? 0.45 : 1 }}
+                onClick={() => editor.selectBlock(id(), row.path)}
+              >
+                <span class="flex w-3.5 shrink-0 justify-center">
+                  <Show when={container()}>
+                    <button
+                      type="button"
+                      class="rounded hover:bg-black/10"
+                      aria-label={collapsed().has(key()) ? 'Expand' : 'Collapse'}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggle(key());
+                      }}
+                    >
+                      {collapsed().has(key()) ? <ChevronRight size={11} /> : <ChevronDown size={11} />}
+                    </button>
+                  </Show>
+                </span>
+                <span class="truncate flex-1">{labelOf(row.block)}</span>
+                <div class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100" classList={{ 'opacity-100': isActive(row.path) }}>
+                  <Show when={container() && editor.canAddBlock(props.section, row.path)}>
+                    <button type="button" class={action} title="Add a block inside" onClick={(event) => (event.stopPropagation(), add(row.path))}>
+                      <Plus size={11} />
+                    </button>
+                  </Show>
+                  <button type="button" class={action} title="Move up" onClick={(event) => (event.stopPropagation(), editor.nudgeBlock(id(), row.path, -1))}>
+                    <ChevronDown size={11} class="rotate-180" />
+                  </button>
+                  <button type="button" class={action} title="Move down" onClick={(event) => (event.stopPropagation(), editor.nudgeBlock(id(), row.path, 1))}>
+                    <ChevronDown size={11} />
+                  </button>
+                  <Show when={editor.canAddBlock(props.section, row.path.slice(0, -1))}>
+                    <button type="button" class={action} title="Duplicate" onClick={(event) => (event.stopPropagation(), editor.duplicateBlock(id(), row.path))}>
+                      <Copy size={11} />
+                    </button>
+                  </Show>
+                  <button type="button" class={action} title={row.block.disabled ? 'Show block' : 'Hide block'} onClick={(event) => (event.stopPropagation(), editor.toggleBlock(id(), row.path))}>
+                    {row.block.disabled ? <EyeOff size={11} /> : <Eye size={11} />}
+                  </button>
+                  <button
+                    type="button"
+                    class={action}
+                    classList={{ 'hover:text-red-600': !isActive(row.path) }}
+                    title="Remove block"
+                    onClick={(event) => (event.stopPropagation(), editor.removeBlock(id(), row.path))}
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
+              </div>
+              <Show when={adding() === key()}>
+                <TypeMenu section={props.section} parentPath={row.path} depth={row.depth + 1} onPick={() => setAdding(null)} />
+              </Show>
+            </>
+          );
+        }}
+      </For>
+
+      <Show when={editor.canAddBlock(props.section, [])}>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 px-2 py-1 text-[11px] text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4] rounded-md transition-colors w-full"
+          onClick={() => add([])}
+        >
+          <Plus size={11} />
+          <span>Add block</span>
+        </button>
+      </Show>
+      <Show when={adding() === ''}>
+        <TypeMenu section={props.section} parentPath={[]} depth={0} onPick={() => setAdding(null)} />
+      </Show>
+    </div>
+  );
+}
+
+/** The block types allowed at one spot, as a short list. */
+function TypeMenu(props: { section: PageSection; parentPath: BlockPath; depth: number; onPick: () => void }) {
+  return (
+    <div class="my-0.5 rounded-md border border-[#e1e3e5] bg-white p-1 shadow-sm" style={{ 'margin-left': `${6 + props.depth * 12}px` }}>
+      <For each={editor.allowedBlockTypes(props.section, props.parentPath)}>
+        {(type) => (
+          <button
+            type="button"
+            class="block w-full rounded px-2 py-1 text-left text-[11px] text-gray-700 hover:bg-[#f1f2f4]"
+            onClick={() => {
+              editor.addBlock(props.section.section_id, props.parentPath, type.type);
+              props.onPick();
+            }}
+          >
+            {type.name ?? type.type}
+          </button>
+        )}
+      </For>
     </div>
   );
 }

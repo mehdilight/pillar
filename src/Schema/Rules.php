@@ -74,6 +74,11 @@ final class Rules {
 				$out[] = [ 'path' => $where, 'message' => sprintf( '%s is not an email address.', $name ) ];
 			}
 
+			if ( FieldType::File === $field->type && [] !== $field->extensions && is_string( $value ) && '' !== $value
+				&& ! in_array( strtolower( pathinfo( (string) parse_url( $value, PHP_URL_PATH ), PATHINFO_EXTENSION ) ), $field->extensions, true ) ) {
+				$out[] = [ 'path' => $where, 'message' => sprintf( '%s must be a %s file.', $name, implode( ' or ', array_map( 'strtoupper', $field->extensions ) ) ) ];
+			}
+
 			$many = FieldType::Repeater === $field->type || ( FieldType::CollectionItem === $field->type && $field->multiple );
 
 			if ( $many && null !== $field->max && is_array( $value ) && count( $value ) > $field->max ) {

@@ -35,6 +35,13 @@ test('each rule reports the field by its path', () => {
   });
 });
 
+test('a file must be one of the types its field takes', () => {
+  const brochure: SchemaSetting[] = [{ id: 'brochure', type: 'file', label: 'Brochure', extensions: ['pdf', 'docx'] }];
+
+  assert.deepEqual(violations(brochure, { brochure: '/assets/uploads/menu.pdf' }), []);
+  assert.deepEqual(violations(brochure, { brochure: '/assets/uploads/menu.zip' }).map((v) => v.message), ['Brochure must be a PDF or DOCX file.']);
+});
+
 test('a hidden field is never required', () => {
   const paths = violations(form, { title: 'Launch', kind: 'talk' }).map((v) => v.path);
 

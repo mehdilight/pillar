@@ -86,7 +86,9 @@ Pillar resolves `sections/`, `blocks/` and `snippets/` across several layers.
 **`EnvironmentFactory`** builds one liqx `Environment` per build (or per dev
 request): the standard filters, plus Pillar's — `markdownify`, `asset_url`
 (content-hashed), `image_url` / `image_srcset` / `image_tag` (build-time
-resize, see below), `image_alt`, `absolute_url`, `excerpt`, `t` — plus globals (`section()`,
+resize, see below), `image_alt`, `video_tag` (a `video` field's value as a
+player: YouTube through youtube-nocookie.com and Vimeo as embeds, a file as
+`<video preload="metadata">`), `absolute_url`, `excerpt`, `t` — plus globals (`section()`,
 `render()`, `content_for_layout`, `now`), both file systems, and
 `setCompiledTemplateDir('.pillar/compiled')` **from day one**. That last call
 is the difference between a 500-page build taking seconds and taking minutes.
@@ -217,7 +219,9 @@ object — `author.name`), `repeater` (rows of the same fields — an FAQ),
 `table` (rows of strings, the first row the header), `checkboxes` (a list of
 option values), `icon` (a Phosphor icon name — a theme renders it however it
 likes) and `file` (a download from the media library: PDF, ZIP, Office,
-MP3/MP4/WebM, each checked against its bytes on upload). Options widen a type:
+MP3/MP4/WebM, each checked against its bytes on upload; `extensions: [pdf]`
+narrows what a field takes). A `video` is an MP4/WebM from the library or a
+YouTube or Vimeo link. Options widen a type:
 `image` with `multiple` is a gallery, `date` with `time` a date and time.
 Groups and repeaters nest three deep. Nested frontmatter is written as
 indented YAML blocks; a schema is written with one field per line

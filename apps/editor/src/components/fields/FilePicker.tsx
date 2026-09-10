@@ -5,7 +5,14 @@ import { FileText } from '../ui/Icons';
 import MediaLibrary from '../MediaLibrary';
 
 /** A download from the media library — a PDF, an archive, a recording. */
-export default function FilePicker(props: { label?: string; info?: string; value?: string | null; onValue: (value: string | null) => void }) {
+export default function FilePicker(props: {
+  label?: string;
+  info?: string;
+  value?: string | null;
+  onValue: (value: string | null) => void;
+  /** The file types this field takes; every download type when empty. */
+  extensions?: string[];
+}) {
   const [open, setOpen] = createSignal(false);
   const name = () => (props.value ?? '').split('/').pop() ?? '';
 
@@ -41,6 +48,7 @@ export default function FilePicker(props: { label?: string; info?: string; value
         <MediaLibrary
           compact
           kind="file"
+          extensions={props.extensions}
           onChoose={(url) => {
             props.onValue(url);
             setOpen(false);
