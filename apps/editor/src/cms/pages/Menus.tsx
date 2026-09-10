@@ -149,7 +149,7 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
     >
       <DragDropSensors>
         <SortableProvider ids={props.items.map(sortableId)}>
-          <div class={props.depth ? 'border-l-2 border-brand/15 bg-surface-muted/30' : ''}>
+          <div class={props.depth ? 'bg-surface-muted/30' : ''}>
             <For each={props.items.map(sortableId)}>{(id) => {
               const item = () => props.items.find((current) => sortableId(current) === id)!;
               return <SortableMenuRow item={item()} id={id} onChange={(next) => props.onChange(props.items.map((current) => sortableId(current) === id ? retainSortableId(current, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => sortableId(current) !== id))} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} depth={props.depth} />;
@@ -195,7 +195,7 @@ function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: M
         </div>
       </Show>
       <Show when={(props.item.items ?? []).length}>
-        <div id={`${props.id}-children`} hidden={!childrenOpen()} class="mx-4 mb-4 rounded-ds border border-border bg-surface sm:ml-12">
+        <div id={`${props.id}-children`} hidden={!childrenOpen()} class="mx-4 mb-4 overflow-hidden rounded-ds border border-border border-s-2 border-s-brand/15 bg-surface sm:ml-12">
           <MenuRows items={props.item.items ?? []} depth={(props.depth ?? 0) + 1} onChange={(items) => props.onChange({ ...props.item, items })} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} />
         </div>
       </Show>
