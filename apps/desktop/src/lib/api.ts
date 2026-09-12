@@ -30,6 +30,31 @@ export interface PhpInfo {
   error: string | null;
 }
 
+export interface GitHubUser {
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  html_url: string;
+  email: string | null;
+}
+
+export interface GitHubRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  html_url: string;
+  clone_url: string;
+  default_branch: string;
+  private: boolean;
+  updated_at: string | null;
+}
+
+export interface GitHubAuthStatus {
+  authenticated: boolean;
+  user: GitHubUser | null;
+}
+
 export const api = {
   async detectPhp(): Promise<PhpInfo> {
     return invoke<PhpInfo>('detect_php');
@@ -77,6 +102,44 @@ export const api = {
 
   async getStarterExamplePath(): Promise<string> {
     return invoke<string>('get_starter_example_path');
+  },
+
+  async getGithubStatus(): Promise<GitHubAuthStatus> {
+    return invoke<GitHubAuthStatus>('github_get_status');
+  },
+
+  async saveGithubToken(token: string): Promise<GitHubUser> {
+    return invoke<GitHubUser>('github_save_token', { token });
+  },
+
+  async githubLogout(): Promise<void> {
+    return invoke<void>('github_logout');
+  },
+
+  async listGithubRepos(): Promise<GitHubRepo[]> {
+    return invoke<GitHubRepo[]>('github_list_repos');
+  },
+
+  async cloneGithubRepo(fullName: string, targetDir: string, cloneUrl = ''): Promise<SiteInfo> {
+    return invoke<SiteInfo>('github_clone_repo', { fullName, targetDir, cloneUrl });
+  },
+
+  async createAndPushGithubRepo(
+    sitePath: string,
+    repoName: string,
+    isPrivate = true,
+    description?: string
+  ): Promise<GitHubRepo> {
+    return invoke<GitHubRepo>('github_create_and_push_repo', {
+      sitePath,
+      repoName,
+      isPrivate,
+      description: description ?? null,
+    });
+  },
+
+  async pushGithubSite(sitePath: string): Promise<string> {
+    return invoke<string>('github_push_site', { sitePath });
   },
 
   listenMenuOpenSite(callback: () => void) {

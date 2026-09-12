@@ -4,16 +4,20 @@ import {
   PlusIcon,
   TrashIcon,
   WarningCircleIcon,
+  GitHubIcon,
 } from './Icons';
-import { api, type PhpInfo, type SiteInfo } from '../lib/api';
+import { api, type PhpInfo, type SiteInfo, type GitHubUser } from '../lib/api';
 
 interface LauncherProps {
   phpInfo: PhpInfo | null;
   recentSites: SiteInfo[];
   starterPath: string | null;
+  githubUser: GitHubUser | null;
   onOpenSite: (path: string) => void;
   onPickFolder: () => void;
   onCreateNew: () => void;
+  onConnectGithub: () => void;
+  onCloneGithub: () => void;
   onRemoveRecent: (path: string) => void;
   isLoading: boolean;
   error: string | null;
@@ -44,6 +48,14 @@ export function Launcher(props: LauncherProps) {
     props.onRemoveRecent(path);
   };
 
+  const handleCloneClick = () => {
+    if (!props.githubUser) {
+      props.onConnectGithub();
+    } else {
+      props.onCloneGithub();
+    }
+  };
+
   return (
     <div class="flex-1 overflow-y-auto bg-[#f6f6f7] text-[#202223] py-8 px-6 select-none font-sans">
       <div class="max-w-4xl mx-auto flex flex-col gap-6">
@@ -59,6 +71,46 @@ export function Launcher(props: LauncherProps) {
           </div>
 
           <div class="flex items-center gap-2">
+            <Show
+              when={props.githubUser}
+              fallback={
+                <button
+                  onClick={props.onConnectGithub}
+                  disabled={props.isLoading}
+                  class={buttonSecondary}
+                  title="Connect GitHub account"
+                >
+                  <GitHubIcon size={14} />
+                  <span>Connect GitHub</span>
+                </button>
+              }
+            >
+              {(user) => (
+                <button
+                  onClick={props.onConnectGithub}
+                  class="h-8 flex items-center gap-1.5 px-2.5 rounded-lg border border-[#c9cccf] bg-white text-[#202223] hover:bg-[#f1f2f4] text-xs font-medium cursor-pointer transition-colors shadow-[0_1px_2px_rgba(0,0,0,0.05)]"
+                  title={`Connected as @${user().login}. Click to manage.`}
+                >
+                  <img
+                    src={user().avatar_url}
+                    alt={user().login}
+                    class="w-4 h-4 rounded-full border border-[#c9cccf]"
+                  />
+                  <span class="max-w-[100px] truncate">@{user().login}</span>
+                </button>
+              )}
+            </Show>
+
+            <button
+              onClick={handleCloneClick}
+              disabled={props.isLoading}
+              class={buttonSecondary}
+              title="Clone repository from GitHub"
+            >
+              <GitHubIcon size={14} />
+              <span>Clone from GitHub</span>
+            </button>
+
             <button
               onClick={props.onPickFolder}
               disabled={props.isLoading}

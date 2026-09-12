@@ -1,11 +1,12 @@
 import { createSignal, Show } from 'solid-js';
-import { FolderIcon, PlusIcon } from './Icons';
-import { api } from '../lib/api';
+import { FolderIcon, PlusIcon, GitHubIcon } from './Icons';
+import { api, type GitHubUser } from '../lib/api';
 
 interface CreateSiteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated: (folderPath: string) => void;
+  githubUser?: GitHubUser | null;
 }
 
 const buttonBase =
@@ -16,6 +17,8 @@ const buttonPrimary = `${buttonBase} border-[#005bd3] bg-[#005bd3] text-white ho
 export function CreateSiteModal(props: CreateSiteModalProps) {
   const [siteName, setSiteName] = createSignal('My Pillar Site');
   const [parentDir, setParentDir] = createSignal('');
+  const [publishToGithub, setPublishToGithub] = createSignal(false);
+  const [isPrivate, setIsPrivate] = createSignal(true);
   const [isSubmitting, setIsSubmitting] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
 
@@ -61,6 +64,13 @@ export function CreateSiteModal(props: CreateSiteModalProps) {
 
     try {
       await api.createSite(targetPath, siteName().trim());
+      if (publishToGithub() && props.githubUser) {
+        try {
+          await api.createAndPushGithubRepo(targetPath, slug(), isPrivate());
+        } catch (gitErr: any) {
+          console.warn('Site was created but GitHub publication failed:', gitErr);
+        }
+      }
       props.onCreated(targetPath);
       props.onClose();
     } catch (err: any) {
@@ -127,6 +137,47 @@ export function CreateSiteModal(props: CreateSiteModalProps) {
                 </button>
               </div>
             </div>
+
+            <Show when={props.githubUser}>
+              <div class="rounded-lg border border-[#e1e3e5] bg-[#f6f6f7] p-3 text-xs flex flex-col gap-2.5">
+                <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-[#202223]">
+                  <input
+                    type="checkbox"
+                    checked={publishToGithub()}
+                    onChange={(e) => setPublishToGithub(e.currentTarget.checked)}
+                    class="rounded border-[#c9cccf] text-[#005bd3] focus:ring-[#005bd3] cursor-pointer"
+                  />
+                  <div class="flex items-center gap-1.5">
+                    <GitHubIcon size={14} />
+                    <span>Create repository on GitHub (@{props.githubUser?.login})</span>
+                  </div>
+                </label>
+                <Show when={publishToGithub()}>
+                  <div class="flex items-center gap-4 pl-6 text-xs text-[#6d7175]">
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="visibility"
+                        checked={isPrivate()}
+                        onChange={() => setIsPrivate(true)}
+                        class="cursor-pointer"
+                      />
+                      <span>Private</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="visibility"
+                        checked={!isPrivate()}
+                        onChange={() => setIsPrivate(false)}
+                        class="cursor-pointer"
+                      />
+                      <span>Public</span>
+                    </label>
+                  </div>
+                </Show>
+              </div>
+            </Show>
 
             <Show when={fullPath()}>
               <div class="p-2.5 rounded-md bg-[#f6f6f7] border border-[#e1e3e5] text-xs flex flex-col gap-1">

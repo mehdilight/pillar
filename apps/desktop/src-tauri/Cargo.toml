@@ -29,4 +29,5 @@ tauri-plugin-fs = "2"
 tauri-plugin-process = "2"
 open = "5"
 rfd = "0.17.2"
+reqwest = { version = "0.13.3", features = ["json"] }
 

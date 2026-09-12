@@ -3,18 +3,21 @@ import { Header } from './components/Header';
 import { Launcher } from './components/Launcher';
 import { SiteFrame } from './components/SiteFrame';
 import { CreateSiteModal } from './components/CreateSiteModal';
+import { ConnectGitHubModal } from './components/ConnectGitHubModal';
+import { CloneRepoModal } from './components/CloneRepoModal';
 import {
   api,
+  type GitHubUser,
   type PhpInfo,
   type ServerStatus,
   type SiteInfo,
 } from './lib/api';
 
-
 export function App() {
   const [phpInfo, setPhpInfo] = createSignal<PhpInfo | null>(null);
   const [recentSites, setRecentSites] = createSignal<SiteInfo[]>([]);
   const [starterPath, setStarterPath] = createSignal<string | null>(null);
+  const [githubUser, setGithubUser] = createSignal<GitHubUser | null>(null);
   const [status, setStatus] = createSignal<ServerStatus>({
     running: false,
     port: null,
@@ -27,7 +30,18 @@ export function App() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = createSignal(false);
+  const [isConnectGithubOpen, setIsConnectGithubOpen] = createSignal(false);
+  const [isCloneGithubOpen, setIsCloneGithubOpen] = createSignal(false);
   const [reloadKey, setReloadKey] = createSignal(0);
+
+  const refreshGithubStatus = async () => {
+    try {
+      const auth = await api.getGithubStatus();
+      setGithubUser(auth.authenticated ? auth.user : null);
+    } catch (err) {
+      console.warn('Failed to get GitHub status:', err);
+    }
+  };
 
   const loadInitialData = async () => {
     try {
@@ -39,6 +53,7 @@ export function App() {
       setPhpInfo(php);
       setRecentSites(recents);
       setStatus(currentStatus);
+      await refreshGithubStatus();
 
       try {
         const starter = await api.getStarterExamplePath();
@@ -168,9 +183,12 @@ export function App() {
             phpInfo={phpInfo()}
             recentSites={recentSites()}
             starterPath={starterPath()}
+            githubUser={githubUser()}
             onOpenSite={handleOpenSite}
             onPickFolder={handlePickFolder}
             onCreateNew={() => setIsCreateModalOpen(true)}
+            onConnectGithub={() => setIsConnectGithubOpen(true)}
+            onCloneGithub={() => setIsCloneGithubOpen(true)}
             onRemoveRecent={handleRemoveRecent}
             isLoading={isLoading()}
             error={error()}
@@ -190,6 +208,20 @@ export function App() {
         isOpen={isCreateModalOpen()}
         onClose={() => setIsCreateModalOpen(false)}
         onCreated={(path) => handleOpenSite(path)}
+        githubUser={githubUser()}
+      />
+
+      <ConnectGitHubModal
+        isOpen={isConnectGithubOpen()}
+        onClose={() => setIsConnectGithubOpen(false)}
+        currentUser={githubUser()}
+        onAuthChange={refreshGithubStatus}
+      />
+
+      <CloneRepoModal
+        isOpen={isCloneGithubOpen()}
+        onClose={() => setIsCloneGithubOpen(false)}
+        onCloned={(site) => handleOpenSite(site.path)}
       />
     </div>
   );

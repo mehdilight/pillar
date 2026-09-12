@@ -83,7 +83,9 @@ fn config_file_path(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(dir)
 }
 
-fn read_recents_from_disk(app: &AppHandle) -> Vec<SiteInfo> {
+pub mod github;
+
+pub fn read_recents_from_disk(app: &AppHandle) -> Vec<SiteInfo> {
     let Ok(path) = config_file_path(app) else {
         return Vec::new();
     };
@@ -100,7 +102,7 @@ fn read_recents_from_disk(app: &AppHandle) -> Vec<SiteInfo> {
     sites
 }
 
-fn write_recents_to_disk(app: &AppHandle, sites: &[SiteInfo]) -> Result<(), String> {
+pub fn write_recents_to_disk(app: &AppHandle, sites: &[SiteInfo]) -> Result<(), String> {
     let path = config_file_path(app)?;
     let json = serde_json::to_string_pretty(sites)
         .map_err(|e| format!("Failed to serialize recent sites: {}", e))?;
@@ -685,6 +687,13 @@ pub fn run() {
             commands::open_in_browser,
             commands::create_site,
             commands::get_starter_example_path,
+            github::github_get_status,
+            github::github_save_token,
+            github::github_logout,
+            github::github_list_repos,
+            github::github_clone_repo,
+            github::github_create_and_push_repo,
+            github::github_push_site,
         ]);
 
     builder
