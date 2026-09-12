@@ -1,3 +1,5 @@
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { t } from '../i18n';
 import { For, Show, createSignal } from 'solid-js';
 import { A, useNavigate } from '@solidjs/router';
 import { As } from '@kobalte/core';
@@ -29,8 +31,8 @@ import * as editor from '../store/editor';
 import type { EditorTab } from '../types';
 
 const TABS: Array<{ id: EditorTab; label: string; shortcut: string; icon: () => any }> = [
-  { id: 'sections', label: 'Sections', shortcut: '⌘ 1', icon: () => <Layers size={18} /> },
-  { id: 'settings', label: 'Theme settings', shortcut: '⌘ 2', icon: () => <Palette size={18} /> },
+  { id: 'sections', get label() { return t("Sections"); }, shortcut: '⌘ 1', icon: () => <Layers size={18} /> },
+  { id: 'settings', get label() { return t("Theme settings"); }, shortcut: '⌘ 2', icon: () => <Palette size={18} /> },
 ];
 
 export default function TopBar() {
@@ -48,9 +50,9 @@ export default function TopBar() {
     try {
       const result = await api.build();
 
-      showToast(`Built ${result.pages} pages in ${result.ms}ms`, 'success');
+      showToast(t("Built {{v0}} pages in {{v1}}ms", { v0: result.pages, v1: result.ms }), 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Build failed', 'error');
+      showToast(error instanceof Error ? error.message : t("Build failed"), 'error');
     } finally {
       setBuilding(false);
     }
@@ -60,11 +62,11 @@ export default function TopBar() {
     <header class="bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 flex items-center justify-between flex-shrink-0 text-sm h-14 select-none z-30 text-white">
       {/* Left: exit and the panels */}
       <div class="flex items-center gap-2">
-        <Tooltip content="Exit">
+        <Tooltip content={t("Exit")}>
           <A
             href="/"
             class="p-1.5 rounded-lg text-gray-300 hover:text-white hover:bg-[#2c2d30] transition-colors inline-flex items-center justify-center"
-            aria-label="Exit"
+            aria-label={t("Exit")}
           >
             <ArrowLeftFromLine size={16} />
           </A>
@@ -103,27 +105,24 @@ export default function TopBar() {
             when={pending() > 0}
             fallback={
               <span class="px-2 py-0.5 text-[11px] font-medium bg-[#2c2d30] text-gray-300 border border-[#3e4045] rounded-full">
-                Committed
-              </span>
+                {t("Committed")} </span>
             }
           >
             <button
               type="button"
               onClick={() => setShowPublish(true)}
               class="px-2 py-0.5 text-[11px] font-medium bg-amber-400/15 text-amber-300 border border-amber-400/30 rounded-full hover:bg-amber-400/25 transition-colors cursor-pointer"
-              title="Uncommitted changes — click to publish"
+              title={t("Uncommitted changes — click to publish")}
             >
-              {pending()} uncommitted
-            </button>
+              {pending()} {t("uncommitted")} </button>
           </Show>
 
           <Show when={editor.offline()}>
             <span
               class="px-2 py-0.5 text-[11px] font-medium bg-gray-500/15 text-gray-300 border border-gray-500/30 rounded-full"
-              title="No backend answered — edits live in memory only."
+              title={t("No backend answered — edits live in memory only.")}
             >
-              Demo data
-            </span>
+              {t("Demo data")} </span>
           </Show>
         </div>
 
@@ -168,7 +167,8 @@ export default function TopBar() {
 
       {/* Right: device, undo/redo, more, publish */}
       <div class="flex items-center gap-2">
-        <Tooltip content={editor.device() === 'mobile' ? 'Desktop view' : 'Mobile view'}>
+        <LanguageSwitcher />
+        <Tooltip content={editor.device() === 'mobile' ? t("Desktop view") : t("Mobile view")}>
           <button
             type="button"
             onClick={() => editor.setDevice(editor.device() === 'mobile' ? 'desktop' : 'mobile')}
@@ -177,44 +177,44 @@ export default function TopBar() {
               'bg-[#383a3e] text-white shadow-xs': editor.device() === 'mobile',
               'text-gray-400 hover:text-gray-200 hover:bg-[#28292c]': editor.device() !== 'mobile',
             }}
-            aria-label="Toggle mobile preview"
+            aria-label={t("Toggle mobile preview")}
           >
             <Smartphone size={16} />
           </button>
         </Tooltip>
 
         <div class="flex items-center">
-          <Tooltip content="Undo" shortcut="⌘ Z">
+          <Tooltip content={t("Undo")} shortcut="⌘ Z">
             <button
               type="button"
               class="p-1.5 rounded-lg text-gray-400 hover:bg-[#2c2d30] hover:text-white disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-not-allowed"
               onClick={editor.undo}
               disabled={!editor.canUndo()}
-              aria-label="Undo"
+              aria-label={t("Undo")}
             >
               <Undo2 size={15} />
             </button>
           </Tooltip>
-          <Tooltip content="Redo" shortcut="⌘ ⇧ Z">
+          <Tooltip content={t("Redo")} shortcut="⌘ ⇧ Z">
             <button
               type="button"
               class="p-1.5 rounded-lg text-gray-400 hover:bg-[#2c2d30] hover:text-white disabled:opacity-25 disabled:hover:bg-transparent transition-colors cursor-pointer disabled:cursor-not-allowed"
               onClick={editor.redo}
               disabled={!editor.canRedo()}
-              aria-label="Redo"
+              aria-label={t("Redo")}
             >
               <Redo2 size={15} />
             </button>
           </Tooltip>
         </div>
 
-        <Tooltip content="Build the site">
+        <Tooltip content={t("Build the site")}>
           <button
             type="button"
             onClick={runBuild}
             disabled={building()}
             class="p-1.5 rounded-lg text-gray-400 hover:bg-[#2c2d30] hover:text-white transition-colors cursor-pointer disabled:opacity-40"
-            aria-label="Build"
+            aria-label={t("Build")}
           >
             <Hammer size={15} />
           </button>
@@ -226,7 +226,7 @@ export default function TopBar() {
               component="button"
               type="button"
               class="p-1.5 rounded-lg text-gray-400 hover:bg-[#2c2d30] hover:text-white transition-colors cursor-pointer"
-              title="More actions"
+              title={t("More actions")}
             >
               <MoreHorizontal size={15} />
             </As>
@@ -241,8 +241,7 @@ export default function TopBar() {
                   setShowPublish(true);
                 }}
               >
-                Publish…
-              </MenuItem>
+                {t("Publish…")} </MenuItem>
               <MenuItem
                 icon={<History size={14} />}
                 onSelect={() => {
@@ -250,8 +249,7 @@ export default function TopBar() {
                   setShowHistory(true);
                 }}
               >
-                Version history
-              </MenuItem>
+                {t("Version history")} </MenuItem>
               <MenuSeparator />
               <MenuItem
                 danger
@@ -261,13 +259,12 @@ export default function TopBar() {
                   setShowDiscard(true);
                 }}
               >
-                Discard changes
-              </MenuItem>
+                {t("Discard changes")} </MenuItem>
             </>
           )}
         </Menu>
 
-        <Tooltip content="Commit the working tree" shortcut="⌘ S">
+        <Tooltip content={t("Commit the working tree")} shortcut="⌘ S">
           <button
             type="button"
             onClick={() => setShowPublish(true)}
@@ -279,8 +276,7 @@ export default function TopBar() {
                 pending() === 0,
             }}
           >
-            Publish
-          </button>
+            {t("Publish")} </button>
         </Tooltip>
       </div>
 
@@ -290,11 +286,11 @@ export default function TopBar() {
         open={showDiscard()}
         onOpenChange={setShowDiscard}
         danger
-        title="Discard changes"
-        message="Every uncommitted edit to templates, settings and content goes back to the last commit. This cannot be undone from here."
-        confirmLabel="Discard changes"
+        title={t("Discard changes")}
+        message={t("Every uncommitted edit to templates, settings and content goes back to the last commit. This cannot be undone from here.")}
+        confirmLabel={t("Discard changes")}
         onConfirm={() => {
-          void editor.discard().then(() => showToast('Working tree restored', 'info'));
+          void editor.discard().then(() => showToast(t("Working tree restored"), 'info'));
         }}
       />
     </header>

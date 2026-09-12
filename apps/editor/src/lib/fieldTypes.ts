@@ -1,15 +1,16 @@
+import { t } from '../i18n';
 import type { FieldType, SchemaSetting } from '../types';
 
 export type FieldCategory = 'text' | 'choice' | 'media' | 'relationship' | 'structure' | 'layout';
 
 export const FIELD_CATEGORIES: Array<{ key: FieldCategory | 'all'; label: string }> = [
-  { key: 'all', label: 'All' },
-  { key: 'text', label: 'Text' },
-  { key: 'choice', label: 'Choice' },
-  { key: 'media', label: 'Media' },
-  { key: 'relationship', label: 'Relationship' },
-  { key: 'structure', label: 'Structure' },
-  { key: 'layout', label: 'Layout' },
+  { key: 'all', get label() { return t("All"); } },
+  { key: 'text', get label() { return t("Text"); } },
+  { key: 'choice', get label() { return t("Choice"); } },
+  { key: 'media', get label() { return t("Media"); } },
+  { key: 'relationship', get label() { return t("Relationship"); } },
+  { key: 'structure', get label() { return t("Structure"); } },
+  { key: 'layout', get label() { return t("Layout"); } },
 ];
 
 export interface FieldTypeInfo {
@@ -28,35 +29,35 @@ export interface FieldTypeInfo {
  * than appearing in the picker as a blank card.
  */
 export const FIELD_TYPES: Record<FieldType, FieldTypeInfo> = {
-  text: { label: 'Text', description: 'A single line of text.', category: 'text', icon: 'text-t' },
-  textarea: { label: 'Textarea', description: 'Several lines of plain text.', category: 'text', icon: 'text-align-left' },
-  markdown: { label: 'Markdown', description: 'Formatted writing, stored as markdown.', category: 'text', icon: 'markdown-logo' },
-  richtext: { label: 'Rich text', description: 'Formatted writing, stored as HTML.', category: 'text', icon: 'article' },
-  html: { label: 'HTML', description: 'Raw HTML, inserted as written.', category: 'text', icon: 'file-html' },
-  code: { label: 'Code', description: 'A code snippet with a monospace editor.', category: 'text', icon: 'code' },
-  url: { label: 'Link', description: 'A page on the site or an external address.', category: 'text', icon: 'link' },
-  number: { label: 'Number', description: 'A whole or decimal number.', category: 'text', icon: 'hash' },
-  range: { label: 'Range', description: 'A number picked on a slider.', category: 'text', icon: 'sliders-horizontal' },
-  date: { label: 'Date', description: 'A calendar date, optionally with a time.', category: 'text', icon: 'calendar' },
-  checkbox: { label: 'Toggle', description: 'On or off.', category: 'choice', icon: 'toggle-left' },
-  select: { label: 'Select', description: 'One option from a dropdown.', category: 'choice', icon: 'caret-circle-down' },
-  radio: { label: 'Radio', description: 'One option, all shown at once.', category: 'choice', icon: 'radio-button' },
-  checkboxes: { label: 'Checkboxes', description: 'Any number of options.', category: 'choice', icon: 'list-checks' },
-  tags: { label: 'Tags', description: 'Free-form labels, typed in.', category: 'choice', icon: 'tag' },
-  color: { label: 'Color', description: 'A colour from a picker.', category: 'choice', icon: 'palette' },
-  image: { label: 'Image', description: 'One image, or a gallery.', category: 'media', icon: 'image' },
-  video: { label: 'Video', description: 'A video file or address.', category: 'media', icon: 'video-camera' },
-  file: { label: 'File', description: 'A download: PDF, ZIP, document, audio.', category: 'media', icon: 'file-arrow-down' },
-  icon: { label: 'Icon', description: 'An icon from the Phosphor set.', category: 'media', icon: 'shapes' },
-  collection_item: { label: 'Entries', description: 'Link to entries — related posts, an author, featured docs.', category: 'relationship', icon: 'files' },
-  collection: { label: 'Collection', description: 'A whole collection, to list its entries.', category: 'relationship', icon: 'folders' },
-  page: { label: 'Page', description: 'Link to one of the site’s pages.', category: 'relationship', icon: 'file-text' },
-  menu: { label: 'Menu', description: 'A navigation list.', category: 'relationship', icon: 'list' },
-  group: { label: 'Group', description: 'Fields kept together as one value.', category: 'structure', icon: 'brackets-curly' },
-  repeater: { label: 'Repeater', description: 'A list of rows, each with the same fields.', category: 'structure', icon: 'rows' },
-  table: { label: 'Table', description: 'Rows and columns of text.', category: 'structure', icon: 'table' },
-  header: { label: 'Section heading', description: 'A heading that organises the form.', category: 'layout', icon: 'text-h' },
-  paragraph: { label: 'Instructions', description: 'A note for whoever fills in the form.', category: 'layout', icon: 'paragraph' },
+  text: { get label() { return t("Text"); }, get description() { return t("A single line of text."); }, category: 'text', icon: 'text-t' },
+  textarea: { get label() { return t("Textarea"); }, get description() { return t("Several lines of plain text."); }, category: 'text', icon: 'text-align-left' },
+  markdown: { get label() { return t("Markdown"); }, get description() { return t("Formatted writing, stored as markdown."); }, category: 'text', icon: 'markdown-logo' },
+  richtext: { get label() { return t("Rich text"); }, get description() { return t("Formatted writing, stored as HTML."); }, category: 'text', icon: 'article' },
+  html: { get label() { return t("HTML"); }, get description() { return t("Raw HTML, inserted as written."); }, category: 'text', icon: 'file-html' },
+  code: { get label() { return t("Code"); }, get description() { return t("A code snippet with a monospace editor."); }, category: 'text', icon: 'code' },
+  url: { get label() { return t("Link"); }, get description() { return t("A page on the site or an external address."); }, category: 'text', icon: 'link' },
+  number: { get label() { return t("Number"); }, get description() { return t("A whole or decimal number."); }, category: 'text', icon: 'hash' },
+  range: { get label() { return t("Range"); }, get description() { return t("A number picked on a slider."); }, category: 'text', icon: 'sliders-horizontal' },
+  date: { get label() { return t("Date"); }, get description() { return t("A calendar date, optionally with a time."); }, category: 'text', icon: 'calendar' },
+  checkbox: { get label() { return t("Toggle"); }, get description() { return t("On or off."); }, category: 'choice', icon: 'toggle-left' },
+  select: { get label() { return t("field.select"); }, get description() { return t("One option from a dropdown."); }, category: 'choice', icon: 'caret-circle-down' },
+  radio: { get label() { return t("Radio"); }, get description() { return t("One option, all shown at once."); }, category: 'choice', icon: 'radio-button' },
+  checkboxes: { get label() { return t("Checkboxes"); }, get description() { return t("Any number of options."); }, category: 'choice', icon: 'list-checks' },
+  tags: { get label() { return t("Tags"); }, get description() { return t("Free-form labels, typed in."); }, category: 'choice', icon: 'tag' },
+  color: { get label() { return t("Color"); }, get description() { return t("A colour from a picker."); }, category: 'choice', icon: 'palette' },
+  image: { get label() { return t("Image"); }, get description() { return t("One image, or a gallery."); }, category: 'media', icon: 'image' },
+  video: { get label() { return t("Video"); }, get description() { return t("A video file or address."); }, category: 'media', icon: 'video-camera' },
+  file: { get label() { return t("File"); }, get description() { return t("A download: PDF, ZIP, document, audio."); }, category: 'media', icon: 'file-arrow-down' },
+  icon: { get label() { return t("Icon"); }, get description() { return t("An icon from the Phosphor set."); }, category: 'media', icon: 'shapes' },
+  collection_item: { get label() { return t("Entries"); }, get description() { return t("Link to entries — related posts, an author, featured docs."); }, category: 'relationship', icon: 'files' },
+  collection: { get label() { return t("Collection"); }, get description() { return t("A whole collection, to list its entries."); }, category: 'relationship', icon: 'folders' },
+  page: { get label() { return t("Page"); }, get description() { return t("Link to one of the site’s pages."); }, category: 'relationship', icon: 'file-text' },
+  menu: { get label() { return t("Menu"); }, get description() { return t("A navigation list."); }, category: 'relationship', icon: 'list' },
+  group: { get label() { return t("Group"); }, get description() { return t("Fields kept together as one value."); }, category: 'structure', icon: 'brackets-curly' },
+  repeater: { get label() { return t("Repeater"); }, get description() { return t("A list of rows, each with the same fields."); }, category: 'structure', icon: 'rows' },
+  table: { get label() { return t("Table"); }, get description() { return t("Rows and columns of text."); }, category: 'structure', icon: 'table' },
+  header: { get label() { return t("Section heading"); }, get description() { return t("A heading that organises the form."); }, category: 'layout', icon: 'text-h' },
+  paragraph: { get label() { return t("Instructions"); }, get description() { return t("A note for whoever fills in the form."); }, category: 'layout', icon: 'paragraph' },
 };
 
 /** Types that hold other fields. */
@@ -107,8 +108,8 @@ export function newField(type: FieldType, taken: string[]): SchemaSetting {
     field.content = info.label;
   }
 
-  if (needsOptions(type)) field.options = [{ value: 'first', label: 'First' }, { value: 'second', label: 'Second' }];
-  if (holdsFields(type)) field.fields = [{ id: 'title', type: 'text', label: 'Title' }];
+  if (needsOptions(type)) field.options = [{ value: 'first', label: t("First") }, { value: 'second', label: t("Second") }];
+  if (holdsFields(type)) field.fields = [{ id: 'title', type: 'text', label: t("Title") }];
   if (type === 'range') Object.assign(field, { min: 0, max: 100, step: 1 });
 
   return field;

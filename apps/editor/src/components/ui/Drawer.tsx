@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Show, createEffect, createSignal, onCleanup, type JSX } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import { X } from './Icons';
@@ -80,7 +81,7 @@ export default function Drawer(props: DrawerProps) {
               <button
                 type="button"
                 class="flex size-8 items-center justify-center rounded-ds text-text-muted transition-colors hover:bg-surface-muted hover:text-text"
-                aria-label="Close"
+                aria-label={t("Close")}
                 onClick={() => props.onClose()}
               >
                 <X size={16} />

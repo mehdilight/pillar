@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Show, type JSX } from 'solid-js';
 import { A } from '@solidjs/router';
 import { ArrowLeft } from '../../components/ui/Icons';
@@ -22,7 +23,7 @@ export default function Page(props: {
             <A
               href={props.backTo!}
               class="size-8 flex items-center justify-center rounded-ds border border-border bg-surface text-text-muted hover:text-text hover:bg-surface-muted transition-colors shrink-0 shadow-xs"
-              title="Back"
+              title={t("Back")}
             >
               <ArrowLeft size={16} />
             </A>

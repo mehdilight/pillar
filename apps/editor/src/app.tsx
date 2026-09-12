@@ -1,4 +1,5 @@
 /* @refresh reload */
+import { t } from './i18n';
 import { lazy, onMount, type JSX } from 'solid-js';
 import { render } from 'solid-js/web';
 import { Route, Router } from '@solidjs/router';
@@ -28,7 +29,7 @@ function Root(props: { children?: JSX.Element }) {
       .editorPlugins()
       .then(loadPlugins)
       .then((failures) =>
-        failures.forEach(({ slug, error }) => showToast(`Plugin "${slug}" did not load: ${error}`, 'error'))
+        failures.forEach(({ slug, error }) => showToast(t("Plugin \"{{v0}}\" did not load: {{v1}}", { v0: slug, v1: error }), 'error'))
       )
       .catch(() => undefined);
   });
@@ -57,7 +58,7 @@ const EditorScreen = lazy(() => import('./editor/EditorScreen'));
 
 const root = document.getElementById('pillar-root');
 
-if (!root) throw new Error('#pillar-root is missing from the page');
+if (!root) throw new Error(t("#pillar-root is missing from the page"));
 
 render(
   () => (

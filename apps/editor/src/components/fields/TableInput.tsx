@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Index, Show } from 'solid-js';
 import Field from '../ui/Field';
 import { Plus, X } from '../ui/Icons';
@@ -20,13 +21,12 @@ export default function TableInput(props: { label?: string; info?: string; value
   const cell = 'h-8 w-full min-w-[90px] border-0 bg-transparent px-2 text-[13px] outline-none focus:bg-[#f4f8ff] focus:ring-0';
 
   return (
-    <Field label={props.label} info={props.info ?? 'The first row is the header.'}>
+    <Field label={props.label} info={props.info ?? t("The first row is the header.")}>
       <Show
         when={props.value.length}
         fallback={
           <button type="button" class="sam-btn self-start" onClick={() => props.onValue([['', ''], ['', '']])}>
-            Start a table
-          </button>
+            {t("Start a table")} </button>
         }
       >
         <div class="overflow-x-auto rounded-lg border border-[#c9cccf] bg-white">
@@ -39,7 +39,7 @@ export default function TableInput(props: { label?: string; info?: string; value
                       <button
                         type="button"
                         class="m-0.5 rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                        aria-label={`Remove column ${c() + 1}`}
+                        aria-label={t("Remove column {{v0}}", { v0: c() + 1 })}
                         onClick={() => removeColumn(c())}
                       >
                         <X size={11} />
@@ -61,7 +61,7 @@ export default function TableInput(props: { label?: string; info?: string; value
                           <input
                             class={cell}
                             classList={{ 'font-medium': r === 0 }}
-                            aria-label={`Row ${r + 1}, column ${c + 1}`}
+                            aria-label={t("Row {{v0}}, column {{v1}}", { v0: r + 1, v1: c + 1 })}
                             value={text()}
                             onInput={(event) => set(r, c, event.currentTarget.value)}
                           />
@@ -69,7 +69,7 @@ export default function TableInput(props: { label?: string; info?: string; value
                       )}
                     </Index>
                     <td class="w-7 p-0 text-center">
-                      <button type="button" class="rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label={`Remove row ${r + 1}`} onClick={() => removeRow(r)}>
+                      <button type="button" class="rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-600" aria-label={t("Remove row {{v0}}", { v0: r + 1 })} onClick={() => removeRow(r)}>
                         <X size={11} />
                       </button>
                     </td>
@@ -81,11 +81,9 @@ export default function TableInput(props: { label?: string; info?: string; value
         </div>
         <div class="flex gap-2">
           <button type="button" class="sam-btn" onClick={addRow}>
-            <Plus size={12} /> Row
-          </button>
+            <Plus size={12} /> {t("Row")} </button>
           <button type="button" class="sam-btn" onClick={addColumn}>
-            <Plus size={12} /> Column
-          </button>
+            <Plus size={12} /> {t("Column")} </button>
         </div>
       </Show>
     </Field>

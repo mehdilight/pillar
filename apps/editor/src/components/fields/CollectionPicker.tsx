@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createSignal, onMount } from 'solid-js';
 import Field, { controlClass } from '../ui/Field';
 import NativeSelect from '../ui/NativeSelect';
@@ -25,7 +26,7 @@ export default function CollectionPicker(props: { label?: string; info?: string;
       {/* `selected` on each option, not `value` on the select: the options arrive after the value, and a select's value set before its options exist is lost. */}
       <NativeSelect class={controlClass} onChange={(event) => props.onValue(event.currentTarget.value)}>
         <option value="" selected={props.value === ''}>
-          {collections() === null ? 'Loading…' : 'Choose a collection'}
+          {collections() === null ? t("Loading…") : t("Choose a collection")}
         </option>
         <For each={collections() ?? []}>
           {(collection) => (
@@ -36,8 +37,7 @@ export default function CollectionPicker(props: { label?: string; info?: string;
         </For>
         <Show when={missing()}>
           <option value={props.value} selected>
-            {props.value} (missing)
-          </option>
+            {props.value} {t("(missing)")} </option>
         </Show>
       </NativeSelect>
     </Field>

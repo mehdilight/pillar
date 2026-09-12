@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createContext, createEffect, createMemo, createSignal, on, useContext } from 'solid-js';
 import Field from '../ui/Field';
 import Drawer from '../ui/Drawer';
@@ -92,14 +93,14 @@ export default function RelationshipInput(props: {
                     'bg-[#b28400]': Boolean(find(reference)?.frontmatter?.draft),
                     'bg-[#e22c38]': entries() !== null && find(reference) === undefined,
                   }}
-                  title={find(reference) ? (find(reference)!.frontmatter?.draft ? 'Draft' : 'Published') : entries() === null ? '' : 'Missing'}
+                  title={find(reference) ? (find(reference)!.frontmatter?.draft ? t("Draft") : t("Published")) : entries() === null ? '' : t("Missing")}
                 />
                 <span class="min-w-0 flex-1">
                   <span class="block truncate text-xs font-medium text-[#303030]">
                     {find(reference)?.title || reference}
                   </span>
                   <Show when={entries() !== null && !find(reference)}>
-                    <span class="block text-[10.5px] text-red-600">No entry {reference} — it was renamed or deleted.</span>
+                    <span class="block text-[10.5px] text-red-600">{t("No entry")} {reference} {t("— it was renamed or deleted.")}</span>
                   </Show>
                 </span>
                 <Show when={qualified() && find(reference)}>
@@ -111,21 +112,21 @@ export default function RelationshipInput(props: {
                     target="_blank"
                     rel="noopener"
                     class="rounded p-0.5 text-gray-400 hover:bg-[#f1f2f4] hover:text-gray-700"
-                    aria-label={`Open ${find(reference)!.title}`}
-                    title="Open in a new tab"
+                    aria-label={t("Open {{v0}}", { v0: find(reference)!.title })}
+                    title={t("Open in a new tab")}
                   >
                     <ExternalLink size={12} />
                   </a>
                 </Show>
                 <Show when={props.multiple}>
-                  <button type="button" class="rounded p-0.5 text-gray-400 hover:bg-[#f1f2f4] hover:text-gray-700 disabled:invisible" aria-label="Move up" disabled={index() === 0} onClick={() => move(index(), index() - 1)}>
+                  <button type="button" class="rounded p-0.5 text-gray-400 hover:bg-[#f1f2f4] hover:text-gray-700 disabled:invisible" aria-label={t("Move up")} disabled={index() === 0} onClick={() => move(index(), index() - 1)}>
                     <ChevronDown size={12} class="rotate-180" />
                   </button>
                 </Show>
                 <button
                   type="button"
                   class="rounded p-0.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                  aria-label={`Unlink ${find(reference)?.title || reference}`}
+                  aria-label={t("Unlink {{v0}}", { v0: find(reference)?.title || reference })}
                   onClick={() => commit(chosen().filter((item) => item !== reference))}
                 >
                   <X size={12} />
@@ -139,23 +140,22 @@ export default function RelationshipInput(props: {
       <Show when={!full() && (props.multiple || chosen().length === 0)}>
         <button type="button" class="sam-btn self-start" onClick={() => setSelecting(true)} disabled={props.collections.length === 0}>
           <Plus size={12} />
-          {props.multiple ? 'Link entries' : 'Link an entry'}
+          {props.multiple ? t("Link entries") : t("Link an entry")}
         </button>
       </Show>
       <Show when={!props.multiple && chosen().length > 0}>
         <button type="button" class="sam-btn self-start" onClick={() => setSelecting(true)}>
-          Change
-        </button>
+          {t("Change")} </button>
       </Show>
       <Show when={props.multiple && props.max !== undefined}>
         <p class="text-[11px] text-gray-500">
-          {chosen().length} of at most {props.max}
+          {chosen().length} {t("of at most")} {props.max}
         </p>
       </Show>
 
       <Show when={selecting()}>
         <EntrySelector
-          title={props.label ? `Link ${props.label.toLowerCase()}` : 'Link entries'}
+          title={props.label ? t("Link {{v0}}", { v0: props.label.toLowerCase() }) : t("Link entries")}
           collections={props.collections}
           entries={selectable()}
           multiple={Boolean(props.multiple)}
@@ -226,15 +226,12 @@ function EntrySelector(props: {
       footer={
         <>
           <span class="mr-auto text-xs text-text-muted">
-            {picked().length} selected
-            {props.max !== undefined ? ` · at most ${props.max}` : ''}
+            {picked().length} {t("selected")} {props.max !== undefined ? t(" · at most {{v0}}", { v0: props.max }) : ''}
           </span>
           <button type="button" class="sam-btn" onClick={props.onClose}>
-            Cancel
-          </button>
+            {t("Cancel")} </button>
           <button type="button" class="sam-btn primary" onClick={() => props.onSelect(picked())}>
-            Select
-          </button>
+            {t("Select")} </button>
         </>
       }
     >
@@ -244,8 +241,8 @@ function EntrySelector(props: {
           <input
             type="search"
             autofocus
-            aria-label="Search entries"
-            placeholder="Search by title or slug"
+            aria-label={t("Search entries")}
+            placeholder={t("Search by title or slug")}
             class="h-8 flex-1 border-0 bg-transparent p-0 text-[13px] outline-none focus:ring-0"
             value={query()}
             onInput={(event) => {
@@ -267,7 +264,7 @@ function EntrySelector(props: {
                     setPage(1);
                   }}
                 >
-                  {name || 'All'}
+                  {name || t("All")}
                 </button>
               )}
             </For>
@@ -275,19 +272,19 @@ function EntrySelector(props: {
         </Show>
       </div>
 
-      <Show when={props.entries !== null} fallback={<p class="py-10 text-center text-xs text-text-faint">Loading entries…</p>}>
-        <Show when={visible().length} fallback={<p class="py-10 text-center text-xs text-text-faint">{query() ? 'No entry matches.' : 'No entries yet.'}</p>}>
+      <Show when={props.entries !== null} fallback={<p class="py-10 text-center text-xs text-text-faint">{t("Loading entries…")}</p>}>
+        <Show when={visible().length} fallback={<p class="py-10 text-center text-xs text-text-faint">{query() ? t("No entry matches.") : t("No entries yet.")}</p>}>
           <div class="overflow-hidden rounded-ds border border-border bg-surface shadow-ds-sm">
             <table class="w-full border-collapse text-[13px]">
               <thead>
                 <tr class="border-b border-border bg-surface-muted text-left text-[11.5px] uppercase tracking-[.03em] text-text-muted">
                   <th class="w-10 px-3 py-2" />
-                  <th class="px-3 py-2 font-medium">Title</th>
+                  <th class="px-3 py-2 font-medium">{t("Title")}</th>
                   <Show when={props.collections.length > 1}>
-                    <th class="px-3 py-2 font-medium">Collection</th>
+                    <th class="px-3 py-2 font-medium">{t("Collection")}</th>
                   </Show>
-                  <th class="px-3 py-2 font-medium">Date</th>
-                  <th class="px-3 py-2 font-medium">Status</th>
+                  <th class="px-3 py-2 font-medium">{t("Date")}</th>
+                  <th class="px-3 py-2 font-medium">{t("Status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -310,7 +307,7 @@ function EntrySelector(props: {
                             classList={{ rounded: props.multiple }}
                             checked={on()}
                             disabled={disabled()}
-                            aria-label={`Select ${entry.title || entry.slug}`}
+                            aria-label={t("Select {{v0}}", { v0: entry.title || entry.slug })}
                             onClick={(event) => event.stopPropagation()}
                             onChange={() => toggle(entry.reference)}
                           />
@@ -331,7 +328,7 @@ function EntrySelector(props: {
                               'border-success/30 bg-success-tint text-success': !entry.frontmatter?.draft,
                             }}
                           >
-                            {entry.frontmatter?.draft ? 'Draft' : 'Published'}
+                            {entry.frontmatter?.draft ? t("Draft") : t("Published")}
                           </span>
                         </td>
                       </tr>
@@ -343,19 +340,17 @@ function EntrySelector(props: {
           </div>
           <div class="mt-3 flex items-center justify-between text-xs text-text-muted">
             <span>
-              {matching().length} entr{matching().length === 1 ? 'y' : 'ies'}
+              {t("count.entry", { count: matching().length })}
             </span>
             <Show when={pages() > 1}>
               <span class="flex items-center gap-2">
                 <button type="button" class="sam-btn" disabled={current() === 1} onClick={() => setPage(current() - 1)}>
-                  Previous
-                </button>
+                  {t("Previous")} </button>
                 <span class="tabular-nums">
-                  {current()} of {pages()}
+                  {current()} {t("of")} {pages()}
                 </span>
                 <button type="button" class="sam-btn" disabled={current() === pages()} onClick={() => setPage(current() + 1)}>
-                  Next
-                </button>
+                  {t("Next")} </button>
               </span>
             </Show>
           </div>

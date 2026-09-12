@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { For, Show, createSignal } from 'solid-js';
 import Modal from '../components/ui/Modal';
 import { showToast } from '../components/ui/Toast';
@@ -24,13 +25,13 @@ export default function PublishDialog(props: {
     setPending(true);
 
     try {
-      const result = await editor.publish(message().trim() || 'Update site content', push());
+      const result = await editor.publish(message().trim() || t("Update site content"), push());
 
       showToast(result.message, 'success');
       props.onOpenChange(false);
       setMessage('');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Publish failed', 'error');
+      showToast(error instanceof Error ? error.message : t("Publish failed"), 'error');
     } finally {
       setPending(false);
     }
@@ -40,38 +41,35 @@ export default function PublishDialog(props: {
     <Modal
       open={props.open}
       onOpenChange={props.onOpenChange}
-      title="Publish changes"
+      title={t("Publish changes")}
       footer={
         <>
           <button type="button" class="sam-btn" onClick={() => props.onOpenChange(false)}>
-            Cancel
-          </button>
+            {t("Cancel")} </button>
           <button
             type="button"
             class="sam-btn primary"
             disabled={pending() || files().length === 0}
             onClick={run}
           >
-            {pending() ? 'Publishing…' : editor.status()?.has_remote && !push() ? 'Commit' : 'Commit & publish'}
+            {pending() ? t("Publishing…") : editor.status()?.has_remote && !push() ? t("Commit") : t("Commit & publish")}
           </button>
         </>
       }
     >
       <Show
         when={files().length}
-        fallback={<p class="text-[13px] text-gray-500">Nothing to publish — the tree is clean.</p>}
+        fallback={<p class="text-[13px] text-gray-500">{t("Nothing to publish — the tree is clean.")}</p>}
       >
         <p class="text-[13px] text-[#303030]">
-          {files().length} file{files().length === 1 ? '' : 's'} will be committed on{' '}
-          <code class="sam-mono">{editor.status()?.branch}</code>
-          <Show when={editor.status()?.has_remote && push()}> and pushed.</Show>
+          {t("publish.files", { count: files().length, branch: editor.status()?.branch })}
+          <Show when={editor.status()?.has_remote && push()}> {t("and pushed.")}</Show>
         </p>
 
         <Show when={editor.status()?.has_remote}>
           <label class="flex cursor-pointer items-center gap-2 text-[12px] text-[#303030]">
             <input type="checkbox" class="size-4 rounded border-[#c9cccf]" checked={push()} onChange={(event) => setPush(event.currentTarget.checked)} />
-            Push to the remote after committing
-          </label>
+            {t("Push to the remote after committing")} </label>
         </Show>
 
         <ul class="rounded-lg border border-[#e1e3e5] bg-[#f6f6f7] divide-y divide-[#e1e3e5] max-h-48 overflow-y-auto">
@@ -81,13 +79,12 @@ export default function PublishDialog(props: {
         </ul>
 
         <label class="sam-label" for="publish-message">
-          Commit message
-        </label>
+          {t("Commit message")} </label>
         <input
           id="publish-message"
           type="text"
           class="sam-input"
-          placeholder="Update site content"
+          placeholder={t("Update site content")}
           value={message()}
           onInput={(event) => setMessage(event.currentTarget.value)}
         />

@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build && node build-plugins.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "esbuild src/lib/blocks.test.ts src/lib/markdown.test.ts src/lib/fieldRules.test.ts --bundle --format=esm --platform=node --external:node:* --outdir=.test --log-level=error && node --test .test/blocks.test.js .test/markdown.test.js .test/fieldRules.test.js",
+    "test": "esbuild src/lib/blocks.test.ts src/lib/markdown.test.ts src/lib/fieldRules.test.ts src/i18n/i18n.test.ts --bundle --outbase=src --alias:solid-js=./node_modules/solid-js/dist/solid.js --format=esm --platform=node --external:node:* --outdir=.test --log-level=error && node --test .test/lib/blocks.test.js .test/lib/markdown.test.js .test/lib/fieldRules.test.js .test/i18n/i18n.test.js",
     "test:seo": "esbuild ../../plugins/seo/frontend/src/analysis.test.ts --bundle --format=esm --platform=node --external:node:* --outfile=.test/seo.test.mjs --log-level=error && node --test .test/seo.test.mjs",
     "build:plugins": "node build-plugins.mjs"
   },
@@ -22,6 +22,7 @@
     "@tiptap/markdown": "^3.31.3",
     "@tiptap/pm": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
+    "i18next": "^26.4.2",
     "solid-js": "^1.9.3"
   },
   "devDependencies": {

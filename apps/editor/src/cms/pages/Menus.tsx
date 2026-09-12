@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createEffect, createResource, createSignal } from 'solid-js';
 import { A, useNavigate, useParams } from '@solidjs/router';
 import { ChevronRight, GripVertical, Link2, Pencil, Plus, Trash2 } from '../../components/ui/Icons';
@@ -14,7 +15,7 @@ const blankLink = (): MenuItem => ({ title: '', url: '' });
 const emptyMenu = () => ({ title: '', items: [] as MenuItem[] });
 const handleOf = (title: string) =>
   title.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'menu';
-const summary = (items: MenuItem[]) => items.map((item) => item.title.trim()).filter(Boolean).join(', ') || 'No links yet';
+const summary = (items: MenuItem[]) => items.map((item) => item.title.trim()).filter(Boolean).join(', ') || t("No links yet");
 const sortableIds = new WeakMap<MenuItem, string>();
 let nextSortableId = 0;
 const sortableId = (item: MenuItem) => {
@@ -42,15 +43,15 @@ export default function Menus() {
 
 function MenuIndex() {
   const [menus] = createResource(api.menus);
-  const create = <A href="/menus/create" class="inline-flex h-8 items-center gap-1.5 rounded-ds border border-brand bg-brand px-3 text-xs font-medium text-white shadow-ds-sm transition-colors hover:border-brand-hover hover:bg-brand-hover"><Plus size={15} /> Create menu</A>;
+  const create = <A href="/menus/create" class="inline-flex h-8 items-center gap-1.5 rounded-ds border border-brand bg-brand px-3 text-xs font-medium text-white shadow-ds-sm transition-colors hover:border-brand-hover hover:bg-brand-hover"><Plus size={15} /> {t("Create menu")}</A>;
 
   return (
-    <Page title="Navigation" actions={create}>
-      <p class="mb-5 max-w-2xl text-[13px] leading-5 text-text-muted">Link lists are reusable navigation for headers, footers, and sections. Open a menu to edit its links and order.</p>
-      <Show when={!menus.loading} fallback={<p class="text-text-muted">Loading navigation…</p>}>
-        <Show when={Object.keys(menus() ?? {}).length} fallback={<Empty title="No menus yet." description="Create a menu to add navigation to your theme." action={create} />}>
+    <Page title={t("Navigation")} actions={create}>
+      <p class="mb-5 max-w-2xl text-[13px] leading-5 text-text-muted">{t("Link lists are reusable navigation for headers, footers, and sections. Open a menu to edit its links and order.")}</p>
+      <Show when={!menus.loading} fallback={<p class="text-text-muted">{t("Loading navigation…")}</p>}>
+        <Show when={Object.keys(menus() ?? {}).length} fallback={<Empty title={t("No menus yet.")} description={t("Create a menu to add navigation to your theme.")} action={create} />}>
           <Postbox flush>
-            <div class="grid grid-cols-[minmax(12rem,.9fr)_minmax(0,1fr)] border-b border-border bg-surface-muted/60 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.045em] text-text-faint"><span>Menu</span><span>Menu items</span></div>
+            <div class="grid grid-cols-[minmax(12rem,.9fr)_minmax(0,1fr)] border-b border-border bg-surface-muted/60 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.045em] text-text-faint"><span>{t("Menu")}</span><span>{t("Menu items")}</span></div>
             <For each={Object.entries(menus() ?? {})}>
               {([handle, menu]) => <A href={`/menus/${handle}`} class="grid grid-cols-[minmax(12rem,.9fr)_minmax(0,1fr)] items-center border-b border-border px-4 py-3.5 text-[13px] transition-colors last:border-b-0 hover:bg-brand-tint/35 focus:bg-brand-tint/35 focus:outline-none"><span class="min-w-0 font-medium text-text">{menu.title || handle}</span><span class="truncate text-text-muted">{summary(menu.items)}</span></A>}
             </For>
@@ -89,7 +90,7 @@ function MenuEditor(props: { handle: string }) {
   };
   const save = async () => {
     const title = current().title.trim();
-    if (!title) return showToast('Give this menu a name before saving.', 'error');
+    if (!title) return showToast(t("Give this menu a name before saving."), 'error');
     const all = menus() ?? {};
     let target = handle();
     let suffix = 2;
@@ -97,34 +98,34 @@ function MenuEditor(props: { handle: string }) {
     try {
       await api.saveMenus({ ...all, [target]: { ...current(), title } });
       await Promise.all([refetch(), refreshStatus()]);
-      showToast('Menu saved', 'success');
+      showToast(t("Menu saved"), 'success');
       if (creating()) navigate(`/menus/${target}`, { replace: true });
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not save menu', 'error');
+      showToast(error instanceof Error ? error.message : t("Could not save menu"), 'error');
     }
   };
   const remove = async () => {
-    if (creating() || !window.confirm(`Delete “${current().title || props.handle}”?`)) return;
+    if (creating() || !window.confirm(t("Delete “{{v0}}”?", { v0: current().title || props.handle }))) return;
     const all = { ...(menus() ?? {}) };
     delete all[props.handle];
     try {
       await api.saveMenus(all);
       await refreshStatus();
-      showToast('Menu deleted', 'success');
+      showToast(t("Menu deleted"), 'success');
       navigate('/menus');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not delete menu', 'error');
+      showToast(error instanceof Error ? error.message : t("Could not delete menu"), 'error');
     }
   };
 
   return (
-    <Page title={creating() ? 'Create menu' : current().title || props.handle} backTo="/menus" actions={<div class="flex items-center gap-2"><Show when={!creating()}><Button variant="link" class="text-danger" onClick={() => void remove()}>Delete</Button></Show><Button variant="primary" disabled={menus.loading} onClick={() => void save()}>Save changes</Button></div>}>
-      <Show when={!menus.loading} fallback={<p class="text-text-muted">Loading menu…</p>}>
+    <Page title={creating() ? t("Create menu") : current().title || props.handle} backTo="/menus" actions={<div class="flex items-center gap-2"><Show when={!creating()}><Button variant="link" class="text-danger" onClick={() => void remove()}>{t("Delete")}</Button></Show><Button variant="primary" disabled={menus.loading} onClick={() => void save()}>{t("Save changes")}</Button></div>}>
+      <Show when={!menus.loading} fallback={<p class="text-text-muted">{t("Loading menu…")}</p>}>
         <div class="max-w-4xl">
-          <Postbox title="Menu details">
-            <div class="max-w-2xl"><Label>Menu name</Label><Input autofocus placeholder="For example, Main menu" value={current().title} onInput={(event) => update({ ...current(), title: event.currentTarget.value })} /><p class="mt-2 text-xs text-text-muted">Handle: <code class="font-mono text-[11px] text-text-secondary">{handle()}</code><Show when={creating()}><span> · Created from the menu name when you save.</span></Show></p></div>
+          <Postbox title={t("Menu details")}>
+            <div class="max-w-2xl"><Label>{t("Menu name")}</Label><Input autofocus placeholder={t("For example, Main menu")} value={current().title} onInput={(event) => update({ ...current(), title: event.currentTarget.value })} /><p class="mt-2 text-xs text-text-muted">{t("Handle:")} <code class="font-mono text-[11px] text-text-secondary">{handle()}</code><Show when={creating()}><span> {t("· Created from the menu name when you save.")}</span></Show></p></div>
           </Postbox>
-          <Postbox title="Menu items" flush actions={<Button size="sm" onClick={() => update({ ...current(), items: [...current().items, blankLink()] })}><Plus size={14} /> Add menu item</Button>}>
+          <Postbox title={t("Menu items")} flush actions={<Button size="sm" onClick={() => update({ ...current(), items: [...current().items, blankLink()] })}><Plus size={14} /> {t("Add menu item")}</Button>}>
             <MenuRows items={current().items} onChange={(items) => update({ ...current(), items })} isExpanded={(id) => expandedItems()[id] === true} onExpandedChange={setItemExpanded} />
           </Postbox>
         </div>
@@ -154,7 +155,7 @@ function MenuRows(props: { items: MenuItem[]; onChange: (items: MenuItem[]) => v
               const item = () => props.items.find((current) => sortableId(current) === id)!;
               return <SortableMenuRow item={item()} id={id} onChange={(next) => props.onChange(props.items.map((current) => sortableId(current) === id ? retainSortableId(current, next) : current))} onRemove={() => props.onChange(props.items.filter((current) => sortableId(current) !== id))} isExpanded={props.isExpanded} onExpandedChange={props.onExpandedChange} depth={props.depth} />;
             }}</For>
-            <Show when={props.items.length === 0}><div class="flex flex-col items-center px-5 py-10 text-center"><Link2 size={22} class="mb-2 text-text-faint" /><p class="text-[13px] font-medium text-text">This menu has no links.</p><p class="mt-1 text-xs text-text-muted">Add a destination for people to navigate to.</p></div></Show>
+            <Show when={props.items.length === 0}><div class="flex flex-col items-center px-5 py-10 text-center"><Link2 size={22} class="mb-2 text-text-faint" /><p class="text-[13px] font-medium text-text">{t("This menu has no links.")}</p><p class="mt-1 text-xs text-text-muted">{t("Add a destination for people to navigate to.")}</p></div></Show>
           </div>
         </SortableProvider>
       </DragDropSensors>
@@ -177,21 +178,21 @@ function SortableMenuRow(props: { item: MenuItem; id: string; onChange: (item: M
   return (
     <div ref={sortable} style={transformStyle(sortable.transform)} class="border-b border-border transition-shadow last:border-b-0" classList={{ 'relative z-10 shadow-ds-md': sortable.isActiveDraggable }}>
       <div class="group flex min-h-13 items-center gap-2 px-4 py-2">
-        <button type="button" {...sortable.dragActivators} class="cursor-grab touch-none text-text-faint hover:text-text active:cursor-grabbing" aria-label={`Reorder ${props.item.title || 'menu item'}`}><GripVertical size={17} /></button>
-        <div class="min-w-0 flex-1 py-1"><span class="block truncate text-[13px] font-medium text-text">{props.item.title || 'Untitled link'}</span><Show when={props.item.url}><span class="mt-0.5 block truncate text-[11px] text-text-faint">{props.item.url}</span></Show></div>
-        <Show when={(props.item.items ?? []).length}><span class="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-text-muted">{props.item.items!.length} nested</span></Show>
-        <button type="button" class="rounded p-1 text-text-faint transition hover:bg-surface-muted hover:text-text" title={editing() ? 'Close editor' : 'Edit link'} aria-label={`Edit ${props.item.title || 'Untitled link'}`} aria-expanded={editing()} onClick={() => props.onExpandedChange(props.id, !editing())}><Pencil size={15} /></button>
-        <button type="button" class="rounded p-1 text-text-faint opacity-100 transition hover:bg-danger-tint hover:text-danger md:opacity-0 md:group-hover:opacity-100" title="Remove link" onClick={props.onRemove}><Trash2 size={15} /></button>
+        <button type="button" {...sortable.dragActivators} class="cursor-grab touch-none text-text-faint hover:text-text active:cursor-grabbing" aria-label={t("Reorder {{v0}}", { v0: props.item.title || t("menu item") })}><GripVertical size={17} /></button>
+        <div class="min-w-0 flex-1 py-1"><span class="block truncate text-[13px] font-medium text-text">{props.item.title || t("Untitled link")}</span><Show when={props.item.url}><span class="mt-0.5 block truncate text-[11px] text-text-faint">{props.item.url}</span></Show></div>
+        <Show when={(props.item.items ?? []).length}><span class="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-medium text-text-muted">{props.item.items!.length} {t("nested")}</span></Show>
+        <button type="button" class="rounded p-1 text-text-faint transition hover:bg-surface-muted hover:text-text" title={editing() ? t("Close editor") : t("Edit link")} aria-label={t("Edit {{v0}}", { v0: props.item.title || t("Untitled link") })} aria-expanded={editing()} onClick={() => props.onExpandedChange(props.id, !editing())}><Pencil size={15} /></button>
+        <button type="button" class="rounded p-1 text-text-faint opacity-100 transition hover:bg-danger-tint hover:text-danger md:opacity-0 md:group-hover:opacity-100" title={t("Remove link")} onClick={props.onRemove}><Trash2 size={15} /></button>
         <Show when={(props.item.items ?? []).length}>
-          <button type="button" class="rounded p-1 text-text-faint hover:bg-surface-muted hover:text-text" aria-label={`Toggle sublinks for ${props.item.title || 'Untitled link'}`} aria-expanded={childrenOpen()} aria-controls={`${props.id}-children`} onClick={() => setChildrenOpen((open) => !open)}>
+          <button type="button" class="rounded p-1 text-text-faint hover:bg-surface-muted hover:text-text" aria-label={t("Toggle sublinks for {{v0}}", { v0: props.item.title || t("Untitled link") })} aria-expanded={childrenOpen()} aria-controls={`${props.id}-children`} onClick={() => setChildrenOpen((open) => !open)}>
             <ChevronRight size={16} class={`transition-transform ${childrenOpen() ? 'rotate-90' : ''}`} />
           </button>
         </Show>
       </div>
       <Show when={editing()}>
         <div class="border-t border-border bg-surface-muted/35 px-4 py-4 sm:pl-12">
-          <div class="grid max-w-2xl items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"><div><Label>Label</Label><Input value={props.item.title} placeholder="For example, About" onInput={(event) => props.onChange({ ...props.item, title: event.currentTarget.value })} /></div><div><Label>Link</Label><LinkPicker compact value={props.item.url} onValue={(url) => props.onChange({ ...props.item, url })} /></div></div>
-          <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> Choose a path or paste any URL.</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={addSublink}><Plus size={13} class="shrink-0" /><span>Add sublink</span></button></div>
+          <div class="grid max-w-2xl items-start gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)]"><div><Label>{t("Label")}</Label><Input value={props.item.title} placeholder={t("For example, About")} onInput={(event) => props.onChange({ ...props.item, title: event.currentTarget.value })} /></div><div><Label>{t("Link")}</Label><LinkPicker compact value={props.item.url} onValue={(url) => props.onChange({ ...props.item, url })} /></div></div>
+          <div class="mt-4 flex min-h-7 items-center justify-between gap-4"><span class="inline-flex items-center gap-1.5 text-xs text-text-faint"><Link2 size={13} /> {t("Choose a path or paste any URL.")}</span><button type="button" class="inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-xs font-medium text-brand hover:underline" onClick={addSublink}><Plus size={13} class="shrink-0" /><span>{t("Add sublink")}</span></button></div>
         </div>
       </Show>
       <Show when={(props.item.items ?? []).length}>

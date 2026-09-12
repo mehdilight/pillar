@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { Show, createEffect, createSignal, on } from 'solid-js';
 import type { MediaItem } from '../types';
 
@@ -30,10 +31,9 @@ export default function AltField(props: { image: MediaItem; onSave: (alt: string
     <div>
       <div class="mb-1 flex items-baseline justify-between gap-2">
         <label for={id()} class="text-xs font-medium text-text-secondary">
-          Alt text
-        </label>
+          {t("Alt text")} </label>
         <Show when={!props.image.alt && !changed()}>
-          <span class="text-[11px] font-medium text-warning">Missing</span>
+          <span class="text-[11px] font-medium text-warning">{t("Missing")}</span>
         </Show>
       </div>
       <textarea
@@ -41,7 +41,7 @@ export default function AltField(props: { image: MediaItem; onSave: (alt: string
         rows={3}
         maxLength={500}
         class="block w-full resize-y rounded-ds border border-border-strong bg-surface px-2.5 py-1.5 text-[13px] leading-snug text-text outline-none placeholder:text-text-faint focus:border-brand focus:ring-2 focus:ring-brand-tint"
-        placeholder="Describe what the image shows"
+        placeholder={t("Describe what the image shows")}
         value={draft()}
         onInput={(event) => setDraft(event.currentTarget.value)}
         onKeyDown={(event) => {
@@ -53,10 +53,9 @@ export default function AltField(props: { image: MediaItem; onSave: (alt: string
       />
       <div class="mt-1 flex items-start justify-between gap-2">
         <p class="text-[11px] leading-snug text-text-faint">
-          Read by screen readers and search engines, wherever the image has no alt text of its own.
-          <Show when={draft().length > RECOMMENDED}>
+          {t("Read by screen readers and search engines, wherever the image has no alt text of its own.")} <Show when={draft().length > RECOMMENDED}>
             {' '}
-            <span class="text-warning">Keep it under {RECOMMENDED} characters.</span>
+            <span class="text-warning">{t("Keep it under {{count}} characters.", { count: RECOMMENDED })}</span>
           </Show>
         </p>
         <Show when={changed()}>
@@ -66,7 +65,7 @@ export default function AltField(props: { image: MediaItem; onSave: (alt: string
             disabled={saving()}
             onClick={() => void save()}
           >
-            {saving() ? 'Saving…' : 'Save'}
+            {saving() ? t("Saving…") : t("Save")}
           </button>
         </Show>
       </div>

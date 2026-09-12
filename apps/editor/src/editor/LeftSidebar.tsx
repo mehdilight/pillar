@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { ChevronDown, ChevronRight, Copy, Eye, EyeOff, GripVertical, Plus, Trash2 } from '../components/ui/Icons';
 import { SectionIcon } from '../components/ui/SectionIcon';
@@ -55,7 +56,7 @@ export default function LeftSidebar() {
           }}
         >
           <div class="px-1.5 pb-2 text-xs font-semibold text-gray-900">{title()}</div>
-          <div class="px-1.5 pb-1 text-[11px] font-medium text-gray-400">Template</div>
+          <div class="px-1.5 pb-1 text-[11px] font-medium text-gray-400">{t("Template")}</div>
 
           <div class="flex flex-col gap-0.5">
             <For each={headerSections()}>
@@ -124,7 +125,7 @@ export default function LeftSidebar() {
               class="flex items-center gap-2 px-2 py-1.5 mt-1 text-xs font-medium text-[#005bd3] hover:bg-blue-50/60 rounded-lg w-full transition-colors cursor-pointer"
             >
               <Plus size={14} class="text-[#005bd3]" />
-              <span>Add section</span>
+              <span>{t("Add section")}</span>
             </button>
           </div>
         </div>
@@ -221,7 +222,7 @@ function SectionRow(props: SectionRowProps) {
               }}
               class="p-0.5 rounded hover:bg-black/10 transition-colors"
               classList={{ 'text-white': isActive(), 'text-gray-400 hover:text-red-600': !isActive() }}
-              title="Remove section"
+              title={t("Remove section")}
             >
               <Trash2 size={12} />
             </button>
@@ -235,7 +236,7 @@ function SectionRow(props: SectionRowProps) {
             }}
             class="p-0.5 rounded hover:bg-black/10 transition-colors"
             classList={{ 'text-white': isActive(), 'text-gray-400 hover:text-gray-700': !isActive() }}
-            title={section().enabled ? 'Hide section' : 'Show section'}
+            title={section().enabled ? t("Hide section") : t("Show section")}
           >
             {section().enabled ? <Eye size={12} /> : <EyeOff size={12} />}
           </button>
@@ -321,7 +322,7 @@ function BlockTree(props: { section: PageSection }) {
                     <button
                       type="button"
                       class="rounded hover:bg-black/10"
-                      aria-label={collapsed().has(key()) ? 'Expand' : 'Collapse'}
+                      aria-label={collapsed().has(key()) ? t("Expand") : t("Collapse")}
                       onClick={(event) => {
                         event.stopPropagation();
                         toggle(key());
@@ -334,29 +335,29 @@ function BlockTree(props: { section: PageSection }) {
                 <span class="truncate flex-1">{labelOf(row.block)}</span>
                 <div class="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100" classList={{ 'opacity-100': isActive(row.path) }}>
                   <Show when={container() && editor.canAddBlock(props.section, row.path)}>
-                    <button type="button" class={action} title="Add a block inside" onClick={(event) => (event.stopPropagation(), add(row.path))}>
+                    <button type="button" class={action} title={t("Add a block inside")} onClick={(event) => (event.stopPropagation(), add(row.path))}>
                       <Plus size={11} />
                     </button>
                   </Show>
-                  <button type="button" class={action} title="Move up" onClick={(event) => (event.stopPropagation(), editor.nudgeBlock(id(), row.path, -1))}>
+                  <button type="button" class={action} title={t("Move up")} onClick={(event) => (event.stopPropagation(), editor.nudgeBlock(id(), row.path, -1))}>
                     <ChevronDown size={11} class="rotate-180" />
                   </button>
-                  <button type="button" class={action} title="Move down" onClick={(event) => (event.stopPropagation(), editor.nudgeBlock(id(), row.path, 1))}>
+                  <button type="button" class={action} title={t("Move down")} onClick={(event) => (event.stopPropagation(), editor.nudgeBlock(id(), row.path, 1))}>
                     <ChevronDown size={11} />
                   </button>
                   <Show when={editor.canAddBlock(props.section, row.path.slice(0, -1))}>
-                    <button type="button" class={action} title="Duplicate" onClick={(event) => (event.stopPropagation(), editor.duplicateBlock(id(), row.path))}>
+                    <button type="button" class={action} title={t("Duplicate")} onClick={(event) => (event.stopPropagation(), editor.duplicateBlock(id(), row.path))}>
                       <Copy size={11} />
                     </button>
                   </Show>
-                  <button type="button" class={action} title={row.block.disabled ? 'Show block' : 'Hide block'} onClick={(event) => (event.stopPropagation(), editor.toggleBlock(id(), row.path))}>
+                  <button type="button" class={action} title={row.block.disabled ? t("Show block") : t("Hide block")} onClick={(event) => (event.stopPropagation(), editor.toggleBlock(id(), row.path))}>
                     {row.block.disabled ? <EyeOff size={11} /> : <Eye size={11} />}
                   </button>
                   <button
                     type="button"
                     class={action}
                     classList={{ 'hover:text-red-600': !isActive(row.path) }}
-                    title="Remove block"
+                    title={t("Remove block")}
                     onClick={(event) => (event.stopPropagation(), editor.removeBlock(id(), row.path))}
                   >
                     <Trash2 size={11} />
@@ -378,7 +379,7 @@ function BlockTree(props: { section: PageSection }) {
           onClick={() => add([])}
         >
           <Plus size={11} />
-          <span>Add block</span>
+          <span>{t("Add block")}</span>
         </button>
       </Show>
       <Show when={adding() === ''}>

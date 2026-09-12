@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createSignal } from 'solid-js';
 import Field from '../ui/Field';
 import Modal from '../ui/Modal';
@@ -27,13 +28,13 @@ export default function GalleryInput(props: { label?: string; info?: string; val
                   <button
                     type="button"
                     class="rounded bg-white/90 p-0.5 text-gray-600 shadow-sm hover:text-gray-900 disabled:invisible"
-                    aria-label="Move earlier"
+                    aria-label={t("Move earlier")}
                     disabled={index() === 0}
                     onClick={() => move(index(), index() - 1)}
                   >
                     <ChevronRight size={12} class="rotate-180" />
                   </button>
-                  <button type="button" class="rounded bg-white/90 p-0.5 text-gray-600 shadow-sm hover:text-red-600" aria-label="Remove image" onClick={() => props.onValue(props.value.filter((_, i) => i !== index()))}>
+                  <button type="button" class="rounded bg-white/90 p-0.5 text-gray-600 shadow-sm hover:text-red-600" aria-label={t("Remove image")} onClick={() => props.onValue(props.value.filter((_, i) => i !== index()))}>
                     <X size={12} />
                   </button>
                 </div>
@@ -43,9 +44,8 @@ export default function GalleryInput(props: { label?: string; info?: string; val
         </ul>
       </Show>
       <button type="button" class="sam-btn self-start" onClick={() => setOpen(true)}>
-        <Plus size={12} /> Add image
-      </button>
-      <Modal open={open()} onOpenChange={setOpen} title="Add an image" wide flushBody>
+        <Plus size={12} /> {t("Add image")} </button>
+      <Modal open={open()} onOpenChange={setOpen} title={t("Add an image")} wide flushBody>
         <MediaLibrary
           compact
           onChoose={(url) => {

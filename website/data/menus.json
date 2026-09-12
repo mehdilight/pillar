@@ -37,6 +37,8 @@
   "reference": {
     "title": "Reference",
     "items": [
+      { "title": "Liqx syntax", "url": "/docs/liqx-templates/" },
+      { "title": "Pagination", "url": "/docs/pagination/" },
       { "title": "CLI", "url": "/docs/cli/" },
       { "title": "site.json", "url": "/docs/site-json/" },
       { "title": "Filters and globals", "url": "/docs/filters-and-globals/" },

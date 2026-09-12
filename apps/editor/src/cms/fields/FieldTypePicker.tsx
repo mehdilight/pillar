@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import Drawer from '../../components/ui/Drawer';
 import { NamedIcon, Search } from '../../components/ui/Icons';
@@ -28,7 +29,7 @@ export default function FieldTypePicker(props: { open: boolean; onClose: () => v
   });
 
   return (
-    <Drawer open={props.open} onClose={props.onClose} title="Field types" width={880}>
+    <Drawer open={props.open} onClose={props.onClose} title={t("Field types")} width={880}>
       <div class="sticky -top-5 z-10 -mx-5 -mt-5 mb-5 border-b border-border bg-canvas/95 px-5 pb-4 pt-5 backdrop-blur">
         <div class="flex flex-wrap items-center justify-center gap-1 rounded-full border border-border bg-surface p-1 shadow-ds-sm">
           <For each={FIELD_CATEGORIES}>
@@ -55,8 +56,8 @@ export default function FieldTypePicker(props: { open: boolean; onClose: () => v
             <input
               autofocus
               type="search"
-              aria-label="Search field types"
-              placeholder="Search"
+              aria-label={t("Search field types")}
+              placeholder={t("Search")}
               class="w-24 border-0 bg-transparent p-0 text-[13px] outline-none placeholder:text-text-faint focus:w-40 focus:ring-0 transition-[width]"
               value={query()}
               onInput={(event) => setQuery(event.currentTarget.value)}
@@ -68,7 +69,7 @@ export default function FieldTypePicker(props: { open: boolean; onClose: () => v
         </div>
       </div>
 
-      <Show when={types().length} fallback={<p class="py-12 text-center text-sm text-text-faint">No field type matches “{query()}”.</p>}>
+      <Show when={types().length} fallback={<p class="py-12 text-center text-sm text-text-faint">{t("No field type matches “{{query}}”.", { query: query() })}</p>}>
         <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <For each={types()}>
             {(type) => (

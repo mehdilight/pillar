@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { For, Show, createMemo, createSignal } from 'solid-js';
 import { Search } from '../components/ui/Icons';
 import Modal from '../components/ui/Modal';
@@ -33,7 +34,7 @@ export default function AddSectionModal(props: {
   });
 
   return (
-    <Modal open={props.open} onOpenChange={props.onOpenChange} title="Add a section" flushBody>
+    <Modal open={props.open} onOpenChange={props.onOpenChange} title={t("Add a section")} flushBody>
       <div class="ed-picker-search px-3 py-2.5 border-b border-[#e1e3e5] sticky top-0 bg-white z-10">
         <div class="relative flex items-center">
           <Search size={14} class="absolute left-2.5 text-gray-400 pointer-events-none" />
@@ -41,7 +42,7 @@ export default function AddSectionModal(props: {
             type="search"
             autofocus
             class="w-full h-9 bg-white border border-[#c9cccf] rounded-lg pl-8 pr-3 text-[13px] text-[#202223] placeholder-gray-400 outline-none focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3]"
-            placeholder="Search sections"
+            placeholder={t("Search sections")}
             value={query()}
             onInput={(event) => setQuery(event.currentTarget.value)}
           />
@@ -53,8 +54,7 @@ export default function AddSectionModal(props: {
           when={candidates().length}
           fallback={
             <div class="ed-picker-empty px-4 py-8 text-center text-xs text-gray-400">
-              No section matches — or none of this theme's sections are enabled on this template.
-            </div>
+              {t("No section matches — or none of this theme's sections are enabled on this template.")} </div>
           }
         >
           <For each={candidates()}>

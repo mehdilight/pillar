@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Index, Show, createSignal } from 'solid-js';
 import { ChevronDown, ChevronRight, Plus, Trash2 } from '../ui/Icons';
 import { SubFields } from './GroupInput';
@@ -35,7 +36,7 @@ export default function RepeaterInput(props: {
       }
     }
 
-    return `Row ${index + 1}`;
+    return t("Row {{v0}}", { v0: index + 1 });
   };
 
   const update = (index: number, row: Row) => props.onValue(props.value.map((current, i) => (i === index ? row : current)));
@@ -71,7 +72,7 @@ export default function RepeaterInput(props: {
           <span class="text-[13px] font-medium leading-tight text-[#303030]">{props.label}</span>
           <span class="text-[11px] text-gray-500">
             {props.value.length}
-            {props.max !== undefined ? ` of ${props.max}` : ''}
+            {props.max !== undefined ? t(" of {{max}}", { max: props.max }) : ''}
           </span>
         </div>
       </Show>
@@ -95,7 +96,7 @@ export default function RepeaterInput(props: {
                 <button
                   type="button"
                   class="rounded-md p-1 text-gray-400 hover:bg-[#f1f2f4] hover:text-gray-700 disabled:opacity-30"
-                  aria-label="Move up"
+                  aria-label={t("Move up")}
                   disabled={index === 0}
                   onClick={() => move(index, index - 1)}
                 >
@@ -104,7 +105,7 @@ export default function RepeaterInput(props: {
                 <button
                   type="button"
                   class="rounded-md p-1 text-gray-400 hover:bg-[#f1f2f4] hover:text-gray-700 disabled:opacity-30"
-                  aria-label="Move down"
+                  aria-label={t("Move down")}
                   disabled={index === props.value.length - 1}
                   onClick={() => move(index, index + 1)}
                 >
@@ -113,7 +114,7 @@ export default function RepeaterInput(props: {
                 <button
                   type="button"
                   class="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
-                  aria-label={`Remove ${titleOf(row(), index)}`}
+                  aria-label={t("Remove {{v0}}", { v0: titleOf(row(), index) })}
                   onClick={() => remove(index)}
                 >
                   <Trash2 size={13} />
@@ -136,7 +137,7 @@ export default function RepeaterInput(props: {
         onClick={add}
       >
         <Plus size={13} />
-        {full() ? `At most ${props.max} rows` : 'Add row'}
+        {full() ? t("At most {{v0}} rows", { v0: props.max }) : t("Add row")}
       </button>
       <Show when={props.info}>
         <p class="mt-1 text-[11px] leading-normal text-gray-500">{props.info}</p>

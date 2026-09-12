@@ -9,3 +9,5 @@ dist/
 
 # Plugin dashboard bundles are built with the dashboard (npm run build in apps/editor).
 plugins/*/editor/dist/
+
+.DS_Store

@@ -1,3 +1,4 @@
+import { t, formatDate } from '../../i18n';
 import { For, Show, createResource, createSignal } from 'solid-js';
 import Page from '../ui/Page';
 import { Badge, Button, Input, Label, Loading, Notice, Postbox, SidebarLayout } from '../ui/ds';
@@ -29,13 +30,13 @@ export default function Publish() {
     setPending(true);
 
     try {
-      const result = await api.publish(message().trim() || 'Update site content', push());
+      const result = await api.publish(message().trim() || t("Update site content"), push());
 
       showToast(result.message, 'success');
       setMessage('');
       await Promise.all([refreshStatus(), refetch()]);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Publish failed', 'error');
+      showToast(error instanceof Error ? error.message : t("Publish failed"), 'error');
     } finally {
       setPending(false);
     }
@@ -44,25 +45,25 @@ export default function Publish() {
   const discard = async () => {
     try {
       await api.discard();
-      showToast('Changes discarded', 'info');
+      showToast(t("Changes discarded"), 'info');
       await Promise.all([refreshStatus(), loadCollections()]);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not discard', 'error');
+      showToast(error instanceof Error ? error.message : t("Could not discard"), 'error');
     }
   };
 
   return (
-    <Page title="Publish">
+    <Page title={t("Publish")}>
       <SidebarLayout>
         <div>
-          <Postbox title={`Changes${files().length ? ` (${files().length})` : ''}`} flush>
+          <Postbox title={t("Changes{{v0}}", { v0: files().length ? ` (${files().length})` : '' })} flush>
             <Show when={status()} fallback={<Loading />}>
-              <Show when={files().length} fallback={<p class="p-4 text-xs text-text-faint">Nothing to publish — everything is committed.</p>}>
+              <Show when={files().length} fallback={<p class="p-4 text-xs text-text-faint">{t("Nothing to publish — everything is committed.")}</p>}>
                 <ul>
                   <For each={files()}>
                     {(file) => (
                       <li class="flex items-center gap-3 px-4 py-2 border-b border-border last:border-0">
-                        <Badge variant="warning">{file.startsWith('content/') ? 'Content' : file.startsWith('templates/') ? 'Page' : file.startsWith('assets/') ? 'Media' : 'Settings'}</Badge>
+                        <Badge variant="warning">{file.startsWith('content/') ? t("Content") : file.startsWith('templates/') ? t("Page") : file.startsWith('assets/') ? t("Media") : t("Settings")}</Badge>
                         <code class="font-mono text-xs text-text-secondary truncate">{file}</code>
                       </li>
                     )}
@@ -72,9 +73,9 @@ export default function Publish() {
             </Show>
           </Postbox>
 
-          <Postbox title="History" flush>
+          <Postbox title={t("History")} flush>
             <Show when={!history.loading} fallback={<Loading />}>
-              <Show when={history()?.length} fallback={<p class="p-4 text-xs text-text-faint">No commits yet.</p>}>
+              <Show when={history()?.length} fallback={<p class="p-4 text-xs text-text-faint">{t("No commits yet.")}</p>}>
                 <ul>
                   <For each={history()}>
                     {(entry) => (
@@ -83,7 +84,7 @@ export default function Publish() {
                         <div class="min-w-0 flex-1">
                           <p class="text-[13px] text-text truncate">{entry.message}</p>
                           <p class="text-[11.5px] text-text-muted">
-                            {entry.author} · {new Date(entry.date).toLocaleString()}
+                            {entry.author} · {formatDate(entry.date, { dateStyle: 'medium', timeStyle: 'short' })}
                           </p>
                         </div>
                       </li>
@@ -96,15 +97,15 @@ export default function Publish() {
         </div>
 
         <div>
-          <Postbox title="Commit">
+          <Postbox title={t("Commit")}>
             <Show when={status()?.branch === 'no repository'}>
-              <Notice type="warning">This site is not a git repository, so there is nothing to publish to.</Notice>
+              <Notice type="warning">{t("This site is not a git repository, so there is nothing to publish to.")}</Notice>
             </Show>
-            <Label for="commit-message">Message</Label>
+            <Label for="commit-message">{t("Message")}</Label>
             <Input
               id="commit-message"
               class="max-w-none"
-              placeholder="Update site content"
+              placeholder={t("Update site content")}
               value={message()}
               onInput={(event) => setMessage(event.currentTarget.value)}
             />
@@ -112,32 +113,29 @@ export default function Publish() {
               when={status()?.has_remote}
               fallback={
                 <p class="mt-1.5 text-[11.5px] text-text-faint">
-                  Commits on <code class="font-mono">{status()?.branch ?? 'main'}</code>. No remote is configured, so nothing is pushed.
-                </p>
+                  {t("Commits on")} <code class="font-mono">{status()?.branch ?? 'main'}</code>{t(". No remote is configured, so nothing is pushed.")} </p>
               }
             >
               <label class="mt-3 flex cursor-pointer items-start gap-2 text-xs text-text-secondary">
                 <input type="checkbox" class="mt-0.5 size-4 rounded border-border-strong text-brand focus:ring-brand" checked={push()} onChange={(event) => setPush(event.currentTarget.checked)} />
                 <span>
-                  Push to the remote after committing
-                  <span class="mt-0.5 block text-[11.5px] text-text-faint">
-                    {push() ? 'Your host deploys from what is pushed.' : `Committed on ${status()?.branch ?? 'main'} only — push later with git, or publish again.`}
+                  {t("Push to the remote after committing")} <span class="mt-0.5 block text-[11.5px] text-text-faint">
+                    {push() ? t("Your host deploys from what is pushed.") : t("Committed on {{v0}} only — push later with git, or publish again.", { v0: status()?.branch ?? 'main' })}
                   </span>
                 </span>
               </label>
             </Show>
             <div class="mt-4 flex flex-wrap gap-2">
               <Button variant="primary" onClick={publish} disabled={pending() || files().length === 0}>
-                {pending() ? 'Publishing…' : status()?.has_remote && !push() ? 'Commit' : 'Commit & publish'}
+                {pending() ? t("Publishing…") : status()?.has_remote && !push() ? t("Commit") : t("Commit & publish")}
               </Button>
             </div>
           </Postbox>
 
-          <Postbox title="Discard">
-            <p class="text-xs text-text-muted">Throws away every uncommitted change in templates, settings, content and media — including files added since the last commit.</p>
+          <Postbox title={t("Discard")}>
+            <p class="text-xs text-text-muted">{t("Throws away every uncommitted change in templates, settings, content and media — including files added since the last commit.")}</p>
             <Button variant="danger" size="sm" class="mt-3" disabled={files().length === 0} onClick={() => setDiscarding(true)}>
-              Discard changes
-            </Button>
+              {t("Discard changes")} </Button>
           </Postbox>
         </div>
       </SidebarLayout>
@@ -146,9 +144,9 @@ export default function Publish() {
         open={discarding()}
         onOpenChange={setDiscarding}
         danger
-        title="Discard changes"
-        message={`${files().length} uncommitted file${files().length === 1 ? '' : 's'} go back to the last commit. Files added since then — a new entry, an uploaded image — are deleted. This cannot be undone.`}
-        confirmLabel="Discard changes"
+        title={t("Discard changes")}
+        message={t("publish.discard", { count: files().length })}
+        confirmLabel={t("Discard changes")}
         onConfirm={() => void discard()}
       />
     </Page>

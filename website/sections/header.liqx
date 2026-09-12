@@ -1,0 +1,22 @@
+<header class="site-header">
+  <div class="wrap header">
+    <a class="brand" href="/" aria-label="Pillar home"><span class="brand-mark" aria-hidden="true">P</span>{site.title}</a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="/docs/introduction/" class:active={page.collection === 'docs'}>Documentation</a>
+      <a href="/docs/liqx-templates/">Liqx reference</a>
+      <a href="/blog/" class:active={template === 'blog'}>Changelog</a>
+    </nav>
+    <div class="header-actions"><a class="github-link" href="https://github.com/mehdilight/pillar">GitHub <span aria-hidden="true">↗</span></a><a class="button button-small" href="/docs/quick-start/">Get started <span aria-hidden="true">→</span></a></div>
+  </div>
+  <nav class="mobile-nav" aria-label="Mobile navigation"><a href="/docs/introduction/">Documentation</a><a href="/docs/liqx-templates/">Liqx reference</a><a href="/blog/">Changelog</a></nav>
+</header>
+<schema>
+{
+  "name": "Header",
+  "settings": [
+    { "id": "menu", "type": "menu", "label": "Navigation menu", "default": "main" },
+    { "id": "cta_label", "type": "text", "label": "Button label", "default": "Sign in" },
+    { "id": "cta_url", "type": "url", "label": "Button link", "default": "/about/" }
+  ]
+}
+</schema>

@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import * as fixtures from './fixtures';
 import type {
   ContentCollection,
@@ -43,7 +44,7 @@ const injected = typeof window === 'undefined' ? undefined : window.PillarEditor
 export const editorConfig: EditorConfig = {
   root: injected?.root ?? '/api',
   previewRoot: injected?.previewRoot ?? '/preview',
-  siteName: injected?.siteName ?? 'Pillar site',
+  get siteName() { return injected?.siteName ?? t("Pillar site"); },
   live: injected?.live ?? false,
 };
 
@@ -103,12 +104,12 @@ const touch = (file: string) => store.dirty.add(file);
 export const api = {
   media: (): Promise<MediaItem[]> => request('/media', undefined, () => []),
   uploadImage: (name: string, data: string): Promise<MediaItem> =>
-    request('/media', { method: 'POST', body: JSON.stringify({ name, data }) }, () => { throw new Error('Start the local server to upload an image.'); }),
+    request('/media', { method: 'POST', body: JSON.stringify({ name, data }) }, () => { throw new Error(t("Start the local server to upload an image.")); }),
 
   setMediaAlt: (url: string, alt: string): Promise<MediaItem> =>
-    request('/media/alt', { method: 'PUT', body: JSON.stringify({ url, alt }) }, () => { throw new Error('Start the local server to edit alt text.'); }),
+    request('/media/alt', { method: 'PUT', body: JSON.stringify({ url, alt }) }, () => { throw new Error(t("Start the local server to edit alt text.")); }),
 
-  deleteMedia: (url: string): Promise<void> => request('/media', { method: 'DELETE', body: JSON.stringify({ url }) }, () => { throw new Error('Start the local server to manage images.'); }),
+  deleteMedia: (url: string): Promise<void> => request('/media', { method: 'DELETE', body: JSON.stringify({ url }) }, () => { throw new Error(t("Start the local server to manage images.")); }),
 
   editorPanels: (): Promise<Record<string, { name: string }>> =>
     request('/editor/panels', undefined, () => ({})),
@@ -119,7 +120,7 @@ export const api = {
 
   pluginPreview: (slug: string, input: Record<string, unknown>): Promise<Record<string, any>> =>
     request(`/editor/preview/${encodeURIComponent(slug)}`, { method: 'POST', body: JSON.stringify(input) }, () => {
-      throw new Error('Plugin preview needs the local server.');
+      throw new Error(t("Plugin preview needs the local server."));
     }),
 
   templates: (): Promise<TemplateSummary[]> =>
@@ -178,7 +179,7 @@ export const api = {
       const name = body.name.trim();
 
       if (fixtures.collections.some((collection) => collection.name === name)) {
-        throw new Error(`A "${name}" collection already exists.`);
+        throw new Error(t('A "{{name}}" collection already exists.', { name }));
       }
 
       fixtures.collections.push({
@@ -213,7 +214,7 @@ export const api = {
   /** Replace a type's label and fields: preset keys, or whole field definitions to keep as they are. */
   updateCollection: (name: string, body: { label: string; fields: Array<string | SchemaSetting>; icon?: string }): Promise<void> =>
     request(`/content-types/${encodeURIComponent(name)}`, { method: 'PUT', body: JSON.stringify(body) }, () => {
-      throw new Error('Editing a content type needs the local server.');
+      throw new Error(t("Editing a content type needs the local server."));
     }),
 
   collections: (): Promise<ContentCollection[]> =>
@@ -231,7 +232,7 @@ export const api = {
 
   createItem: (item: ContentItem): Promise<void> =>
     request(`/content/${encodeURIComponent(item.collection)}`, { method: 'POST', body: JSON.stringify(item) }, () => {
-      if (store.content.some((existing) => existing.collection === item.collection && existing.slug === item.slug)) throw new Error('An entry with this URL name already exists. Choose another.');
+      if (store.content.some((existing) => existing.collection === item.collection && existing.slug === item.slug)) throw new Error(t("An entry with this URL name already exists. Choose another."));
       store.content.push(item);
       touch(`content/${item.collection}/${item.slug}.md`);
     }),
@@ -277,12 +278,12 @@ export const api = {
       fixtures.history.unshift({
         hash: Math.random().toString(16).slice(2, 10),
         short: Math.random().toString(16).slice(2, 9),
-        message: message || 'Publish from the editor',
+        message: message || t("Publish from the editor"),
         author: 'you',
         date: new Date().toISOString(),
       });
 
-      return { message: `Committed ${count} file${count === 1 ? '' : 's'}` };
+      return { message: t("publish.committed", { count }) };
     }),
 
   discard: (): Promise<void> =>
@@ -298,7 +299,7 @@ export const api = {
   /** Rendered by the site's own converter, so the preview matches the build. */
   markdown: (body: string): Promise<{ html: string }> =>
     request('/markdown', { method: 'POST', body: JSON.stringify({ body }) }, () => {
-      throw new Error('no backend');
+      throw new Error(t("no backend"));
     }),
 
   build: (): Promise<{ pages: number; ms: number }> =>

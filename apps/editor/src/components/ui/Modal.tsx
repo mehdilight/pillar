@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Show, onCleanup, createEffect, type JSX } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import { X } from './Icons';
@@ -55,7 +56,7 @@ export default function Modal(props: ModalProps) {
             <button
               type="button"
               class="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-              aria-label="Close"
+              aria-label={t("Close")}
               onClick={() => props.onOpenChange(false)}
             >
               <X size={15} />

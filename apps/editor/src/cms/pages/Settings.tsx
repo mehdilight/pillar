@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createResource, createSignal } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import { A } from '@solidjs/router';
@@ -39,7 +40,7 @@ export default function Settings() {
         await api.saveSettings(next);
         await refreshStatus();
       } catch (error) {
-        showToast(error instanceof Error ? error.message : 'Could not save settings', 'error');
+        showToast(error instanceof Error ? error.message : t("Could not save settings"), 'error');
         setValues(null);
         void refetch();
       }
@@ -50,10 +51,10 @@ export default function Settings() {
   const custom = (plugin: string | undefined) => (plugin === undefined ? undefined : slotsFor('settings.panel', plugin)[0]);
 
   return (
-    <Page title="Settings">
+    <Page title={t("Settings")}>
       <SidebarLayout>
         <div>
-          <Show when={pluginPanels().length} fallback={<Postbox title="Plugins"><p class="text-xs text-text-faint">No enabled plugin has settings.</p></Postbox>}>
+          <Show when={pluginPanels().length} fallback={<Postbox title={t("Plugins")}><p class="text-xs text-text-faint">{t("No enabled plugin has settings.")}</p></Postbox>}>
             <For each={pluginPanels()}>
               {(panel) => (
                 <Postbox title={panel.name}>
@@ -75,25 +76,24 @@ export default function Settings() {
         </div>
 
         <div>
-          <Postbox title="Site">
+          <Postbox title={t("Site")}>
             <dl class="space-y-3 text-xs">
               <div>
-                <dt class="text-text-muted">Name</dt>
+                <dt class="text-text-muted">{t("Name")}</dt>
                 <dd class="mt-0.5 text-[13px] text-text">{editorConfig.siteName}</dd>
               </div>
               <div>
-                <dt class="text-text-muted">Declared in</dt>
+                <dt class="text-text-muted">{t("Declared in")}</dt>
                 <dd class="mt-0.5 font-mono text-text-secondary">site.json</dd>
               </div>
             </dl>
-            <p class="mt-3 text-[11.5px] text-text-faint">Base URL, plugins and deploy target are edited in site.json — they change what the build does, not how the site looks.</p>
+            <p class="mt-3 text-[11.5px] text-text-faint">{t("Base URL, plugins and deploy target are edited in site.json — they change what the build does, not how the site looks.")}</p>
           </Postbox>
 
-          <Postbox title="Theme">
-            <p class="text-xs text-text-muted">Colours, layout and the site's name in its header are theme settings, edited beside a live preview.</p>
+          <Postbox title={t("Theme")}>
+            <p class="text-xs text-text-muted">{t("Colours, layout and the site's name in its header are theme settings, edited beside a live preview.")}</p>
             <A href="/editor" class={`${buttonClass('secondary', 'sm')} mt-3`}>
-              Open the theme editor
-            </A>
+              {t("Open the theme editor")} </A>
           </Postbox>
         </div>
       </SidebarLayout>

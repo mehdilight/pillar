@@ -64,3 +64,6 @@ export interface ContentSidebarProps {
   /** Replace the entry's frontmatter; saved with the entry. */
   setFrontmatter: (next: Record<string, any>) => void;
 }
+
+/** Share the admin's language; plugin catalogs live in their own namespace. */
+export { language, createTranslator } from '../i18n';

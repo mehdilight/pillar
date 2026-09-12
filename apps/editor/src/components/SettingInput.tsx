@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { Match, Show, Switch, createResource } from 'solid-js';
 import type { SchemaSetting } from '../types';
 import { api } from '../api/client';
@@ -59,7 +60,7 @@ export default function SettingInput(props: SettingInputProps) {
     const selected = String(value() ?? '');
 
     return selected && !available.some((option) => option.value === selected)
-      ? [{ value: selected, label: `${selected} (missing)` }, ...available]
+      ? [{ value: selected, label: t("{{name}} (missing)", { name: selected }) }, ...available]
       : available;
   };
 
@@ -267,7 +268,7 @@ export default function SettingInput(props: SettingInputProps) {
       <Match when={setting().type === 'menu'}>
         <SelectInput
           label={label()}
-          info={setting().info ?? 'Choose a navigation list. Manage lists under Navigation.'}
+          info={setting().info ?? t("Choose a navigation list. Manage lists under Navigation.")}
           value={String(value() ?? '')}
           options={menuOptions()}
           onValue={props.onChange}
@@ -346,7 +347,7 @@ function UnknownType(props: { type: string }) {
   return (
     <div class="ed-field">
       <p class="ed-error">
-        Unknown setting type <code class="sam-mono">{props.type}</code>.
+        {t("Unknown setting type")} <code class="sam-mono">{props.type}</code>.
       </p>
     </div>
   );

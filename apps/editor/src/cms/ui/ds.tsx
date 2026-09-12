@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, splitProps, type JSX } from 'solid-js';
 
 /**
@@ -170,17 +171,17 @@ export function Pager(props: { page: number; pages: number; total: number; onCha
   return (
     <div class="mt-3.5 flex flex-wrap items-center justify-end gap-2.5 text-xs text-text-muted">
       <span>
-        {props.total} item{props.total === 1 ? '' : 's'}
+        {t("count.item", { count: props.total })}
       </span>
       <Show when={props.pages > 1}>
         <span class="inline-flex items-center gap-1">
-          <button type="button" class={buttonSecondary} disabled={props.page <= 1} onClick={() => props.onChange(props.page - 1)} aria-label="Previous page">
+          <button type="button" class={buttonSecondary} disabled={props.page <= 1} onClick={() => props.onChange(props.page - 1)} aria-label={t("Previous page")}>
             ‹
           </button>
           <span class="px-0.5 tabular-nums text-text-secondary">
-            {props.page} of {props.pages}
+            {props.page} {t("of")} {props.pages}
           </span>
-          <button type="button" class={buttonSecondary} disabled={props.page >= props.pages} onClick={() => props.onChange(props.page + 1)} aria-label="Next page">
+          <button type="button" class={buttonSecondary} disabled={props.page >= props.pages} onClick={() => props.onChange(props.page + 1)} aria-label={t("Next page")}>
             ›
           </button>
         </span>
@@ -260,5 +261,5 @@ export function Empty(props: { title: string; description?: string; action?: JSX
 }
 
 export function Loading(props: { label?: string }) {
-  return <div class="p-8 text-center text-xs text-text-faint">{props.label ?? 'Loading…'}</div>;
+  return <div class="p-8 text-center text-xs text-text-faint">{props.label ?? t("Loading…")}</div>;
 }

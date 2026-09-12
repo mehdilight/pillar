@@ -1,3 +1,4 @@
+import { t, formatDate } from '../../i18n';
 import { For, Show, createEffect, createMemo, createSignal, onCleanup, onMount } from 'solid-js';
 import { A } from '@solidjs/router';
 import { Copy, ExternalLink, ImagePlus, Trash2, Upload } from '../../components/ui/Icons';
@@ -29,7 +30,7 @@ const entryLink = (file: string) => {
 };
 
 const added = (seconds: number) =>
-  new Date(seconds * 1000).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  formatDate(seconds * 1000, { year: 'numeric', month: 'short', day: 'numeric' });
 
 /**
  * Every image the site has. Uploads land in `assets/uploads/`, versioned like
@@ -117,8 +118,8 @@ export default function Media() {
   const copy = (text: string, what: string) =>
     navigator.clipboard
       .writeText(text)
-      .then(() => showToast(`${what} copied`, 'success'))
-      .catch(() => library.setError(`Could not copy. Select the ${what.toLowerCase()} and copy it yourself.`));
+      .then(() => showToast(t("{{what}} copied", { what }), 'success'))
+      .catch(() => library.setError(t("Could not copy. Select the {{v0}} and copy it yourself.", { v0: what.toLowerCase() })));
 
   // Files dropped anywhere on the page, or pasted, are uploaded. The counter
   // absorbs the enter/leave pairs every child element fires while dragging.
@@ -168,17 +169,17 @@ export default function Media() {
     const uses = selected()?.used_in ?? [];
 
     return uses.length
-      ? `This image is used in ${plural(uses.length, 'file')} (${uses.join(', ')}). They will show a broken image until you choose another. If it was already published, Discard on the Publish page brings it back.`
-      : 'Nothing on the site uses this image. If it was already published, Discard on the Publish page brings it back.';
+      ? t("This image is used in {{v0}} ({{v1}}). They will show a broken image until you choose another. If it was already published, Discard on the Publish page brings it back.", { v0: plural(uses.length, 'file'), v1: uses.join(', ') })
+      : t("Nothing on the site uses this image. If it was already published, Discard on the Publish page brings it back.");
   };
 
   return (
     <Page
-      title="Media"
+      title={t("Media")}
       actions={
         <Button variant="primary" size="sm" disabled={Boolean(library.progress())} onClick={() => uploadInput.click()}>
           <Upload size={13} />
-          {library.progress() || 'Upload images'}
+          {library.progress() || t("Upload images")}
         </Button>
       }
     >
@@ -188,7 +189,7 @@ export default function Media() {
         multiple
         accept={ACCEPTED}
         class="hidden"
-        aria-label="Upload images"
+        aria-label={t("Upload images")}
         onChange={(event) => void upload(Array.from(event.currentTarget.files ?? []))}
       />
 
@@ -206,42 +207,41 @@ export default function Media() {
             setPage(1);
           }}
           items={[
-            { key: 'all', label: 'All', count: counts().all },
-            { key: 'site', label: 'Uploads', count: counts().site },
-            ...(counts().theme ? [{ key: 'theme', label: 'Theme', count: counts().theme }] : []),
-            { key: 'unused', label: 'Unused', count: counts().unused },
-            { key: 'no-alt', label: 'No alt text', count: counts().noAlt },
+            { key: 'all', get label() { return t("All"); }, count: counts().all },
+            { key: 'site', get label() { return t("Uploads"); }, count: counts().site },
+            ...(counts().theme ? [{ key: 'theme', get label() { return t("Theme"); }, count: counts().theme }] : []),
+            { key: 'unused', get label() { return t("Unused"); }, count: counts().unused },
+            { key: 'no-alt', get label() { return t("No alt text"); }, count: counts().noAlt },
           ]}
         />
         <div class="mb-3.5 flex w-full flex-wrap gap-2 sm:w-auto">
           <input
             type="search"
-            aria-label="Search images"
+            aria-label={t("Search images")}
             class={`${control} min-w-0 flex-1 sm:w-[220px]`}
-            placeholder="Search images"
+            placeholder={t("Search images")}
             value={query()}
             onInput={(event) => {
               setQuery(event.currentTarget.value);
               setPage(1);
             }}
           />
-          <NativeSelect aria-label="Sort images" class={`${control} py-0 pl-2.5`} value={sort()} onChange={(event) => setSort(event.currentTarget.value as Sort)}>
-            <option value="newest">Newest first</option>
-            <option value="name">Name</option>
-            <option value="size">Largest first</option>
+          <NativeSelect aria-label={t("Sort images")} class={`${control} py-0 pl-2.5`} value={sort()} onChange={(event) => setSort(event.currentTarget.value as Sort)}>
+            <option value="newest">{t("Newest first")}</option>
+            <option value="name">{t("Name")}</option>
+            <option value="size">{t("Largest first")}</option>
           </NativeSelect>
         </div>
       </div>
 
       <SidebarLayout variant="form">
         <div class="min-w-0">
-          <Show when={!library.images.loading} fallback={<Loading label="Loading images…" />}>
+          <Show when={!library.images.loading} fallback={<Loading label={t("Loading images…")} />}>
             <Show when={library.images.error}>
               <Notice type="error">
-                Could not load the images.{' '}
+                {t("Could not load the images.")}{' '}
                 <button type="button" class="underline" onClick={() => void library.refetch()}>
-                  Try again
-                </button>
+                  {t("Try again")} </button>
               </Notice>
             </Show>
 
@@ -258,14 +258,14 @@ export default function Media() {
                         onClick={() => uploadInput.click()}
                       >
                         <ImagePlus size={28} class="text-text-faint" />
-                        <span class="text-sm font-medium text-text">Add your first image</span>
-                        <span class="text-xs text-text-faint">Drop images here, paste one, or click to choose. PNG, JPG, GIF, WebP or AVIF, up to 10 MB.</span>
+                        <span class="text-sm font-medium text-text">{t("Add your first image")}</span>
+                        <span class="text-xs text-text-faint">{t("Drop images here, paste one, or click to choose. PNG, JPG, GIF, WebP or AVIF, up to 10 MB.")}</span>
                       </button>
                     }
                   >
                     <div class="rounded-ds border border-border bg-surface p-12 text-center">
-                      <p class="text-sm font-medium text-text">No images match.</p>
-                      <p class="mt-1 text-xs text-text-faint">Try another search or filter.</p>
+                      <p class="text-sm font-medium text-text">{t("No images match.")}</p>
+                      <p class="mt-1 text-xs text-text-faint">{t("Try another search or filter.")}</p>
                     </div>
                   </Show>
                 </Show>
@@ -288,7 +288,7 @@ export default function Media() {
                         <div class={`relative aspect-[4/3] border-b border-border ${checkerboard}`}>
                           <img src={mediaUrl(image.url)} alt={image.alt} loading="lazy" class="absolute inset-0 size-full object-contain p-2" />
                           <Show when={image.readonly}>
-                            <span class="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">Theme</span>
+                            <span class="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">{t("Theme")}</span>
                           </Show>
                         </div>
                         <div class="px-2.5 py-2">
@@ -301,11 +301,11 @@ export default function Media() {
                             <span>{bytes(image.size)}</span>
                             <Show when={image.used_in.length === 0}>
                               <span aria-hidden="true">·</span>
-                              <span>Unused</span>
+                              <span>{t("Unused")}</span>
                             </Show>
                             <Show when={!image.alt}>
                               <span aria-hidden="true">·</span>
-                              <span class="text-warning">No alt</span>
+                              <span class="text-warning">{t("No alt")}</span>
                             </Show>
                           </p>
                         </div>
@@ -325,14 +325,14 @@ export default function Media() {
             when={selected()}
             keyed
             fallback={
-              <Postbox title="Library">
+              <Postbox title={t("Library")}>
                 <dl class="grid grid-cols-2 gap-3">
                   <div>
-                    <dt class="text-[11.5px] text-text-faint">Images</dt>
+                    <dt class="text-[11.5px] text-text-faint">{t("Images")}</dt>
                     <dd class="mt-0.5 text-lg text-text">{counts().all}</dd>
                   </div>
                   <div>
-                    <dt class="text-[11.5px] text-text-faint">Total size</dt>
+                    <dt class="text-[11.5px] text-text-faint">{t("Total size")}</dt>
                     <dd class="mt-0.5 text-lg text-text">{bytes(totalSize())}</dd>
                   </div>
                 </dl>
@@ -345,23 +345,20 @@ export default function Media() {
                       setPage(1);
                     }}
                   >
-                    {plural(counts().noAlt, 'image')} without alt text
-                  </button>
+                    {plural(counts().noAlt, 'image')} {t("without alt text")} </button>
                 </Show>
                 <p class="mt-3 text-[11.5px] leading-relaxed text-text-faint">
-                  Select an image to see where it is used. Uploads are saved to <code class="font-mono">assets/uploads/</code> and published with the rest of the site.
-                </p>
-                <p class="mt-2 text-[11.5px] leading-relaxed text-text-faint">Drop images anywhere on this page, or paste one, to upload.</p>
+                  {t("Select an image to see where it is used. Uploads are saved to")} <code class="font-mono">assets/uploads/</code> {t("and published with the rest of the site.")} </p>
+                <p class="mt-2 text-[11.5px] leading-relaxed text-text-faint">{t("Drop images anywhere on this page, or paste one, to upload.")}</p>
               </Postbox>
             }
           >
             {(image) => (
               <Postbox
-                title="Details"
+                title={t("Details")}
                 actions={
                   <button type="button" class="text-xs text-text-muted hover:text-text" onClick={() => setSelectedUrl(null)}>
-                    Close
-                  </button>
+                    {t("Close")} </button>
                 }
               >
                 <a
@@ -369,7 +366,7 @@ export default function Media() {
                   target="_blank"
                   rel="noopener"
                   class={`group relative block overflow-hidden rounded-ds border border-border ${checkerboard}`}
-                  title="Open the original"
+                  title={t("Open the original")}
                 >
                   <img src={mediaUrl(image.url)} alt={image.alt || image.name} class="mx-auto max-h-56 w-full object-contain" />
                   <span class="absolute right-1.5 top-1.5 flex size-6 items-center justify-center rounded-ds bg-surface/90 text-text-muted opacity-0 shadow-ds-sm transition-opacity group-hover:opacity-100">
@@ -379,7 +376,7 @@ export default function Media() {
 
                 <h3 class="mt-3 break-all text-[13px] font-semibold text-text">{image.name}</h3>
                 <Show when={image.readonly}>
-                  <Badge class="mt-1.5">From the theme</Badge>
+                  <Badge class="mt-1.5">{t("From the theme")}</Badge>
                 </Show>
 
                 <div class="mt-3">
@@ -388,22 +385,21 @@ export default function Media() {
 
                 <dl class="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
                   <Show when={image.width}>
-                    <dt class="text-text-faint">Dimensions</dt>
+                    <dt class="text-text-faint">{t("Dimensions")}</dt>
                     <dd class="text-text-secondary tabular-nums">
                       {image.width} × {image.height}
                     </dd>
                   </Show>
-                  <dt class="text-text-faint">Size</dt>
+                  <dt class="text-text-faint">{t("Size")}</dt>
                   <dd class="text-text-secondary">
                     {bytes(image.size)} · {extension(image)}
                   </dd>
-                  <dt class="text-text-faint">Modified</dt>
+                  <dt class="text-text-faint">{t("Modified")}</dt>
                   <dd class="text-text-secondary">{added(image.modified)}</dd>
                 </dl>
 
                 <Label for="media-address" class="mt-4">
-                  Address
-                </Label>
+                  {t("Address")} </Label>
                 <div class="flex gap-1.5">
                   <input
                     id="media-address"
@@ -412,25 +408,24 @@ export default function Media() {
                     value={image.url}
                     onFocus={(event) => event.currentTarget.select()}
                   />
-                  <Button size="sm" title="Copy the address" aria-label="Copy the address" onClick={() => void copy(image.url, 'Address')}>
+                  <Button size="sm" title={t("Copy the address")} aria-label={t("Copy the address")} onClick={() => void copy(image.url, t("Address"))}>
                     <Copy size={13} />
                   </Button>
                 </div>
                 <button
                   type="button"
                   class="mt-1.5 text-[11.5px] text-brand hover:underline"
-                  onClick={() => void copy(`![${image.alt}](${image.url})`, 'Markdown')}
+                  onClick={() => void copy(`![${image.alt}](${image.url})`, t("Markdown"))}
                 >
-                  Copy as markdown
-                </button>
+                  {t("Copy as markdown")} </button>
 
                 <div class="mt-4 border-t border-border pt-3">
                   <p class="text-xs font-medium text-text-secondary">
-                    {image.used_in.length ? `Used in ${plural(image.used_in.length, 'file')}` : 'Not used anywhere'}
+                    {image.used_in.length ? t("Used in {{v0}}", { v0: plural(image.used_in.length, 'file') }) : t("Not used anywhere")}
                   </p>
                   <Show
                     when={image.used_in.length}
-                    fallback={<p class="mt-1 text-[11.5px] text-text-faint">No content, settings or template mentions this image.</p>}
+                    fallback={<p class="mt-1 text-[11.5px] text-text-faint">{t("No content, settings or template mentions this image.")}</p>}
                   >
                     <ul class="mt-1.5 space-y-1">
                       <For each={image.used_in}>
@@ -452,7 +447,7 @@ export default function Media() {
 
                 <Show
                   when={!image.readonly}
-                  fallback={<p class="mt-4 text-[11.5px] text-text-faint">Theme images can be used, but they belong to the theme and cannot be deleted here.</p>}
+                  fallback={<p class="mt-4 text-[11.5px] text-text-faint">{t("Theme images can be used, but they belong to the theme and cannot be deleted here.")}</p>}
                 >
                   <button
                     type="button"
@@ -461,7 +456,7 @@ export default function Media() {
                     onClick={() => setConfirming(true)}
                   >
                     <Trash2 size={13} />
-                    {deleting() ? 'Deleting…' : 'Delete image'}
+                    {deleting() ? t("Deleting…") : t("Delete image")}
                   </button>
                 </Show>
               </Postbox>
@@ -474,8 +469,8 @@ export default function Media() {
         <div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-brand/10 p-6 backdrop-blur-[1px]">
           <div class="flex flex-col items-center gap-2 rounded-ds border-2 border-dashed border-brand bg-surface px-12 py-10 shadow-ds-lg">
             <Upload size={26} class="text-brand" />
-            <p class="text-sm font-medium text-text">Drop to upload</p>
-            <p class="text-xs text-text-faint">PNG, JPG, GIF, WebP or AVIF, up to 10 MB each</p>
+            <p class="text-sm font-medium text-text">{t("Drop to upload")}</p>
+            <p class="text-xs text-text-faint">{t("PNG, JPG, GIF, WebP or AVIF, up to 10 MB each")}</p>
           </div>
         </div>
       </Show>
@@ -484,9 +479,9 @@ export default function Media() {
         open={confirming()}
         onOpenChange={setConfirming}
         danger
-        title="Delete image?"
+        title={t("Delete image?")}
         message={deleteMessage()}
-        confirmLabel="Delete image"
+        confirmLabel={t("Delete image")}
         onConfirm={() => void remove()}
       />
     </Page>

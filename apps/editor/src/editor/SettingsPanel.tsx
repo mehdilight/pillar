@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { Show, createEffect, createSignal, on } from 'solid-js';
 import { ChevronDown, Trash2, X } from '../components/ui/Icons';
 import { SectionIcon } from '../components/ui/SectionIcon';
@@ -49,9 +50,9 @@ function BlockSettings(props: { section: PageSection; path: BlockPath }) {
             <ChevronDown size={11} class="rotate-90" />
             {props.section.schema?.name ?? props.section.section_type}
           </button>
-          <div class="truncate text-xs font-semibold text-gray-900">{type()?.name ?? block()?.type ?? 'Block'}</div>
+          <div class="truncate text-xs font-semibold text-gray-900">{type()?.name ?? block()?.type ?? t("Block")}</div>
         </div>
-        <button type="button" onClick={editor.closeSettings} class="p-1 rounded-md text-gray-500 hover:text-gray-800 hover:bg-[#f1f2f4] transition-colors" title="Close">
+        <button type="button" onClick={editor.closeSettings} class="p-1 rounded-md text-gray-500 hover:text-gray-800 hover:bg-[#f1f2f4] transition-colors" title={t("Close")}>
           <X size={14} />
         </button>
       </div>
@@ -60,9 +61,9 @@ function BlockSettings(props: { section: PageSection; path: BlockPath }) {
         <div class="px-3 py-3">
           <Show
             when={block()}
-            fallback={<div class="py-6 text-center text-xs text-gray-400">This block is no longer here.</div>}
+            fallback={<div class="py-6 text-center text-xs text-gray-400">{t("This block is no longer here.")}</div>}
           >
-            <Show when={(type()?.settings ?? []).length} fallback={<div class="py-6 text-center text-xs text-gray-400">This block declares no settings.</div>}>
+            <Show when={(type()?.settings ?? []).length} fallback={<div class="py-6 text-center text-xs text-gray-400">{t("This block declares no settings.")}</div>}>
               <FormFields fields={type()?.settings ?? []} values={local()} onChange={change} />
             </Show>
             <button
@@ -71,8 +72,7 @@ function BlockSettings(props: { section: PageSection; path: BlockPath }) {
               onClick={() => editor.removeBlock(props.section.section_id, props.path)}
             >
               <Trash2 size={12} />
-              Remove block
-            </button>
+              {t("Remove block")} </button>
           </Show>
         </div>
       </div>
@@ -127,7 +127,7 @@ function SectionSettings(props: { section: PageSection }) {
           type="button"
           onClick={editor.closeSettings}
           class="p-1 rounded-md text-gray-500 hover:text-gray-800 hover:bg-[#f1f2f4] transition-colors"
-          title="Close"
+          title={t("Close")}
         >
           <X size={14} />
         </button>
@@ -139,8 +139,7 @@ function SectionSettings(props: { section: PageSection }) {
             when={settings().length > 0}
             fallback={
               <div class="text-center py-6 text-xs text-gray-400">
-                This section declares no settings.
-              </div>
+                {t("This section declares no settings.")} </div>
             }
           >
             <FormFields fields={settings()} values={local()} onChange={change} />
@@ -154,7 +153,7 @@ function SectionSettings(props: { section: PageSection }) {
               onClick={() => setCssOpen(!cssOpen())}
               class="flex items-center justify-between w-full px-4 py-3 text-[13px] font-semibold text-[#202223] hover:bg-[#f6f6f7] transition-colors text-left cursor-pointer"
             >
-              <span>Custom CSS</span>
+              <span>{t("Custom CSS")}</span>
               <ChevronDown
                 size={15}
                 class="transform transition-transform text-gray-500"
@@ -183,9 +182,7 @@ function SectionSettings(props: { section: PageSection }) {
                   }}
                 />
                 <span class="text-[11px] text-gray-500 leading-tight">
-                  <code class="sam-mono">&amp;</code> is this section's wrapper. Written into the
-                  page's template JSON, not the theme source.
-                </span>
+                  <code class="sam-mono">&amp;</code> {t("is this section's wrapper. Written into the page's template JSON, not the theme source.")} </span>
               </div>
             </Show>
           </div>
@@ -198,7 +195,7 @@ function SectionSettings(props: { section: PageSection }) {
                 class="flex items-center justify-center gap-2.5 w-full py-2.5 px-3 text-[13px] font-semibold text-[#8a1200] hover:text-[#b91c1c] hover:bg-red-50/50 rounded-lg transition-colors cursor-pointer"
               >
                 <Trash2 size={16} class="text-[#8a1200]" />
-                <span>Remove section</span>
+                <span>{t("Remove section")}</span>
               </button>
             </div>
           </Show>

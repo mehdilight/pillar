@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import Modal from './Modal';
 
 interface ConfirmDialogProps {
@@ -19,8 +20,7 @@ export default function ConfirmDialog(props: ConfirmDialogProps) {
       footer={
         <>
           <button type="button" class="sam-btn" onClick={() => props.onOpenChange(false)}>
-            Cancel
-          </button>
+            {t("Cancel")} </button>
           <button
             type="button"
             class="sam-btn"
@@ -30,7 +30,7 @@ export default function ConfirmDialog(props: ConfirmDialogProps) {
               props.onOpenChange(false);
             }}
           >
-            {props.confirmLabel ?? 'Confirm'}
+            {props.confirmLabel ?? t("Confirm")}
           </button>
         </>
       }

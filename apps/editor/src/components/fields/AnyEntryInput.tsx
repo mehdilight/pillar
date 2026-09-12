@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Show, createSignal, onMount } from 'solid-js';
 import RelationshipInput from './RelationshipInput';
 import { api } from '../../api/client';
@@ -26,7 +27,7 @@ export default function AnyEntryInput(props: {
   });
 
   return (
-    <Show when={names()} fallback={<p class="mb-3.5 text-[11px] text-gray-500">Loading entries…</p>}>
+    <Show when={names()} fallback={<p class="mb-3.5 text-[11px] text-gray-500">{t("Loading entries…")}</p>}>
       {(list) => <RelationshipInput qualify label={props.label} info={props.info} collections={list()} multiple={props.multiple} max={props.max} value={props.value} onValue={props.onValue} />}
     </Show>
   );

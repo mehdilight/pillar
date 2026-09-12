@@ -1,3 +1,4 @@
+import { t, formatDate } from '../i18n';
 import { For, Show, createResource } from 'solid-js';
 import Modal from '../components/ui/Modal';
 import { api } from '../api/client';
@@ -10,10 +11,10 @@ export default function HistoryModal(props: {
   const [history] = createResource(() => props.open, () => api.history());
 
   return (
-    <Modal open={props.open} onOpenChange={props.onOpenChange} title="Version history" flushBody>
+    <Modal open={props.open} onOpenChange={props.onOpenChange} title={t("Version history")} flushBody>
       <Show
         when={history()?.length}
-        fallback={<div class="px-4 py-8 text-center text-xs text-gray-400">No commits yet.</div>}
+        fallback={<div class="px-4 py-8 text-center text-xs text-gray-400">{t("No commits yet.")}</div>}
       >
         <ul class="divide-y divide-[#e1e3e5]">
           <For each={history()}>
@@ -23,7 +24,7 @@ export default function HistoryModal(props: {
                 <div class="flex flex-col min-w-0 flex-1">
                   <span class="text-[13px] text-[#202223] truncate">{entry.message}</span>
                   <span class="text-[11px] text-gray-500">
-                    {entry.author} · {new Date(entry.date).toLocaleString()}
+                    {entry.author} · {formatDate(entry.date, { dateStyle: 'medium', timeStyle: 'short' })}
                   </span>
                 </div>
               </li>

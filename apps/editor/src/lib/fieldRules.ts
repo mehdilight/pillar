@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import type { SchemaSetting } from '../types';
 
 /**
@@ -62,28 +63,28 @@ export function violations(fields: SchemaSetting[], values: Record<string, unkno
     const name = label + (field.label || field.id);
 
     if (field.required && isEmpty(value)) {
-      out.push({ path: where, message: `${name} is required.` });
+      out.push({ path: where, message: t("{{v0}} is required.", { v0: name }) });
       continue;
     }
 
     if (field.character_limit && typeof value === 'string' && [...textOf(field, value)].length > field.character_limit) {
-      out.push({ path: where, message: `${name} is longer than ${field.character_limit} characters.` });
+      out.push({ path: where, message: t("{{v0}} is longer than {{v1}} characters.", { v0: name, v1: field.character_limit }) });
     }
 
     if (field.input_type === 'email' && typeof value === 'string' && value !== '' && !EMAIL.test(value)) {
-      out.push({ path: where, message: `${name} is not an email address.` });
+      out.push({ path: where, message: t("{{v0}} is not an email address.", { v0: name }) });
     }
 
     const extension = typeof value === 'string' ? value.split('?')[0].split('.').pop()?.toLowerCase() ?? '' : '';
 
     if (field.type === 'file' && field.extensions?.length && typeof value === 'string' && value !== '' && !field.extensions.includes(extension)) {
-      out.push({ path: where, message: `${name} must be a ${field.extensions.map((item) => item.toUpperCase()).join(' or ')} file.` });
+      out.push({ path: where, message: t("{{v0}} must be a {{v1}} file.", { v0: name, v1: field.extensions.map((item) => item.toUpperCase()).join(t(" or ")) }) });
     }
 
     const many = field.type === 'repeater' || (field.type === 'collection_item' && field.multiple);
 
     if (many && field.max !== undefined && Array.isArray(value) && value.length > field.max) {
-      out.push({ path: where, message: `${name} has more than ${field.max} ${field.type === 'repeater' ? 'rows' : 'entries'}.` });
+      out.push({ path: where, message: t("{{v0}} has more than {{v1}} {{v2}}.", { v0: name, v1: field.max, v2: field.type === 'repeater' ? t("rows") : t("entries") }) });
     }
 
     if (field.type === 'group' && value && typeof value === 'object' && !Array.isArray(value)) {
@@ -93,7 +94,7 @@ export function violations(fields: SchemaSetting[], values: Record<string, unkno
     if (field.type === 'repeater' && Array.isArray(value)) {
       value.forEach((row, index) => {
         if (row && typeof row === 'object') {
-          out.push(...violations(field.fields ?? [], row as Record<string, unknown>, `${where}.${index}.`, `${name} row ${index + 1} › `));
+          out.push(...violations(field.fields ?? [], row as Record<string, unknown>, `${where}.${index}.`, t("{{v0}} row {{v1}} › ", { v0: name, v1: index + 1 })));
         }
       });
     }

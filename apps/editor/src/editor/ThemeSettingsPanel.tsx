@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { For, Show, createResource, createSignal } from 'solid-js';
 import { ChevronDown } from '../components/ui/Icons';
 import FormFields from '../components/fields/FormFields';
@@ -43,17 +44,17 @@ export default function ThemeSettingsPanel() {
         await editor.refreshStatus();
         editor.reloadPreview();
       } catch (error) {
-        showToast(error instanceof Error ? error.message : 'Could not save settings', 'error');
+        showToast(error instanceof Error ? error.message : t("Could not save settings"), 'error');
       }
     }, 400);
   };
 
   return (
     <aside class="w-[300px] flex flex-col h-full bg-white border-r border-[#e1e3e5] select-none overflow-y-auto">
-      <div class="px-4 pt-3 pb-2 text-xs font-semibold text-gray-900">Theme settings</div>
+      <div class="px-4 pt-3 pb-2 text-xs font-semibold text-gray-900">{t("Theme settings")}</div>
 
-      <Show when={schema()} fallback={<div class="px-4 py-6 text-xs text-gray-400">Loading settings…</div>}>
-        <For each={panels()} fallback={<p class="px-4 text-xs text-gray-400">This theme declares no settings.</p>}>
+      <Show when={schema()} fallback={<div class="px-4 py-6 text-xs text-gray-400">{t("Loading settings…")}</div>}>
+        <For each={panels()} fallback={<p class="px-4 text-xs text-gray-400">{t("This theme declares no settings.")}</p>}>
           {(panel) => (
             <div class="border-b border-[#e1e3e5]">
               <button

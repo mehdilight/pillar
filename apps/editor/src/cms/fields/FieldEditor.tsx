@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createMemo, createSignal, type JSX } from 'solid-js';
 import { createStore, produce, unwrap } from 'solid-js/store';
 import Drawer from '../../components/ui/Drawer';
@@ -46,24 +47,24 @@ export default function FieldEditor(props: {
     const out: string[] = [];
 
     if (!decorative()) {
-      if (!validHandle(draft.id)) out.push('The handle must start with a letter and use only a–z, 0–9 and _.');
-      else if (props.taken.includes(draft.id)) out.push(`Another field here is already called “${draft.id}”.`);
+      if (!validHandle(draft.id)) out.push(t("The handle must start with a letter and use only a–z, 0–9 and _."));
+      else if (props.taken.includes(draft.id)) out.push(t("Another field here is already called “{{v0}}”.", { v0: draft.id }));
     }
 
     if (needsOptions(draft.type)) {
       const values = (draft.options ?? []).map((option) => option.value.trim());
 
-      if (values.length === 0) out.push('Add at least one option.');
-      if (values.some((value) => value === '')) out.push('Every option needs a value.');
-      if (new Set(values).size !== values.length) out.push('Two options have the same value.');
+      if (values.length === 0) out.push(t("Add at least one option."));
+      if (values.some((value) => value === '')) out.push(t("Every option needs a value."));
+      if (new Set(values).size !== values.length) out.push(t("Two options have the same value."));
     }
 
     if (holdsFields(draft.type) && !(draft.fields ?? []).some((field) => !isDecorative(field.type))) {
-      out.push(`A ${info().label.toLowerCase()} needs at least one field.`);
+      out.push(t("A {{type}} needs at least one field.", { type: info().label.toLowerCase() }));
     }
 
-    if (draft.type === 'collection_item' && !draft.collections?.length) out.push('Choose at least one collection its entries come from.');
-    if ((draft.visible_if ?? []).some((rule) => !rule.field)) out.push('Every condition needs a field.');
+    if (draft.type === 'collection_item' && !draft.collections?.length) out.push(t("Choose at least one collection its entries come from."));
+    if ((draft.visible_if ?? []).some((rule) => !rule.field)) out.push(t("Every condition needs a field."));
 
     return out;
   });
@@ -79,7 +80,7 @@ export default function FieldEditor(props: {
       open
       onClose={props.onClose}
       width={Math.max(480, 640 - props.depth * 40)}
-      title={props.isNew ? `New ${info().label.toLowerCase()} field` : decorative() ? info().label : draft.label || draft.id}
+      title={props.isNew ? t("New {{v0}} field", { v0: info().label.toLowerCase() }) : decorative() ? info().label : draft.label || draft.id}
       subtitle={
         <span class="inline-flex items-center gap-1.5">
           <NamedIcon name={info().icon} size={12} />
@@ -95,25 +96,25 @@ export default function FieldEditor(props: {
           <Show when={errors().length}>
             <p class="mr-auto text-xs text-danger">{errors()[0]}</p>
           </Show>
-          <Button onClick={props.onClose}>Cancel</Button>
+          <Button onClick={props.onClose}>{t("Cancel")}</Button>
           <Button variant="primary" disabled={errors().length > 0} onClick={done}>
-            {props.isNew ? 'Add field' : 'Done'}
+            {props.isNew ? t("Add field") : t("Done")}
           </Button>
         </>
       }
     >
       <div class="space-y-6">
-        <Section title="Display">
+        <Section title={t("Display")}>
           <Show
             when={!decorative()}
             fallback={
-              <Row label={draft.type === 'header' ? 'Heading' : 'Text'} for="field-content">
+              <Row label={draft.type === 'header' ? t("Heading") : t("Text")} for="field-content">
                 <Textarea id="field-content" class="max-w-none" value={draft.content ?? ''} onInput={(event) => set('content', event.currentTarget.value)} />
               </Row>
             }
           >
             <div class="grid gap-4 sm:grid-cols-2">
-              <Row label="Label" for="field-label">
+              <Row label={t("Label")} for="field-label">
                 <Input
                   id="field-label"
                   class="max-w-none"
@@ -125,7 +126,7 @@ export default function FieldEditor(props: {
                   }}
                 />
               </Row>
-              <Row label="Handle" for="field-handle" hint="The key in the file — how templates read it.">
+              <Row label={t("Handle")} for="field-handle" hint={t("The key in the file — how templates read it.")}>
                 <Input
                   id="field-handle"
                   class="max-w-none font-mono text-xs"
@@ -138,13 +139,13 @@ export default function FieldEditor(props: {
               </Row>
             </div>
             <Show when={!props.isNew && props.field.id !== draft.id}>
-              <p class="-mt-2 text-[11.5px] text-warning">Entries already saved keep their value under “{props.field.id}” until they are edited.</p>
+              <p class="-mt-2 text-[11.5px] text-warning">{t("Entries already saved keep their value under “{{id}}” until they are edited.", { id: props.field.id })}</p>
             </Show>
-            <Row label="Instructions" for="field-info" hint="Shown under the field, for whoever fills it in.">
+            <Row label={t("Instructions")} for="field-info" hint={t("Shown under the field, for whoever fills it in.")}>
               <Textarea id="field-info" class="max-w-none min-h-16" value={draft.info ?? ''} onInput={(event) => set('info', event.currentTarget.value)} />
             </Row>
             <Show when={['text', 'textarea', 'url', 'number'].includes(draft.type)}>
-              <Row label="Placeholder" for="field-placeholder">
+              <Row label={t("Placeholder")} for="field-placeholder">
                 <Input id="field-placeholder" class="max-w-none" value={draft.placeholder ?? ''} onInput={(event) => set('placeholder', event.currentTarget.value)} />
               </Row>
             </Show>
@@ -152,17 +153,17 @@ export default function FieldEditor(props: {
         </Section>
 
         <Show when={needsOptions(draft.type)}>
-          <Section title="Options" hint="Label is what people see; value is what the file stores.">
+          <Section title={t("Options")} hint={t("Label is what people see; value is what the file stores.")}>
             <OptionsEditor options={draft.options ?? []} onChange={(options) => set('options', options)} />
           </Section>
         </Show>
 
         <Show when={draft.type === 'number' || draft.type === 'range'}>
-          <Section title="Limits">
+          <Section title={t("Limits")}>
             <div class="grid gap-4 sm:grid-cols-4">
               <For each={['min', 'max', 'step'] as const}>
                 {(key) => (
-                  <Row label={{ min: 'Minimum', max: 'Maximum', step: 'Step' }[key]} for={`field-${key}`}>
+                  <Row label={{ min: t("Minimum"), max: t("Maximum"), step: t("Step") }[key]} for={`field-${key}`}>
                     <Input
                       id={`field-${key}`}
                       type="number"
@@ -174,7 +175,7 @@ export default function FieldEditor(props: {
                 )}
               </For>
               <Show when={draft.type === 'range'}>
-                <Row label="Unit" for="field-unit">
+                <Row label={t("Unit")} for="field-unit">
                   <Input id="field-unit" class="max-w-none" placeholder="px" value={draft.unit ?? ''} onInput={(event) => set('unit', event.currentTarget.value)} />
                 </Row>
               </Show>
@@ -183,15 +184,15 @@ export default function FieldEditor(props: {
         </Show>
 
         <Show when={draft.type === 'image'}>
-          <Section title="Images">
-            <Toggle checked={Boolean(draft.multiple)} onChange={(on) => set('multiple', on)} label="Allow several images" hint="A gallery: the field stores a list." />
+          <Section title={t("Images")}>
+            <Toggle checked={Boolean(draft.multiple)} onChange={(on) => set('multiple', on)} label={t("Allow several images")} hint={t("A gallery: the field stores a list.")} />
           </Section>
         </Show>
 
         <Show when={draft.type === 'collection_item'}>
-          <Section title="Entries">
+          <Section title={t("Entries")}>
             <div>
-              <p class="mb-1.5 text-xs font-medium text-text-secondary">Collections</p>
+              <p class="mb-1.5 text-xs font-medium text-text-secondary">{t("Collections")}</p>
               <div class="grid gap-1.5 sm:grid-cols-2">
                 <For each={collections() ?? []}>
                   {(collection) => (
@@ -214,12 +215,12 @@ export default function FieldEditor(props: {
                 </For>
               </div>
               <p class="mt-1.5 text-[11.5px] text-text-faint">
-                {(draft.collections ?? []).length > 1 ? 'Stored as collection/slug, since several collections are offered.' : 'Stored as the entry’s slug.'}
+                {(draft.collections ?? []).length > 1 ? t("Stored as collection/slug, since several collections are offered.") : t("Stored as the entry’s slug.")}
               </p>
             </div>
-            <Toggle checked={Boolean(draft.multiple)} onChange={(on) => set('multiple', on)} label="Allow several entries" hint="Related posts, featured docs: the field stores a list." />
+            <Toggle checked={Boolean(draft.multiple)} onChange={(on) => set('multiple', on)} label={t("Allow several entries")} hint={t("Related posts, featured docs: the field stores a list.")} />
             <Show when={draft.multiple}>
-              <Row label="Maximum entries" for="field-max-entries" hint="Leave empty for no limit.">
+              <Row label={t("Maximum entries")} for="field-max-entries" hint={t("Leave empty for no limit.")}>
                 <Input
                   id="field-max-entries"
                   type="number"
@@ -234,7 +235,7 @@ export default function FieldEditor(props: {
         </Show>
 
         <Show when={draft.type === 'file'}>
-          <Section title="File types" hint="Leave all unticked to take any download the media library holds.">
+          <Section title={t("File types")} hint={t("Leave all unticked to take any download the media library holds.")}>
             <div class="flex flex-wrap gap-1.5">
               <For each={FILE_EXTENSIONS}>
                 {(extension) => {
@@ -258,27 +259,27 @@ export default function FieldEditor(props: {
         </Show>
 
         <Show when={draft.type === 'date'}>
-          <Section title="Date">
-            <Toggle checked={Boolean(draft.time)} onChange={(on) => set('time', on)} label="Include a time" hint="Stored as 2026-09-10T14:30." />
+          <Section title={t("Date")}>
+            <Toggle checked={Boolean(draft.time)} onChange={(on) => set('time', on)} label={t("Include a time")} hint={t("Stored as 2026-09-10T14:30.")} />
           </Section>
         </Show>
 
         <Show when={holdsFields(draft.type)}>
           <Section
-            title={draft.type === 'repeater' ? 'Fields in each row' : 'Fields in the group'}
-            hint={draft.type === 'repeater' ? 'Every row has these fields — an FAQ row has a question and an answer.' : 'Stored together, read as one value: author.name, author.url.'}
+            title={draft.type === 'repeater' ? t("Fields in each row") : t("Fields in the group")}
+            hint={draft.type === 'repeater' ? t("Every row has these fields — an FAQ row has a question and an answer.") : t("Stored together, read as one value: author.name, author.url.")}
           >
             <FieldList
               fields={draft.fields ?? []}
               onChange={(fields) => set('fields', fields)}
               depth={props.depth + 1}
               exclude={props.depth + 1 >= MAX_DEPTH ? ['group', 'repeater'] : undefined}
-              empty="Add the fields this holds."
+              empty={t("Add the fields this holds.")}
             />
           </Section>
           <Show when={draft.type === 'repeater'}>
-            <Section title="Rows">
-              <Row label="Maximum rows" for="field-max" hint="Leave empty for no limit.">
+            <Section title={t("Rows")}>
+              <Row label={t("Maximum rows")} for="field-max" hint={t("Leave empty for no limit.")}>
                 <Input
                   id="field-max"
                   type="number"
@@ -293,10 +294,10 @@ export default function FieldEditor(props: {
         </Show>
 
         <Show when={!decorative()}>
-          <Section title="Validation" hint="Checked when an entry is published — a draft may be saved incomplete.">
-            <Toggle checked={Boolean(draft.required)} onChange={(on) => set('required', on)} label="Required" hint="A published entry must fill it in. A toggle must be switched on." />
+          <Section title={t("Validation")} hint={t("Checked when an entry is published — a draft may be saved incomplete.")}>
+            <Toggle checked={Boolean(draft.required)} onChange={(on) => set('required', on)} label={t("Required")} hint={t("A published entry must fill it in. A toggle must be switched on.")} />
             <Show when={['text', 'textarea', 'markdown', 'richtext'].includes(draft.type)}>
-              <Row label="Character limit" for="field-limit" hint="Leave empty for no limit. The form counts as you type.">
+              <Row label={t("Character limit")} for="field-limit" hint={t("Leave empty for no limit. The form counts as you type.")}>
                 <Input
                   id="field-limit"
                   type="number"
@@ -308,7 +309,7 @@ export default function FieldEditor(props: {
               </Row>
             </Show>
             <Show when={draft.type === 'text'}>
-              <Row label="Input type" for="field-input-type" hint="The keyboard on a phone — and an email address is checked.">
+              <Row label={t("Input type")} for="field-input-type" hint={t("The keyboard on a phone — and an email address is checked.")}>
                 <NativeSelect
                   id="field-input-type"
                   wrapperClass="max-w-[200px]"
@@ -316,28 +317,28 @@ export default function FieldEditor(props: {
                   value={draft.input_type ?? 'text'}
                   onChange={(event) => set('input_type', event.currentTarget.value === 'text' ? undefined : (event.currentTarget.value as 'email' | 'tel'))}
                 >
-                  <option value="text">Text</option>
-                  <option value="email">Email address</option>
-                  <option value="tel">Phone number</option>
+                  <option value="text">{t("Text")}</option>
+                  <option value="email">{t("Email address")}</option>
+                  <option value="tel">{t("Phone number")}</option>
                 </NativeSelect>
               </Row>
             </Show>
           </Section>
 
-          <Section title="Appearance">
+          <Section title={t("Appearance")}>
             <Show when={draft.type === 'radio'}>
-              <Toggle checked={draft.display === 'buttons'} onChange={(on) => set('display', on ? 'buttons' : undefined)} label="Show as buttons" hint="A row of buttons instead of a list — for a few short options." />
+              <Toggle checked={draft.display === 'buttons'} onChange={(on) => set('display', on ? 'buttons' : undefined)} label={t("Show as buttons")} hint={t("A row of buttons instead of a list — for a few short options.")} />
             </Show>
-            <Toggle checked={Boolean(draft.hidden)} onChange={(on) => set('hidden', on)} label="Hide from the form" hint="Kept in the file and read by templates, never shown — for data a script or plugin manages." />
+            <Toggle checked={Boolean(draft.hidden)} onChange={(on) => set('hidden', on)} label={t("Hide from the form")} hint={t("Kept in the file and read by templates, never shown — for data a script or plugin manages.")} />
           </Section>
 
-          <Section title="Conditions" hint="Show this field only when every rule holds. A hidden field is never required, and keeps its value.">
+          <Section title={t("Conditions")} hint={t("Show this field only when every rule holds. A hidden field is never required, and keeps its value.")}>
             <ConditionsEditor rules={draft.visible_if ?? []} siblings={props.siblings} onChange={(rules) => set('visible_if', rules)} />
           </Section>
         </Show>
 
         <Show when={DEFAULTABLE.includes(draft.type) && (!needsOptions(draft.type) || (draft.options ?? []).length > 0)}>
-          <Section title="Default" hint="What a new entry starts with.">
+          <Section title={t("Default")} hint={t("What a new entry starts with.")}>
             {/* The control brings its own bottom margin; the negative one evens the box's padding. */}
             <div class="rounded-ds border border-border bg-surface p-3">
               <div class="-mb-3.5">
@@ -350,8 +351,7 @@ export default function FieldEditor(props: {
             </div>
             <Show when={draft.default !== undefined}>
               <button type="button" class="mt-1.5 text-[11.5px] text-text-muted hover:text-text hover:underline" onClick={() => set('default', undefined)}>
-                Clear the default
-              </button>
+                {t("Clear the default")} </button>
             </Show>
           </Section>
         </Show>
@@ -361,11 +361,11 @@ export default function FieldEditor(props: {
 }
 
 const OPERATORS: Array<{ value: VisibilityOperator; label: string }> = [
-  { value: 'equals', label: 'is' },
-  { value: 'not_equals', label: 'is not' },
-  { value: 'contains', label: 'contains' },
-  { value: 'empty', label: 'is empty' },
-  { value: 'not_empty', label: 'is not empty' },
+  { value: 'equals', get label() { return t("is"); } },
+  { value: 'not_equals', get label() { return t("is not"); } },
+  { value: 'contains', get label() { return t("contains"); } },
+  { value: 'empty', get label() { return t("is empty"); } },
+  { value: 'not_empty', get label() { return t("is not empty"); } },
 ];
 
 const selectClass =
@@ -379,29 +379,29 @@ function ConditionsEditor(props: { rules: VisibilityRule[]; siblings: SchemaSett
 
   return (
     <div>
-      <Show when={props.rules.length} fallback={<p class="text-xs text-text-faint">Always shown.</p>}>
+      <Show when={props.rules.length} fallback={<p class="text-xs text-text-faint">{t("Always shown.")}</p>}>
         <div class="space-y-2">
           <For each={props.rules}>
             {(rule, index) => (
               <div class="flex flex-wrap items-center gap-2">
-                <span class="w-12 text-xs text-text-muted">{index() === 0 ? 'Show if' : 'and'}</span>
-                <NativeSelect aria-label="Field" wrapperClass="flex-1" class={selectClass} value={rule.field} onChange={(event) => update(index(), { field: event.currentTarget.value, value: undefined })}>
-                  <option value="" selected={!rule.field}>Choose a field…</option>
+                <span class="w-12 text-xs text-text-muted">{index() === 0 ? t("Show if") : t("and")}</span>
+                <NativeSelect aria-label={t("Field")} wrapperClass="flex-1" class={selectClass} value={rule.field} onChange={(event) => update(index(), { field: event.currentTarget.value, value: undefined })}>
+                  <option value="" selected={!rule.field}>{t("Choose a field…")}</option>
                   <For each={candidates()}>{(field) => <option value={field.id} selected={field.id === rule.field}>{field.label || field.id}</option>}</For>
                 </NativeSelect>
-                <NativeSelect aria-label="Comparison" class={selectClass} value={rule.operator ?? 'equals'} onChange={(event) => update(index(), { operator: event.currentTarget.value as VisibilityOperator })}>
+                <NativeSelect aria-label={t("Comparison")} class={selectClass} value={rule.operator ?? 'equals'} onChange={(event) => update(index(), { operator: event.currentTarget.value as VisibilityOperator })}>
                   <For each={OPERATORS}>{(operator) => <option value={operator.value} selected={operator.value === (rule.operator ?? 'equals')}>{operator.label}</option>}</For>
                 </NativeSelect>
                 <Show when={!['empty', 'not_empty'].includes(rule.operator ?? 'equals')}>
                   <Show
                     when={sibling(rule.field)?.options?.length || sibling(rule.field)?.type === 'checkbox'}
                     fallback={
-                      <Input aria-label="Value" class="max-w-none min-w-0 flex-1" value={String(rule.value ?? '')} onInput={(event) => update(index(), { value: event.currentTarget.value })} />
+                      <Input aria-label={t("Value")} class="max-w-none min-w-0 flex-1" value={String(rule.value ?? '')} onInput={(event) => update(index(), { value: event.currentTarget.value })} />
                     }
                   >
-                    <NativeSelect aria-label="Value" wrapperClass="flex-1" class={selectClass} value={String(rule.value ?? '')} onChange={(event) => update(index(), { value: sibling(rule.field)?.type === 'checkbox' ? event.currentTarget.value === 'true' : event.currentTarget.value })}>
-                      <option value="" selected={rule.value === undefined || rule.value === ''}>Choose…</option>
-                      <For each={sibling(rule.field)?.type === 'checkbox' ? [{ value: 'true', label: 'On' }, { value: 'false', label: 'Off' }] : sibling(rule.field)?.options ?? []}>
+                    <NativeSelect aria-label={t("Value")} wrapperClass="flex-1" class={selectClass} value={String(rule.value ?? '')} onChange={(event) => update(index(), { value: sibling(rule.field)?.type === 'checkbox' ? event.currentTarget.value === 'true' : event.currentTarget.value })}>
+                      <option value="" selected={rule.value === undefined || rule.value === ''}>{t("Choose…")}</option>
+                      <For each={sibling(rule.field)?.type === 'checkbox' ? [{ value: 'true', get label() { return t("On"); } }, { value: 'false', get label() { return t("Off"); } }] : sibling(rule.field)?.options ?? []}>
                         {(option) => <option value={option.value} selected={option.value === String(rule.value ?? '')}>{option.label}</option>}
                       </For>
                     </NativeSelect>
@@ -410,7 +410,7 @@ function ConditionsEditor(props: { rules: VisibilityRule[]; siblings: SchemaSett
                 <button
                   type="button"
                   class="flex size-8 shrink-0 items-center justify-center rounded-ds text-text-muted hover:bg-danger-tint hover:text-danger"
-                  aria-label="Remove this rule"
+                  aria-label={t("Remove this rule")}
                   onClick={() => props.onChange(props.rules.filter((_, i) => i !== index()))}
                 >
                   <Trash2 size={14} />
@@ -424,12 +424,11 @@ function ConditionsEditor(props: { rules: VisibilityRule[]; siblings: SchemaSett
         type="button"
         class="mt-2 -ml-2 inline-flex items-center gap-1.5 rounded-ds px-2 py-1.5 text-[13px] font-medium text-brand hover:bg-brand-tint disabled:cursor-not-allowed disabled:opacity-40"
         disabled={candidates().length === 0}
-        title={candidates().length === 0 ? 'Add another field first — a condition depends on one.' : undefined}
+        title={candidates().length === 0 ? t("Add another field first — a condition depends on one.") : undefined}
         onClick={() => props.onChange([...props.rules, { field: candidates()[0]?.id ?? '', operator: 'equals' }])}
       >
         <Plus size={14} />
-        Add a rule
-      </button>
+        {t("Add a rule")} </button>
     </div>
   );
 }
@@ -497,8 +496,8 @@ function OptionsEditor(props: { options: Array<{ value: string; label: string }>
           {(option, index) => (
             <div class="flex items-center gap-2">
               <Input
-                aria-label="Option label"
-                placeholder="Label"
+                aria-label={t("Option label")}
+                placeholder={t("Label")}
                 class="max-w-none flex-1"
                 value={option.label}
                 onInput={(event) => {
@@ -509,8 +508,8 @@ function OptionsEditor(props: { options: Array<{ value: string; label: string }>
                 }}
               />
               <Input
-                aria-label="Option value"
-                placeholder="value"
+                aria-label={t("Option value")}
+                placeholder={t("value")}
                 class="max-w-none flex-1 font-mono text-xs"
                 value={option.value}
                 onInput={(event) => update(index(), { value: event.currentTarget.value })}
@@ -518,7 +517,7 @@ function OptionsEditor(props: { options: Array<{ value: string; label: string }>
               <button
                 type="button"
                 class="flex size-8 shrink-0 items-center justify-center rounded-ds text-text-muted hover:bg-danger-tint hover:text-danger"
-                aria-label={`Remove ${option.label || option.value}`}
+                aria-label={t("Remove {{v0}}", { v0: option.label || option.value })}
                 onClick={() => props.onChange(props.options.filter((_, i) => i !== index()))}
               >
                 <Trash2 size={14} />
@@ -533,8 +532,7 @@ function OptionsEditor(props: { options: Array<{ value: string; label: string }>
         onClick={() => props.onChange([...props.options, { value: '', label: '' }])}
       >
         <Plus size={14} />
-        Add option
-      </button>
+        {t("Add option")} </button>
     </div>
   );
 }

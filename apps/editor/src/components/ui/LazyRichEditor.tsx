@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Suspense, lazy, type ComponentProps } from 'solid-js';
 
 /**
@@ -20,8 +21,7 @@ export default function LazyRichEditor(props: Props) {
           class="rounded-xl border border-[#e1e3e5] bg-white text-xs text-gray-400 flex items-center justify-center"
           style={{ 'min-height': `${(props.minHeight ?? 320) + 40}px` }}
         >
-          Loading the editor…
-        </div>
+          {t("Loading the editor…")} </div>
       }
     >
       <RichEditor {...props} />

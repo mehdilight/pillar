@@ -1,3 +1,5 @@
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { t } from '../i18n';
 import { For, Show, createSignal, onMount, type JSX } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import {
@@ -55,7 +57,7 @@ function Header(props: { onToggle: () => void }) {
         <button
           onClick={props.onToggle}
           class="md:hidden me-1 h-8 w-8 flex items-center justify-center cursor-pointer text-gray-200 rounded-md hover:text-white hover:bg-[#272626]"
-          aria-label="Open navigation"
+          aria-label={t("Open navigation")}
         >
           <Menu size={18} />
         </button>
@@ -72,25 +74,26 @@ function Header(props: { onToggle: () => void }) {
             'border-amber-400/30 bg-amber-400/15 text-amber-300 hover:bg-amber-400/25': pending() > 0,
             'border-[#3e4045] bg-[#2c2d30] text-gray-300 hover:text-white': pending() === 0,
           }}
-          title="Changes and history"
+          title={t("Changes and history")}
         >
           <GitBranch size={13} />
           <span class="font-mono">{status()?.branch ?? 'main'}</span>
-          <span>{pending() > 0 ? `${pending()} uncommitted` : 'Committed'}</span>
+          <span>{pending() > 0 ? t("{{v0}} uncommitted", { v0: pending() }) : t("Committed")}</span>
         </A>
       </div>
 
       <div class="flex justify-end items-center gap-1.5">
-        <a href="/preview/" target="_blank" rel="noopener" class={headerButton} title="Open the site">
+        <LanguageSwitcher />
+        <a href="/preview/" target="_blank" rel="noopener" class={headerButton} title={t("Open the site")}>
           <ExternalLink size={14} />
-          <span class="hidden sm:inline">View site</span>
+          <span class="hidden sm:inline">{t("View site")}</span>
         </a>
         <A
           href="/editor"
           class="h-8 inline-flex items-center gap-1.5 rounded-md bg-white text-[#1a1a1a] px-3 text-xs font-semibold hover:bg-gray-100 transition-colors"
         >
           <PaintbrushVertical size={14} />
-          <span>Customize</span>
+          <span>{t("Customize")}</span>
         </A>
       </div>
     </header>
@@ -135,10 +138,10 @@ function Sidebar(props: { open: boolean; onClose: () => void }) {
       classList={{ block: props.open, hidden: !props.open }}
     >
       <ul class="space-y-0.5">
-        <Item to="/" label="Overview" icon={(a) => <House size={18} class={iconClass(a)} />} />
+        <Item to="/" label={t("Overview")} icon={(a) => <House size={18} class={iconClass(a)} />} />
       </ul>
 
-      <p class="mt-5 mb-1.5 px-3.5 text-[11px] font-semibold uppercase tracking-[.05em] text-[#8a8a8a]">Content</p>
+      <p class="mt-5 mb-1.5 px-3.5 text-[11px] font-semibold uppercase tracking-[.05em] text-[#8a8a8a]">{t("Content")}</p>
       <ul class="space-y-0.5">
         <For each={collections() ?? []}>
           {(collection) => (
@@ -150,16 +153,16 @@ function Sidebar(props: { open: boolean; onClose: () => void }) {
             />
           )}
         </For>
-        <Item to="/types" label="Content types" icon={(a) => <Folder size={18} class={iconClass(a)} />} />
-        <Item to="/media" label="Media" icon={(a) => <Images size={18} class={iconClass(a)} />} />
-        <Item to="/menus" label="Navigation" icon={(a) => <ListTree size={18} class={iconClass(a)} />} />
+        <Item to="/types" label={t("Content types")} icon={(a) => <Folder size={18} class={iconClass(a)} />} />
+        <Item to="/media" label={t("Media")} icon={(a) => <Images size={18} class={iconClass(a)} />} />
+        <Item to="/menus" label={t("Navigation")} icon={(a) => <ListTree size={18} class={iconClass(a)} />} />
       </ul>
 
-      <p class="mt-5 mb-1.5 px-3.5 text-[11px] font-semibold uppercase tracking-[.05em] text-[#8a8a8a]">Site</p>
+      <p class="mt-5 mb-1.5 px-3.5 text-[11px] font-semibold uppercase tracking-[.05em] text-[#8a8a8a]">{t("Site")}</p>
       <ul class="space-y-0.5">
-        <Item to="/editor" label="Customize" icon={(a) => <Layers size={18} class={iconClass(a)} />} />
-        <Item to="/publish" label="Publish" count={status()?.count || undefined} icon={(a) => <Upload size={18} class={iconClass(a)} />} />
-        <Item to="/settings" label="Settings" icon={(a) => <Settings size={18} class={iconClass(a)} />} />
+        <Item to="/editor" label={t("Customize")} icon={(a) => <Layers size={18} class={iconClass(a)} />} />
+        <Item to="/publish" label={t("Publish")} count={status()?.count || undefined} icon={(a) => <Upload size={18} class={iconClass(a)} />} />
+        <Item to="/settings" label={t("Settings")} icon={(a) => <Settings size={18} class={iconClass(a)} />} />
       </ul>
     </aside>
   );

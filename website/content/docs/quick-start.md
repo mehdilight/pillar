@@ -10,17 +10,22 @@ order: 2
 - **Composer**.
 - **Git**, if you want publishing — Pillar works without it, there is just nothing to commit to.
 
-Node is only needed to work on Pillar's own dashboard; it ships prebuilt in `public/editor/` once built.
+Node.js 22+ and npm are required to build the dashboard and plugin interfaces in the initial release. They are not needed to serve the generated static site.
 
 ## Install
 
-Install Pillar from its Git repository. Composer installs the published Liqx dependency from Packagist:
+Once `phpmystic/pillar` is indexed on Packagist, install it with Composer:
 
 ```bash
-git clone https://github.com/mehdilight/pillar.git pillar
-cd pillar && composer install
-(cd apps/editor && npm ci && npm run build)   # the dashboard
+composer create-project phpmystic/pillar pillar "^0.1"
+cd pillar
+npm --prefix apps/editor ci
+npm --prefix apps/editor run build
 ```
+
+This installs the full Pillar package; the starter lives in `examples/starter/`. There is no `pillar init` command or dedicated starter package yet.
+
+For a source checkout, use `git clone https://github.com/mehdilight/pillar.git pillar`, enter that directory, run `composer install`, then run the same npm commands.
 
 Every command in these docs is `bin/pillar` from that checkout; `pillar` below is short for it.
 
@@ -30,8 +35,10 @@ The repository includes `examples/starter`: a landing page, a blog and a small d
 
 ```bash
 cp -r examples/starter ~/my-site
-cd ~/my-site && git init && git add -A && git commit -m "Start from the Pillar starter"
-pillar dev --site ~/my-site
+git -C ~/my-site init
+git -C ~/my-site add -A
+git -C ~/my-site commit -m "Start from the Pillar starter"
+./bin/pillar dev --site ~/my-site
 ```
 
 `pillar dev` prints one address — `http://127.0.0.1:7788` by default. Open it:
@@ -49,7 +56,7 @@ pillar dev --site ~/my-site
 ## Build
 
 ```bash
-pillar build --site ~/my-site
+./bin/pillar build --site ~/my-site
 ```
 
 The site is written to `dist/`: an `index.html` per page, content-hashed assets, resized images, a sitemap and `robots.txt` (from the SEO plugin). Serve it with anything:

@@ -1,3 +1,4 @@
+import { t, language } from '../../i18n';
 import { For, Show, createEffect, createSignal, on, onCleanup, onMount, type JSX } from 'solid-js';
 import { Editor } from '@tiptap/core';
 import { Selection } from '@tiptap/pm/state';
@@ -78,7 +79,7 @@ export default function RichEditor(props: {
         StarterKit.configure({ link: { openOnClick: false, autolink: true } }),
         TableKit.configure({ table: { resizable: false } }),
         Image,
-        Placeholder.configure({ placeholder: props.placeholder ?? 'Start writing…' }),
+        Placeholder.configure({ placeholder: () => props.placeholder ?? t("Start writing…") }),
         Markdown,
       ],
       editorProps: { attributes: { class: 'tiptap-content', spellcheck: 'true' } },
@@ -94,6 +95,12 @@ export default function RichEditor(props: {
     load(instance, props.value);
     setEditor(instance);
     onCleanup(() => instance.destroy());
+  });
+
+  createEffect(() => {
+    language();
+    const instance = editor();
+    if (instance) instance.view.dispatch(instance.state.tr.setMeta('addToHistory', false));
   });
 
   /**
@@ -215,25 +222,25 @@ export default function RichEditor(props: {
     | { label: string; icon: () => JSX.Element; run: () => void; active?: () => boolean; enabled?: () => boolean }
     | 'divider'
   > = [
-    { label: 'Heading', icon: () => <Heading2 size={15} />, run: () => run((c) => c.toggleHeading({ level: 2 })), active: () => active('heading', { level: 2 }) },
-    { label: 'Subheading', icon: () => <Heading3 size={15} />, run: () => run((c) => c.toggleHeading({ level: 3 })), active: () => active('heading', { level: 3 }) },
+    { get label() { return t("Heading"); }, icon: () => <Heading2 size={15} />, run: () => run((c) => c.toggleHeading({ level: 2 })), active: () => active('heading', { level: 2 }) },
+    { get label() { return t("Subheading"); }, icon: () => <Heading3 size={15} />, run: () => run((c) => c.toggleHeading({ level: 3 })), active: () => active('heading', { level: 3 }) },
     'divider',
-    { label: 'Bold (⌘B)', icon: () => <Bold size={15} />, run: () => run((c) => c.toggleBold()), active: () => active('bold') },
-    { label: 'Italic (⌘I)', icon: () => <Italic size={15} />, run: () => run((c) => c.toggleItalic()), active: () => active('italic') },
-    { label: 'Strikethrough', icon: () => <Strikethrough size={15} />, run: () => run((c) => c.toggleStrike()), active: () => active('strike') },
-    { label: 'Inline code', icon: () => <Code size={15} />, run: () => run((c) => c.toggleCode()), active: () => active('code') },
-    { label: 'Link', icon: () => <Link2 size={15} />, run: openLink, active: () => active('link') },
+    { get label() { return t("Bold (⌘B)"); }, icon: () => <Bold size={15} />, run: () => run((c) => c.toggleBold()), active: () => active('bold') },
+    { get label() { return t("Italic (⌘I)"); }, icon: () => <Italic size={15} />, run: () => run((c) => c.toggleItalic()), active: () => active('italic') },
+    { get label() { return t("Strikethrough"); }, icon: () => <Strikethrough size={15} />, run: () => run((c) => c.toggleStrike()), active: () => active('strike') },
+    { get label() { return t("Inline code"); }, icon: () => <Code size={15} />, run: () => run((c) => c.toggleCode()), active: () => active('code') },
+    { get label() { return t("Link"); }, icon: () => <Link2 size={15} />, run: openLink, active: () => active('link') },
     'divider',
-    { label: 'Bulleted list', icon: () => <List size={15} />, run: () => run((c) => c.toggleBulletList()), active: () => active('bulletList') },
-    { label: 'Numbered list', icon: () => <ListOrdered size={15} />, run: () => run((c) => c.toggleOrderedList()), active: () => active('orderedList') },
-    { label: 'Quote', icon: () => <Quote size={15} />, run: () => run((c) => c.toggleBlockquote()), active: () => active('blockquote') },
-    { label: 'Code block', icon: () => <SquareCode size={15} />, run: () => run((c) => c.toggleCodeBlock()), active: () => active('codeBlock') },
-    { label: 'Divider', icon: () => <Minus size={15} />, run: () => run((c) => c.setHorizontalRule()) },
-    { label: 'Table', icon: () => <Table size={15} />, run: () => run((c) => c.insertTable({ rows: 3, cols: 2, withHeaderRow: true })) },
-    { label: 'Image', icon: () => <ImagePlus size={15} />, run: () => setChoosingImage(true) },
+    { get label() { return t("Bulleted list"); }, icon: () => <List size={15} />, run: () => run((c) => c.toggleBulletList()), active: () => active('bulletList') },
+    { get label() { return t("Numbered list"); }, icon: () => <ListOrdered size={15} />, run: () => run((c) => c.toggleOrderedList()), active: () => active('orderedList') },
+    { get label() { return t("Quote"); }, icon: () => <Quote size={15} />, run: () => run((c) => c.toggleBlockquote()), active: () => active('blockquote') },
+    { get label() { return t("Code block"); }, icon: () => <SquareCode size={15} />, run: () => run((c) => c.toggleCodeBlock()), active: () => active('codeBlock') },
+    { get label() { return t("Divider"); }, icon: () => <Minus size={15} />, run: () => run((c) => c.setHorizontalRule()) },
+    { get label() { return t("Table"); }, icon: () => <Table size={15} />, run: () => run((c) => c.insertTable({ rows: 3, cols: 2, withHeaderRow: true })) },
+    { get label() { return t("Image"); }, icon: () => <ImagePlus size={15} />, run: () => setChoosingImage(true) },
     'divider',
-    { label: 'Undo (⌘Z)', icon: () => <Undo2 size={15} />, run: () => run((c) => c.undo()), enabled: () => can((i) => i.can().undo()) },
-    { label: 'Redo (⌘⇧Z)', icon: () => <Redo2 size={15} />, run: () => run((c) => c.redo()), enabled: () => can((i) => i.can().redo()) },
+    { get label() { return t("Undo (⌘Z)"); }, icon: () => <Undo2 size={15} />, run: () => run((c) => c.undo()), enabled: () => can((i) => i.can().undo()) },
+    { get label() { return t("Redo (⌘⇧Z)"); }, icon: () => <Redo2 size={15} />, run: () => run((c) => c.redo()), enabled: () => can((i) => i.can().redo()) },
   ];
 
   return (
@@ -277,11 +284,11 @@ export default function RichEditor(props: {
               'bg-[#e9eef7] text-[#005bd3]': source(),
               'text-gray-500 hover:text-gray-900 hover:bg-[#f1f2f4]': !source(),
             }}
-            title={source() ? 'Back to the visual editor' : `Edit the ${format() === 'markdown' ? 'markdown' : 'HTML'} directly`}
+            title={source() ? t("Back to the visual editor") : t("Edit the {{v0}} directly", { v0: format() === 'markdown' ? 'markdown' : 'HTML' })}
             onClick={toggleSource}
           >
             <FileCode size={13} />
-            {format() === 'markdown' ? 'Markdown' : 'HTML'}
+            {format() === 'markdown' ? t("Markdown") : 'HTML'}
           </button>
         </div>
 
@@ -297,17 +304,16 @@ export default function RichEditor(props: {
               autofocus
               type="url"
               class="h-7 flex-1 rounded-md border border-[#c9cccf] bg-white px-2 text-xs outline-none focus:border-[#005bd3]"
-              placeholder="https://… or /a/page/"
+              placeholder={t("https://… or /a/page/")}
               value={linkUrl()}
               onInput={(event) => setLinkUrl(event.currentTarget.value)}
               onKeyDown={(event) => event.key === 'Escape' && setLinking(false)}
             />
             <button type="submit" class="sam-btn primary">
-              {linkUrl().trim() === '' ? 'Remove link' : 'Apply'}
+              {linkUrl().trim() === '' ? t("Remove link") : t("Apply")}
             </button>
             <button type="button" class="sam-btn" onClick={() => setLinking(false)}>
-              Cancel
-            </button>
+              {t("Cancel")} </button>
           </form>
         </Show>
 
@@ -315,22 +321,21 @@ export default function RichEditor(props: {
           {(image) => (
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1 px-2 py-1.5 border-b border-[#e1e3e5] bg-[#fbfbfc]">
               <label for="rich-editor-alt" class="text-xs font-medium text-gray-600">
-                Alt text
-              </label>
+                {t("Alt text")} </label>
               <input
                 id="rich-editor-alt"
                 class="h-7 min-w-[180px] flex-1 rounded-md border border-[#c9cccf] bg-white px-2 text-xs outline-none focus:border-[#005bd3]"
-                placeholder={fallbackAlt() ? `From the media library: ${fallbackAlt()}` : 'Describe what the image shows'}
+                placeholder={fallbackAlt() ? t("From the media library: {{v0}}", { v0: fallbackAlt() }) : t("Describe what the image shows")}
                 value={image().alt}
                 onInput={(event) => setImageAlt(event.currentTarget.value)}
                 onKeyDown={(event) => event.key === 'Enter' && (event.preventDefault(), editor()?.commands.focus())}
               />
               <span class="w-full text-[11px] text-gray-500">
                 {image().alt
-                  ? 'Used for this image here only.'
+                  ? t("Used for this image here only.")
                   : fallbackAlt()
-                    ? 'Empty: the media library’s alt text is used, and follows it when it changes.'
-                    : 'This image has no alt text in the media library either. Describe it here, or once in Media for everywhere it is used.'}
+                    ? t("Empty: the media library’s alt text is used, and follows it when it changes.")
+                    : t("This image has no alt text in the media library either. Describe it here, or once in Media for everywhere it is used.")}
               </span>
             </div>
           )}
@@ -355,7 +360,7 @@ export default function RichEditor(props: {
         />
       </Show>
 
-      <Modal open={choosingImage()} onOpenChange={setChoosingImage} title="Insert an image" wide flushBody>
+      <Modal open={choosingImage()} onOpenChange={setChoosingImage} title={t("Insert an image")} wide flushBody>
         <MediaLibrary
           compact
           onChoose={(url) => {

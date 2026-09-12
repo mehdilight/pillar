@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createEffect, createMemo, createResource, createSignal, on, onCleanup, onMount } from 'solid-js';
 import { Dynamic } from 'solid-js/web';
 import { A, useBeforeLeave, useNavigate, useParams, type BeforeLeaveEventArgs } from '@solidjs/router';
@@ -120,7 +121,7 @@ export default function Entry() {
     setErrors(Object.fromEntries(found.map((problem) => [problem.path, problem.message])));
 
     if (found.length && !draft()) {
-      showToast(`Fix ${found.length === 1 ? 'one field' : `${found.length} fields`} before publishing — or save it as a draft.`, 'error');
+      showToast(t("validation.fix", { count: found.length }), 'error');
       document.querySelector(`[data-field="${CSS.escape(found[0].path)}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
       return;
@@ -143,7 +144,7 @@ export default function Entry() {
 
       setSaved(snapshot());
       showToast(
-        found.length ? `Saved as a draft — ${found.length === 1 ? 'one field needs' : `${found.length} fields need`} attention before publishing` : isNew() ? 'Entry created' : 'Saved',
+        found.length ? t("validation.draft", { count: found.length }) : isNew() ? t("Entry created") : t("Saved"),
         'success'
       );
       void refreshStatus();
@@ -151,7 +152,7 @@ export default function Entry() {
 
       if (isNew()) navigate(`/content/${params.collection}/${item.slug}`, { replace: true });
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not save', 'error');
+      showToast(error instanceof Error ? error.message : t("Could not save"), 'error');
     } finally {
       setSaving(false);
     }
@@ -161,12 +162,12 @@ export default function Entry() {
     try {
       await api.deleteItem(params.collection, slug());
       setSaved(snapshot());
-      showToast('Entry deleted', 'success');
+      showToast(t("Entry deleted"), 'success');
       void refreshStatus();
       void loadCollections();
       navigate(`/content/${params.collection}`);
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not delete', 'error');
+      showToast(error instanceof Error ? error.message : t("Could not delete"), 'error');
     }
   };
 
@@ -198,16 +199,16 @@ export default function Entry() {
     });
   });
 
-  const saveLabel = () => (saving() ? 'Saving…' : isNew() ? 'Create entry' : 'Save');
+  const saveLabel = () => (saving() ? t("Saving…") : isNew() ? t("Create entry") : t("Save"));
 
   return (
     <Page
-      title={isNew() ? `New ${collection()?.label ?? params.collection} entry` : title() || params.slug}
+      title={isNew() ? t("New {{v0}} entry", { v0: collection()?.label ?? params.collection }) : title() || params.slug}
       backTo={`/content/${params.collection}`}
       actions={
         <>
           <Show when={dirty()}>
-            <span class="text-xs text-text-muted">Unsaved changes</span>
+            <span class="text-xs text-text-muted">{t("Unsaved changes")}</span>
           </Show>
           <Button variant="primary" size="sm" onClick={save} disabled={saving() || !title().trim() || !validSlug()}>
             {saveLabel()}
@@ -215,12 +216,12 @@ export default function Entry() {
         </>
       }
     >
-      <Show when={isNew() || existing() !== undefined} fallback={<Loading label="Loading the entry…" />}>
+      <Show when={isNew() || existing() !== undefined} fallback={<Loading label={t("Loading the entry…")} />}>
         <Show
           when={isNew() || existing()}
           fallback={
             <Notice type="error">
-              There is no {params.slug} in {params.collection}. <A href={`/content/${params.collection}`} class="underline">Back to the list</A>
+              {t("There is no")} {params.slug} {t("in")} {params.collection}. <A href={`/content/${params.collection}`} class="underline">{t("Back to the list")}</A>
             </Notice>
           }
         >
@@ -244,20 +245,19 @@ export default function Entry() {
                 <div class="min-w-0 space-y-4">
                   <div>
                     <label for="entry-title" class="sr-only">
-                      Title
-                    </label>
+                      {t("Title")} </label>
                     <Input
                       id="entry-title"
-                      placeholder="Title"
+                      placeholder={t("Title")}
                       class="h-[42px] max-w-none text-base font-medium"
                       value={title()}
                       onInput={(event) => setTitle(event.currentTarget.value)}
                     />
                   </div>
 
-                  <Postbox title="Content" flush>
+                  <Postbox title={t("Content")} flush>
                     <div class="p-3">
-                      <RichEditor value={body()} onValue={setBody} minHeight={420} placeholder="Start writing…" />
+                      <RichEditor value={body()} onValue={setBody} minHeight={420} placeholder={t("Start writing…")} />
                     </div>
                   </Postbox>
 
@@ -268,7 +268,7 @@ export default function Entry() {
                     than in it: publishing, the URL, plugin panels.
                   */}
                   <Show when={fields().length}>
-                    <Postbox title="Details">
+                    <Postbox title={t("Details")}>
                       <FieldErrors.Provider value={errors}>
                         <FormFields grid fields={fields()} values={frontmatter()} onChange={(id, value) => setFrontmatter({ ...frontmatter(), [id]: value })} />
                       </FieldErrors.Provider>
@@ -277,7 +277,7 @@ export default function Entry() {
                 </div>
 
                 <div>
-                  <Postbox title="Publish">
+                  <Postbox title={t("Publish")}>
                     <label class="flex items-center gap-2 text-xs text-text-muted cursor-pointer">
                       <input
                         type="checkbox"
@@ -285,11 +285,9 @@ export default function Entry() {
                         checked={!draft()}
                         onChange={(event) => setFrontmatter({ ...frontmatter(), draft: !event.currentTarget.checked })}
                       />
-                      Published — included when the site is built
-                    </label>
+                      {t("Published — included when the site is built")} </label>
                     <p class="mt-2 text-[11.5px] text-text-faint">
-                      Saving writes the file. Changes go live when you publish them.
-                    </p>
+                      {t("Saving writes the file. Changes go live when you publish them.")} </p>
                     <div class="mt-4 flex flex-wrap gap-2">
                       <Button variant="primary" type="submit" disabled={saving() || !title().trim() || !validSlug()}>
                         {saveLabel()}
@@ -297,19 +295,17 @@ export default function Entry() {
                       <Show when={!isNew()}>
                         <a href={`/preview${entryUrl(params.collection, slug())}`} target="_blank" rel="noopener" class={buttonClass()}>
                           <ExternalLink size={13} />
-                          Preview
-                        </a>
+                          {t("Preview")} </a>
                       </Show>
                     </div>
                     <Show when={!isNew()}>
                       <button type="button" class="mt-3 text-xs text-danger hover:underline" onClick={() => setDeleting(true)}>
-                        Delete this entry
-                      </button>
+                        {t("Delete this entry")} </button>
                     </Show>
                   </Postbox>
 
-                  <Postbox title="URL">
-                    <Label for="entry-slug">URL name</Label>
+                  <Postbox title={t("URL")}>
+                    <Label for="entry-slug">{t("URL name")}</Label>
                     <Input
                       id="entry-slug"
                       value={slug()}
@@ -318,11 +314,11 @@ export default function Entry() {
                       class="max-w-none font-mono text-xs"
                     />
                     <Show when={slug() && !validSlug()}>
-                      <p class="mt-1 text-xs text-danger">Letters, numbers, hyphens or underscores.</p>
+                      <p class="mt-1 text-xs text-danger">{t("Letters, numbers, hyphens or underscores.")}</p>
                     </Show>
                     <p class="mt-1.5 text-xs text-text-faint break-all">{entryUrl(params.collection, slug() || 'your-entry')}</p>
                     <Show when={!isNew()}>
-                      <p class="mt-1 text-[11.5px] text-text-faint">The URL is the file's name, so it is fixed once created.</p>
+                      <p class="mt-1 text-[11.5px] text-text-faint">{t("The URL is the file's name, so it is fixed once created.")}</p>
                     </Show>
                   </Postbox>
 
@@ -353,9 +349,9 @@ export default function Entry() {
         open={deleting()}
         onOpenChange={setDeleting}
         danger
-        title="Delete entry"
-        message={`This removes content/${params.collection}/${slug()}.md. Until you publish, Discard on the Publish page brings it back.`}
-        confirmLabel="Delete"
+        title={t("Delete entry")}
+        message={t("This removes {{path}}. Until you publish, Discard on the Publish page brings it back.", { path: `content/${params.collection}/${slug()}.md` })}
+        confirmLabel={t("Delete")}
         onConfirm={() => void remove()}
       />
 
@@ -363,9 +359,9 @@ export default function Entry() {
         open={leaving() !== null}
         onOpenChange={(open) => !open && setLeaving(null)}
         danger
-        title="Leave without saving?"
-        message="Your changes to this entry have not been saved."
-        confirmLabel="Leave"
+        title={t("Leave without saving?")}
+        message={t("Your changes to this entry have not been saved.")}
+        confirmLabel={t("Leave")}
         onConfirm={() => {
           const event = leaving();
 

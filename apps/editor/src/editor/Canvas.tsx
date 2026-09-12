@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { Show } from 'solid-js';
 import { Copy, EyeOff, Trash2 } from '../components/ui/Icons';
 import * as editor from '../store/editor';
@@ -31,11 +32,9 @@ export default function Canvas() {
           when={!editor.offline()}
           fallback={
             <div class="w-full h-full flex flex-col items-center justify-center gap-2 text-center px-8">
-              <p class="text-sm font-medium text-[#202223]">No preview server</p>
+              <p class="text-sm font-medium text-[#202223]">{t("No preview server")}</p>
               <p class="text-xs text-gray-500 max-w-xs leading-relaxed">
-                Run <code class="sam-mono">pillar dev</code> to render this page. The editor is
-                running on demo data, so edits here are in memory only.
-              </p>
+                {t("Run")} <code class="sam-mono">pillar dev</code> {t("to render this page. The editor is running on demo data, so edits here are in memory only.")} </p>
             </div>
           }
         >
@@ -43,7 +42,7 @@ export default function Canvas() {
             ref={(frame) => editor.registerPreview(frame)}
             src={editor.previewUrl()}
             class="w-full h-full border-0 overflow-hidden"
-            title="Preview"
+            title={t("Preview")}
           />
         </Show>
       </div>
@@ -61,7 +60,7 @@ export default function Canvas() {
             type="button"
             onClick={() => editor.duplicateSection(section()!.section_id)}
             class="p-1 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-            title="Duplicate section"
+            title={t("Duplicate section")}
           >
             <Copy size={13} />
           </button>
@@ -70,7 +69,7 @@ export default function Canvas() {
             type="button"
             onClick={() => editor.toggleSection(section()!.section_id)}
             class="p-1 rounded text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-            title={section()?.enabled ? 'Hide section' : 'Show section'}
+            title={section()?.enabled ? t("Hide section") : t("Show section")}
           >
             <EyeOff size={13} />
           </button>
@@ -80,7 +79,7 @@ export default function Canvas() {
               type="button"
               onClick={() => editor.removeSection(section()!.section_id)}
               class="p-1 rounded text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
-              title="Remove section"
+              title={t("Remove section")}
             >
               <Trash2 size={13} />
             </button>

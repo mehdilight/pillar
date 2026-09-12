@@ -37,20 +37,20 @@ PHP's `gd` extension enables image resizing; `exif` enables photo orientation co
 
 ## Quick start
 
-### 1. Clone and install
+### 1. Install with Composer
 
-Clone Pillar and install its dependencies:
+Composer downloads Pillar and its dependencies from packages listed on Packagist. Once `phpmystic/pillar` is indexed, install the initial release:
 
 ```bash
-git clone https://github.com/mehdilight/pillar.git pillar
-cd pillar
-
-composer install
+composer create-project phpmystic/pillar my-site "^0.1"
+cd my-site
 npm --prefix apps/editor ci
 npm --prefix apps/editor run build
 ```
 
-Composer installs the published Liqx package from Packagist. The lockfile pins the dependency versions. The dashboard build also compiles the bundled plugin interfaces.
+This creates a copy of the full Pillar package. The example site lives in `examples/starter/`; the dashboard and bundled plugin interfaces currently require a local Node.js build. There is no `pillar init` command yet.
+
+See [Installation](docs/installation.md) for Git installation and troubleshooting, or [Creating your own site](docs/creating-a-site.md) to keep your content in a separate project.
 
 ### 2. Open the starter site
 
@@ -123,6 +123,13 @@ Run commands from this checkout using `./bin/pillar`. Every command accepts `--s
 
 ## Documentation
 
+Start with the [documentation index](docs/README.md), or choose a setup guide:
+
+- [Installation](docs/installation.md): Composer, Git, requirements, and troubleshooting.
+- [Creating your own site](docs/creating-a-site.md): copy the starter, configure Git, and build your site.
+- [Development](docs/development.md): work on Pillar and run its checks.
+
+
 The documentation is itself a Pillar site in [`website/`](website/), using the starter as an addon. Run it locally:
 
 ```bash
@@ -150,55 +157,21 @@ Translations use i18next. See the [translation guide](apps/editor/src/i18n/READM
 
 Bug reports, documentation improvements, and focused pull requests are welcome. For bugs, include reproduction steps, expected and actual behavior, relevant error output, and your PHP and Node.js versions. Discuss substantial changes in an issue before starting implementation.
 
-### Repository layout
+See the [development guide](docs/development.md) for repository layout, frontend development, tests, and generated field types.
 
-| Path | Contents |
-| --- | --- |
-| `src/` | PHP renderer, schemas, content, builds, dev server, CLI, Git integration, and plugin system |
-| `apps/editor/` | SolidJS dashboard and visual editor |
-| `plugins/seo/` | Bundled SEO plugin and its frontend |
-| `examples/starter/` | Starter site with landing page, blog, and docs |
-| `website/` | Documentation site |
-| `schema/` | Shared field-type definitions |
-| `tests/` | PHP tests and fixture sites |
-| `tools/` | Development utilities and code generation |
+## Template language reference
 
-### Local development
+Start with [Liqx templates](website/content/docs/liqx-templates.md) or the complete [pagination recipe](website/content/docs/pagination.md).
 
-Complete the installation above, then start the PHP server and the frontend development server in separate terminals:
-
-```bash
-# Terminal 1, from the repository root
-./bin/pillar dev --site examples/starter
-```
-
-```bash
-# Terminal 2, from the repository root
-npm --prefix apps/editor run dev
-```
-
-Open **http://localhost:7777**. Vite proxies API and preview requests to the PHP server on port `7788`. Without a backend, the frontend uses in-memory demo data.
-
-### Checks
-
-Run the checks relevant to your changes before submitting a pull request:
-
-```bash
-# PHP tests and static analysis
-composer test
-composer analyse
-
-# Shared PHP/TypeScript field-type consistency
-php tools/generate-field-types.php --check
-
-# Dashboard and plugin checks
-npm --prefix apps/editor test
-npm --prefix apps/editor run test:seo
-npm --prefix apps/editor run typecheck
-npm --prefix apps/editor run build
-```
-
-When changing field types, edit `schema/field-types.json` and run `php tools/generate-field-types.php` to regenerate the PHP and TypeScript definitions. Keep generated definitions and relevant documentation in the same pull request.
+- [Document structure](website/content/docs/liqx-structure.md)
+- [Frontmatter](website/content/docs/liqx-frontmatter.md)
+- [Expressions](website/content/docs/liqx-expressions.md)
+- [Elements and attributes](website/content/docs/liqx-elements.md)
+- [Filter reference](website/content/docs/liqx-filters.md)
+- [Control flow](website/content/docs/liqx-control-flow.md)
+- [Components and slots](website/content/docs/liqx-components.md)
+- [Schema, styles, and scripts](website/content/docs/liqx-schema-style-script.md)
+- [Methods, globals, and scope](website/content/docs/liqx-methods-globals.md)
 
 ## License
 

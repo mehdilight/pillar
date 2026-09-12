@@ -1,0 +1,41 @@
+<div class="wrap home-hero">
+  <div class="hero-copy">
+    <p class="eyebrow"><span class="status-dot"></span>{section.settings.label}</p>
+    <h1>{section.settings.heading}</h1>
+    <p class="hero-description">{section.settings.subheading}</p>
+    <div class="hero-actions"><a class="button" href={section.settings.cta_url}>{section.settings.cta_label} <span aria-hidden="true">→</span></a><a class="text-link" href="/docs/how-it-works/">See how it works <span aria-hidden="true">↗</span></a></div>
+    <div class="install-command"><span aria-hidden="true">$</span><code>composer create-project phpmystic/pillar my-site</code><button type="button" data-copy-install aria-label="Copy install command">Copy</button></div>
+    <p class="hero-requirements">PHP 8.2+ <span>·</span> Composer <span>·</span> Node.js for the editor build</p>
+  </div>
+  <div class="file-demo" aria-label="Pillar turns your content and templates into a static website">
+    <div class="demo-title"><span class="file-dot"></span> A website, in your hands <span class="demo-extension">.liqx</span></div>
+    <div class="demo-workspace">
+      <div class="demo-files"><p>MY SITE</p><span>⌄ content</span><span class="indent">hello-world.md</span><span>⌄ sections</span><span class="indent selected">hero.liqx</span><span>⌄ templates</span><span class="indent">index.json</span><span>site.json</span></div>
+      <div class="demo-source"><div class="file-tab">sections / hero.liqx</div><pre aria-label="Example Liqx template"><code><span class="code-comment">&lt;!-- Make it yours. --&gt;</span>
+<span class="code-tag">&lt;section&gt;</span>
+  <span class="code-tag">&lt;h1&gt;</span>&#123;section.settings.title&#125;<span class="code-tag">&lt;/h1&gt;</span>
+  <span class="code-tag">&lt;p&gt;</span>A place for your ideas.<span class="code-tag">&lt;/p&gt;</span>
+<span class="code-tag">&lt;/section&gt;</span>
+
+<span class="code-tag">&lt;schema&gt;</span>
+  &#123; <span class="code-string">"name"</span>: <span class="code-string">"Hero"</span>,
+    <span class="code-string">"settings"</span>: [ … ] &#125;
+<span class="code-tag">&lt;/schema&gt;</span></code></pre></div>
+    </div>
+    <div class="demo-result"><div><span class="result-label">THE RESULT</span><strong>Hello, world.</strong><p>A place for your ideas.</p></div><span class="result-file">index.html <span aria-hidden="true">↗</span></span></div>
+    <div class="demo-bottom"><span><span class="status-dot"></span> Plain files. Real possibilities.</span><span>HTML OUT</span></div>
+  </div>
+</div>
+<div class="principles-strip"><div class="wrap"><span>Markdown content</span><span>Liqx templates</span><span>Visual editing</span><span>Git history</span><span>Static output</span></div></div>
+<schema>
+{
+  "name": "Pillar introduction",
+  "settings": [
+    {"id":"label","type":"text","label":"Eyebrow"},
+    {"id":"heading","type":"textarea","label":"Heading"},
+    {"id":"subheading","type":"textarea","label":"Description"},
+    {"id":"cta_label","type":"text","label":"Button label"},
+    {"id":"cta_url","type":"url","label":"Button URL"}
+  ]
+}
+</schema>

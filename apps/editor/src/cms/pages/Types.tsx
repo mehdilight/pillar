@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createEffect, createResource, createSignal, on } from 'solid-js';
 import { A } from '@solidjs/router';
 import Page from '../ui/Page';
@@ -25,18 +26,18 @@ export default function Types() {
   const [editing, setEditing] = createSignal<ContentCollection | 'new' | null>(null);
 
   return (
-    <Page title="Content types" actions={<Button variant="primary" size="sm" onClick={() => setEditing('new')}>New content type</Button>}>
+    <Page title={t("Content types")} actions={<Button variant="primary" size="sm" onClick={() => setEditing('new')}>{t("New content type")}</Button>}>
       <Show
         when={collections()?.length}
-        fallback={<Empty title="No content types yet." description="A content type is a folder of markdown with a form for its frontmatter." />}
+        fallback={<Empty title={t("No content types yet.")} description={t("A content type is a folder of markdown with a form for its frontmatter.")} />}
       >
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Type</TableHead>
-              <TableHead>Fields</TableHead>
-              <TableHead>Renders through</TableHead>
-              <TableHead style={{ width: '90px' }}>Entries</TableHead>
+              <TableHead>{t("Type")}</TableHead>
+              <TableHead>{t("Fields")}</TableHead>
+              <TableHead>{t("Renders through")}</TableHead>
+              <TableHead style={{ width: '90px' }}>{t("Entries")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -56,14 +57,13 @@ export default function Types() {
                           <span class="font-mono text-text-faint">content/{collection.name}/</span>
                           <span class="mx-1 text-text-faint">|</span>
                           <button type="button" class="text-brand hover:underline" onClick={() => setEditing(collection)}>
-                            Edit fields
-                          </button>
+                            {t("Edit fields")} </button>
                         </div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Show when={collection.fields.length} fallback={<span class="text-xs text-text-faint">No schema — no form</span>}>
+                    <Show when={collection.fields.length} fallback={<span class="text-xs text-text-faint">{t("No schema — no form")}</span>}>
                       <div class="flex flex-wrap gap-1">
                         <For each={collection.fields}>
                           {(field) => (
@@ -142,18 +142,18 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
       if (isNew()) {
         const created = await api.createCollection({ name: name().trim(), label: label().trim(), fields: definitions, icon: icon() || undefined });
 
-        showToast(`Created ${created.name}`, 'success');
+        showToast(t("Created {{v0}}", { v0: created.name }), 'success');
       } else {
         const type = existing()!;
 
         await api.updateCollection(type.name, { label: label().trim() || type.label, fields: definitions, icon: icon() || undefined });
-        showToast(`Updated ${type.label}`, 'success');
+        showToast(t("Updated {{v0}}", { v0: type.label }), 'success');
       }
 
       await Promise.all([loadCollections(), refreshStatus()]);
       props.onClose();
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Could not save the content type', 'error');
+      showToast(error instanceof Error ? error.message : t("Could not save the content type"), 'error');
     } finally {
       setPending(false);
     }
@@ -165,18 +165,17 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
         open={props.subject !== null}
         onClose={close}
         width={720}
-        title={isNew() ? 'New content type' : existing()?.label ?? ''}
-        subtitle={isNew() ? 'A folder of markdown, and the form for its entries' : <span class="font-mono">schemas/{existing()?.name}.json</span>}
+        title={isNew() ? t("New content type") : existing()?.label ?? ''}
+        subtitle={isNew() ? t("A folder of markdown, and the form for its entries") : <span class="font-mono">schemas/{existing()?.name}.json</span>}
         footer={
           <>
             <Show when={dirty()}>
-              <span class="mr-auto text-xs text-text-muted">Unsaved changes</span>
+              <span class="mr-auto text-xs text-text-muted">{t("Unsaved changes")}</span>
             </Show>
             <Button onClick={close} disabled={pending()}>
-              Cancel
-            </Button>
+              {t("Cancel")} </Button>
             <Button variant="primary" onClick={save} disabled={pending() || (isNew() && name().trim().length < 2)}>
-              {pending() ? 'Saving…' : isNew() ? 'Create content type' : 'Save'}
+              {pending() ? t("Saving…") : isNew() ? t("Create content type") : t("Save")}
             </Button>
           </>
         }
@@ -185,17 +184,17 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
           <section class="grid gap-4 sm:grid-cols-[1fr_1fr_200px]">
             <Show when={isNew()}>
               <div>
-                <Label for="type-name">Name</Label>
-                <Input id="type-name" autofocus value={name()} placeholder="guides" onInput={(event) => setName(event.currentTarget.value)} class="max-w-none font-mono text-xs" />
-                <p class="mt-1 text-[11.5px] text-text-faint">Plural and lowercase — the folder and the URL.</p>
+                <Label for="type-name">{t("Name")}</Label>
+                <Input id="type-name" autofocus value={name()} placeholder={t("guides")} onInput={(event) => setName(event.currentTarget.value)} class="max-w-none font-mono text-xs" />
+                <p class="mt-1 text-[11.5px] text-text-faint">{t("Plural and lowercase — the folder and the URL.")}</p>
               </div>
             </Show>
             <div classList={{ 'sm:col-span-2': !isNew() }}>
-              <Label for="type-label">Label</Label>
-              <Input id="type-label" value={label()} placeholder="Guides" onInput={(event) => setLabel(event.currentTarget.value)} class="max-w-none" />
+              <Label for="type-label">{t("Label")}</Label>
+              <Input id="type-label" value={label()} placeholder={t("Guides")} onInput={(event) => setLabel(event.currentTarget.value)} class="max-w-none" />
             </div>
             <div>
-              <Label for="type-icon">Icon</Label>
+              <Label for="type-icon">{t("Icon")}</Label>
               <IconChooser id="type-icon" cms value={icon()} onValue={setIcon} />
             </div>
           </section>
@@ -203,17 +202,17 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
           <section>
             <div class="mb-3 flex items-end justify-between gap-3">
               <div>
-                <h3 class="text-[11.5px] font-semibold uppercase tracking-[.05em] text-text-muted">Fields</h3>
-                <p class="mt-0.5 text-xs text-text-faint">The form every entry gets. Drag to reorder; click one to configure it.</p>
+                <h3 class="text-[11.5px] font-semibold uppercase tracking-[.05em] text-text-muted">{t("Fields")}</h3>
+                <p class="mt-0.5 text-xs text-text-faint">{t("The form every entry gets. Drag to reorder; click one to configure it.")}</p>
               </div>
               <span class="text-xs tabular-nums text-text-faint">{fields().length}</span>
             </div>
 
-            <FieldList fields={fields()} onChange={setFields} empty="No fields yet — entries will only have a body." />
+            <FieldList fields={fields()} onChange={setFields} empty={t("No fields yet — entries will only have a body.")} />
 
             <Show when={suggestions().length}>
               <div class="mt-4 flex flex-wrap items-center gap-1.5">
-                <span class="mr-1 text-xs text-text-faint">Quick add</span>
+                <span class="mr-1 text-xs text-text-faint">{t("Quick add")}</span>
                 <For each={suggestions()}>
                   {(preset) => (
                     <button
@@ -222,7 +221,7 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
                       onClick={() => setFields([...fields(), presetField(preset)])}
                     >
                       <Plus size={11} />
-                      {preset.label}
+                      {t(preset.label)}
                     </button>
                   )}
                 </For>
@@ -232,8 +231,7 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
 
           <Show when={isNew()}>
             <p class="text-xs text-text-faint">
-              Creates <code class="font-mono">content/{name().trim() || 'name'}/</code>, <code class="font-mono">schemas/{name().trim() || 'name'}.json</code> and a template for its entries.
-            </p>
+              {t("Creates")} <code class="font-mono">content/{name().trim() || 'name'}/</code>, <code class="font-mono">schemas/{name().trim() || 'name'}.json</code> {t("and a template for its entries.")} </p>
           </Show>
         </div>
       </Drawer>
@@ -242,9 +240,9 @@ function TypeDrawer(props: { subject: ContentCollection | 'new' | null; onClose:
         open={discarding()}
         onOpenChange={setDiscarding}
         danger
-        title="Discard changes?"
-        message="Your changes to this content type have not been saved."
-        confirmLabel="Discard"
+        title={t("Discard changes?")}
+        message={t("Your changes to this content type have not been saved.")}
+        confirmLabel={t("Discard")}
         onConfirm={() => {
           setDiscarding(false);
           props.onClose();

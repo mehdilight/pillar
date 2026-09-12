@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Show, createSignal } from 'solid-js';
 import Field, { controlClass } from '../ui/Field';
 import Modal from '../ui/Modal';
@@ -27,7 +28,7 @@ export default function VideoPicker(props: { label?: string; info?: string; valu
   let linkBox!: HTMLDetailsElement;
 
   return (
-    <Field label={props.label} info={props.info ?? 'An MP4 or WebM from the media library, or a YouTube or Vimeo link.'}>
+    <Field label={props.label} info={props.info ?? t("An MP4 or WebM from the media library, or a YouTube or Vimeo link.")}>
       <Show when={props.value}>
         <Show
           when={embedOf(props.value!)}
@@ -40,19 +41,18 @@ export default function VideoPicker(props: { label?: string; info?: string; valu
       </Show>
       <div class="flex gap-2">
         <button type="button" class="sam-btn" onClick={() => setOpen(true)}>
-          {props.value ? 'Change video' : 'Choose video'}
+          {props.value ? t("Change video") : t("Choose video")}
         </button>
         <Show when={props.value}>
           <button type="button" class="sam-btn" onClick={() => props.onValue(null)}>
-            Remove
-          </button>
+            {t("Remove")} </button>
         </Show>
       </div>
       <details ref={linkBox} class="mt-1">
-        <summary class="cursor-pointer text-[11px] text-gray-500">Use a YouTube or Vimeo link</summary>
+        <summary class="cursor-pointer text-[11px] text-gray-500">{t("Use a YouTube or Vimeo link")}</summary>
         <input
           type="url"
-          aria-label="Video link"
+          aria-label={t("Video link")}
           class={`${controlClass} mt-2`}
           placeholder="https://www.youtube.com/watch?v=…"
           value={address()}
@@ -68,10 +68,9 @@ export default function VideoPicker(props: { label?: string; info?: string; valu
             linkBox.open = false;
           }}
         >
-          Use link
-        </button>
+          {t("Use link")} </button>
       </details>
-      <Modal open={open()} onOpenChange={setOpen} title="Choose a video" wide flushBody>
+      <Modal open={open()} onOpenChange={setOpen} title={t("Choose a video")} wide flushBody>
         <MediaLibrary
           compact
           kind="file"

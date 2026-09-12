@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { Show, createSignal } from 'solid-js';
 import Field from '../ui/Field';
 import Modal from '../ui/Modal';
@@ -36,15 +37,14 @@ export default function FilePicker(props: {
       </Show>
       <div class="flex gap-2">
         <button type="button" class="sam-btn" onClick={() => setOpen(true)}>
-          {props.value ? 'Change file' : 'Choose file'}
+          {props.value ? t("Change file") : t("Choose file")}
         </button>
         <Show when={props.value}>
           <button type="button" class="sam-btn" onClick={() => props.onValue(null)}>
-            Remove
-          </button>
+            {t("Remove")} </button>
         </Show>
       </div>
-      <Modal open={open()} onOpenChange={setOpen} title="Choose a file" wide flushBody>
+      <Modal open={open()} onOpenChange={setOpen} title={t("Choose a file")} wide flushBody>
         <MediaLibrary
           compact
           kind="file"

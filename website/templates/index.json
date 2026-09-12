@@ -3,10 +3,10 @@
     "hero": {
       "section_type": "hero",
       "settings": {
-        "heading": "Edit it visually. Keep it as files.",
-        "label": "",
-        "subheading": "Pillar is a static site generator with a CMS and a visual editor built in. Your site is markdown, JSON and templates in a git repository; the dashboard edits those files, and the build turns them into plain HTML.",
-        "cta_label": "Get started",
+        "heading": "Your content.\nYour code.\nYour corner of the web.",
+        "label": "LOCAL-FIRST. OPEN SOURCE.",
+        "subheading": "A static site generator with a visual editor built in. Write, design, and publish from a folder of files you own.",
+        "cta_label": "Start building",
         "cta_url": "/docs/quick-start/",
         "align": "center",
         "padding": 88
@@ -15,22 +15,77 @@
     },
     "features": {
       "section_type": "feature-grid",
-      "settings": { "label": "", "heading": "What you get", "columns": 3 },
+      "settings": {
+        "label": "BUILT FOR THE WAY YOU WORK",
+        "heading": "A simpler stack. A complete workflow.",
+        "columns": 3
+      },
       "blocks": [
-        { "id": "f_files", "type": "feature", "settings": { "title": "Files, not a database", "body": "Content is markdown with frontmatter, layout is JSON, design is Liqx templates. Everything lives in your repository and reads fine in any editor." } },
-        { "id": "f_dashboard", "type": "feature", "settings": { "title": "A real CMS", "body": "Collections, a field builder with 29 field types, relationships, media with alt text and resizing, navigation menus — writing the same files you would." } },
-        { "id": "f_visual", "type": "feature", "settings": { "title": "A visual editor", "body": "Pages are sections and blocks with settings declared in their templates. Click, edit, and watch the live preview update." } },
-        { "id": "f_git", "type": "feature", "settings": { "title": "Git is the history", "body": "Drafts are the working tree, publishing is a commit, rollback is git revert. No accounts, no server to run." } },
-        { "id": "f_fast", "type": "feature", "settings": { "title": "Fast, incremental builds", "body": "Each page records what it read; only what changed is rebuilt. Images are resized once and cached." } },
-        { "id": "f_extend", "type": "feature", "settings": { "title": "Themes, addons, plugins", "body": "Layer a theme under your site, add addons on top, and extend the build, the head and the dashboard with plugins." } }
+        {
+          "id": "f_files",
+          "type": "feature",
+          "settings": {
+            "title": "Files, not a database",
+            "body": "Content is markdown with frontmatter, layout is JSON, design is Liqx templates. Everything lives in your repository and reads fine in any editor."
+          }
+        },
+        {
+          "id": "f_dashboard",
+          "type": "feature",
+          "settings": {
+            "title": "A real CMS",
+            "body": "Collections, a field builder with 29 field types, relationships, media with alt text and resizing, navigation menus \u2014 writing the same files you would."
+          }
+        },
+        {
+          "id": "f_visual",
+          "type": "feature",
+          "settings": {
+            "title": "A visual editor",
+            "body": "Pages are sections and blocks with settings declared in their templates. Click, edit, and watch the live preview update."
+          }
+        },
+        {
+          "id": "f_git",
+          "type": "feature",
+          "settings": {
+            "title": "Git is the history",
+            "body": "Save to your working tree. Review the diff. Commit when you are ready, and use Git to keep your history."
+          }
+        },
+        {
+          "id": "f_fast",
+          "type": "feature",
+          "settings": {
+            "title": "Fast, incremental builds",
+            "body": "Each page records what it read; only what changed is rebuilt. Images are resized once and cached."
+          }
+        },
+        {
+          "id": "f_extend",
+          "type": "feature",
+          "settings": {
+            "title": "Themes, addons, plugins",
+            "body": "Layer a theme under your site, add addons on top, and extend the build, the head and the dashboard with plugins."
+          }
+        }
       ],
       "order": 1
     },
     "latest": {
       "section_type": "post-list",
-      "settings": { "heading": "Changelog", "source": "posts", "limit": 3, "show_excerpt": true },
+      "settings": {
+        "heading": "Changelog",
+        "source": "posts",
+        "limit": 3,
+        "show_excerpt": true
+      },
       "order": 2
     }
   },
-  "order": ["hero", "features", "latest"]
+  "order": [
+    "hero",
+    "features",
+    "latest"
+  ]
 }

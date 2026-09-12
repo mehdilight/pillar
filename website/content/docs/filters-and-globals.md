@@ -40,3 +40,5 @@ Plugins add more — the SEO plugin adds `seo_breadcrumbs(page, route)`.
 ## Liqx's own filters
 
 Liqx ships some sixty: strings (`upcase`, `downcase`, `capitalize`, `truncate`, `truncatewords`, `strip_html`, `escape`, `slugify`, `append`, `replace`, `split`), numbers (`plus`, `minus`, `times`, `divided_by`, `round`, `money`), dates (`date('%Y-%m-%d')`), and lists (`join`, `first`, `last`, `size`, `sort`, `reverse`, `uniq`, `where`, `find`, `find_index`, `map`, `group_by`, `slice`). Arrays also have JavaScript's methods — `map`, `filter`, `find`, `some`, `every`, `includes`, `indexOf`, `slice`, `join`.
+
+The [complete Liqx filter reference](/docs/liqx-filters/) documents every standard filter. See [Methods, globals, and scope](/docs/liqx-methods-globals/) for the supported method signatures, and [Pagination](/docs/pagination/) for a complete listing.

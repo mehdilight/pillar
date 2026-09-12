@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { Match, Show, Switch, createEffect, on, onCleanup, onMount } from 'solid-js';
 import { useParams } from '@solidjs/router';
 import TopBar from './TopBar';
@@ -60,7 +61,7 @@ export default function EditorScreen() {
         when={!editor.loading()}
         fallback={
           <div class="flex-1 flex items-center justify-center">
-            <div class="text-gray-500 text-sm font-medium">Loading the page…</div>
+            <div class="text-gray-500 text-sm font-medium">{t("Loading the page…")}</div>
           </div>
         }
       >

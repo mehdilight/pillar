@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createEffect, createMemo, createSignal } from 'solid-js';
 import Field from '../ui/Field';
 import Modal from '../ui/Modal';
@@ -49,7 +50,7 @@ export function IconChooser(props: { value: string; onValue: (value: string) => 
     <>
       <div class="flex items-center gap-2">
         <button id={props.id} type="button" class={button()} onClick={() => setOpen(true)}>
-          <Show when={props.value} fallback={<span class="text-gray-500">Choose an icon</span>}>
+          <Show when={props.value} fallback={<span class="text-gray-500">{t("Choose an icon")}</span>}>
             <NamedIcon name={props.value} size={16} />
             <span class="truncate font-mono text-[11.5px]">{props.value}</span>
           </Show>
@@ -60,24 +61,23 @@ export function IconChooser(props: { value: string; onValue: (value: string) => 
             class={props.cms ? 'h-8 shrink-0 rounded-ds px-2 text-xs text-text-muted hover:bg-surface-muted hover:text-text' : 'sam-btn'}
             onClick={() => props.onValue('')}
           >
-            Clear
-          </button>
+            {t("Clear")} </button>
         </Show>
       </div>
 
-      <Modal open={open()} onOpenChange={setOpen} title="Choose an icon" wide>
+      <Modal open={open()} onOpenChange={setOpen} title={t("Choose an icon")} wide>
         <input
           type="search"
           autofocus
-          aria-label="Search icons"
+          aria-label={t("Search icons")}
           class={`${controlClass} mb-3`}
-          placeholder={names() ? `Search ${names()!.length} icons — arrow, heart, rocket…` : 'Loading icons…'}
+          placeholder={names() ? t("Search {{v0}} icons — arrow, heart, rocket…", { v0: names()!.length }) : t("Loading icons…")}
           value={query()}
           onInput={(event) => setQuery(event.currentTarget.value)}
         />
         <Show
           when={matching().length}
-          fallback={<p class="py-10 text-center text-xs text-gray-500">{names() === null ? 'Loading icons…' : `No icon matches “${query()}”.`}</p>}
+          fallback={<p class="py-10 text-center text-xs text-gray-500">{names() === null ? t("Loading icons…") : t("No icon matches “{{v0}}”.", { v0: query() })}</p>}
         >
           <div class="grid grid-cols-[repeat(auto-fill,minmax(76px,1fr))] gap-1.5">
             <For each={matching().slice(0, SHOWN)}>
@@ -100,8 +100,7 @@ export function IconChooser(props: { value: string; onValue: (value: string) => 
           </div>
           <Show when={matching().length > SHOWN}>
             <p class="mt-3 text-center text-[11px] text-gray-500">
-              Showing {SHOWN} of {matching().length}. Search to narrow them down.
-            </p>
+              {t("Showing")} {SHOWN} {t("of")} {matching().length}{t(". Search to narrow them down.")} </p>
           </Show>
         </Show>
       </Modal>

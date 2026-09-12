@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { createSignal, type Component } from 'solid-js';
 import * as solid from 'solid-js';
 import * as web from 'solid-js/web';
@@ -115,7 +116,7 @@ export async function loadPlugins(bundles: PluginBundle[]): Promise<Array<{ slug
     bundles.map(async (bundle) => {
       try {
         if (bundle.script === null) {
-          throw new Error('its dashboard bundle has not been built — run `npm run build` in apps/editor');
+          throw new Error(t("its dashboard bundle has not been built — run `npm run build` in apps/editor"));
         }
 
         if (bundle.style) addStylesheet(bundle.style);
@@ -123,7 +124,7 @@ export async function loadPlugins(bundles: PluginBundle[]): Promise<Array<{ slug
         const module = await loadScript(bundle.slug, bundle.script);
 
         if (typeof module?.register !== 'function') {
-          throw new Error('its bundle defines no register(host) function');
+          throw new Error(t("its bundle defines no register(host) function"));
         }
 
         module.register(scoped(bundle.slug));
@@ -144,7 +145,7 @@ function loadScript(slug: string, src: string): Promise<PluginModule> {
     // dashboard's startup forever.
     const timer = window.setTimeout(() => {
       pending.delete(slug);
-      reject(new Error('its bundle loaded but never called PillarHost.define()'));
+      reject(new Error(t("its bundle loaded but never called PillarHost.define()")));
     }, 5000);
 
     pending.set(slug, (module) => {

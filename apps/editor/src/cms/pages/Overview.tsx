@@ -1,3 +1,4 @@
+import { t, formatDate } from '../../i18n';
 import { For, Show, createResource, createSignal } from 'solid-js';
 import { A } from '@solidjs/router';
 import { Hammer } from '../../components/ui/Icons';
@@ -29,9 +30,9 @@ export default function Overview() {
     try {
       const result = await api.build();
 
-      showToast(`Built ${result.pages} pages in ${result.ms}ms`, 'success');
+      showToast(t("Built {{v0}} pages in {{v1}}ms", { v0: result.pages, v1: result.ms }), 'success');
     } catch (error) {
-      showToast(error instanceof Error ? error.message : 'Build failed', 'error');
+      showToast(error instanceof Error ? error.message : t("Build failed"), 'error');
     } finally {
       setBuilding(false);
     }
@@ -39,32 +40,31 @@ export default function Overview() {
 
   return (
     <Page
-      title="Overview"
+      title={t("Overview")}
       actions={
         <>
           <Button onClick={build} disabled={building()}>
             <Hammer size={14} />
-            {building() ? 'Building…' : 'Build site'}
+            {building() ? t("Building…") : t("Build site")}
           </Button>
           <A href="/editor" class={buttonClass('primary')}>
-            Customize
-          </A>
+            {t("Customize")} </A>
         </>
       }
     >
       <div class="mb-4">
         <Grid cols={4}>
-          <Tile label="Entries" value={String(entries())} hint={`${collections()?.length ?? 0} collections`} />
-          <Tile label="Uncommitted" value={String(status()?.count ?? 0)} hint={status()?.has_remote ? 'Publishing pushes' : 'No remote configured'} />
-          <Tile label="Branch" value={<span class="font-mono text-xl">{status()?.branch ?? '—'}</span>} />
-          <Tile label="Site" value={<span class="text-base">{editorConfig.siteName}</span>} />
+          <Tile label={t("Entries")} value={String(entries())} hint={t("count.collection", { count: collections()?.length ?? 0 })} />
+          <Tile label={t("Uncommitted")} value={String(status()?.count ?? 0)} hint={status()?.has_remote ? t("Publishing pushes") : t("No remote configured")} />
+          <Tile label={t("Branch")} value={<span class="font-mono text-xl">{status()?.branch ?? '—'}</span>} />
+          <Tile label={t("Site")} value={<span class="text-base">{editorConfig.siteName}</span>} />
         </Grid>
       </div>
 
       <SidebarLayout>
-        <Postbox title="Recently edited" flush>
+        <Postbox title={t("Recently edited")} flush>
           <Show when={recent()} fallback={<Loading />}>
-            <Show when={recent()!.length} fallback={<p class="p-4 text-xs text-text-faint">Nothing yet.</p>}>
+            <Show when={recent()!.length} fallback={<p class="p-4 text-xs text-text-faint">{t("Nothing yet.")}</p>}>
               <ul>
                 <For each={recent()}>{(item) => <RecentRow item={item} />}</For>
               </ul>
@@ -73,7 +73,7 @@ export default function Overview() {
         </Postbox>
 
         <div>
-          <Postbox title="Collections" flush>
+          <Postbox title={t("Collections")} flush>
             <ul>
               <For each={collections() ?? []}>
                 {(collection) => (
@@ -88,8 +88,8 @@ export default function Overview() {
             </ul>
           </Postbox>
 
-          <Postbox title="Latest commits" flush actions={<A href="/publish" class="text-xs text-brand hover:underline">All</A>}>
-            <Show when={history()?.length} fallback={<p class="p-4 text-xs text-text-faint">No commits yet.</p>}>
+          <Postbox title={t("Latest commits")} flush actions={<A href="/publish" class="text-xs text-brand hover:underline">{t("All")}</A>}>
+            <Show when={history()?.length} fallback={<p class="p-4 text-xs text-text-faint">{t("No commits yet.")}</p>}>
               <ul>
                 <For each={history()!.slice(0, 5)}>
                   {(entry) => (
@@ -118,10 +118,10 @@ function RecentRow(props: { item: ContentItem }) {
         <p class="text-xs font-mono text-text-faint truncate">{entryUrl(props.item.collection, props.item.slug)}</p>
       </div>
       <Show when={props.item.frontmatter?.draft}>
-        <Badge>Draft</Badge>
+        <Badge>{t("Draft")}</Badge>
       </Show>
       <span class="text-xs text-text-muted whitespace-nowrap">
-        {props.item.updated_at ? new Date(props.item.updated_at).toLocaleDateString() : '—'}
+        {props.item.updated_at ? formatDate(props.item.updated_at) : '—'}
       </span>
     </li>
   );

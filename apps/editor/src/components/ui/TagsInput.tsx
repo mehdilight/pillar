@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, createSignal } from 'solid-js';
 import { X } from './Icons';
 import Field, { controlClass } from './Field';
@@ -33,7 +34,7 @@ export default function TagsInput(props: TagsInputProps) {
                 type="button"
                 class="text-gray-400 hover:text-gray-700"
                 onClick={() => props.onValue(tags().filter((entry) => entry !== tag))}
-                aria-label={`Remove ${tag}`}
+                aria-label={t("Remove {{v0}}", { v0: tag })}
               >
                 <X size={10} />
               </button>
@@ -44,7 +45,7 @@ export default function TagsInput(props: TagsInputProps) {
       <input
         type="text"
         class={controlClass}
-        placeholder="Add a tag…"
+        placeholder={t("Add a tag…")}
         value={draft()}
         onInput={(event) => setDraft(event.currentTarget.value)}
         onBlur={commit}

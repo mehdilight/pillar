@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { createUniqueId } from 'solid-js';
 import Field from './Field';
 
@@ -19,7 +20,7 @@ export default function ColorInput(props: ColorInputProps) {
           for={id}
           class="relative w-6 h-6 ml-1.5 rounded-md border border-black/15 shadow-xs flex-shrink-0 cursor-pointer overflow-hidden flex items-center justify-center"
           style={{ 'background-color': current() }}
-          title="Pick color"
+          title={t("Pick color")}
         >
           <input
             id={id}

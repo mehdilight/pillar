@@ -1,3 +1,4 @@
+import { t } from '../../i18n';
 import { For, Show, createSignal } from 'solid-js';
 import { ChevronDown, GripVertical, NamedIcon, Plus, Trash2 } from '../../components/ui/Icons';
 import { FIELD_TYPES, holdsFields, isDecorative, newField } from '../../lib/fieldTypes';
@@ -57,11 +58,11 @@ export default function FieldList(props: {
   };
 
   const summary = (field: SchemaSetting) => {
-    if (holdsFields(field.type)) return `${field.fields?.length ?? 0} field${field.fields?.length === 1 ? '' : 's'}`;
-    if (field.options?.length) return `${field.options.length} options`;
-    if (field.multiple && field.type === 'image') return 'Gallery';
-    if (field.collections?.length) return field.collections.join(', ') + (field.multiple ? ' · several' : '');
-    if (field.time) return 'With time';
+    if (holdsFields(field.type)) return t("count.field", { count: field.fields?.length ?? 0 });
+    if (field.options?.length) return t("count.option", { count: field.options.length });
+    if (field.multiple && field.type === 'image') return t("Gallery");
+    if (field.collections?.length) return field.collections.join(', ') + (field.multiple ? t(" · several") : '');
+    if (field.time) return t("With time");
 
     return '';
   };
@@ -72,7 +73,7 @@ export default function FieldList(props: {
         when={props.fields.length}
         fallback={
           <div class="rounded-ds border border-dashed border-border-strong bg-surface px-4 py-6 text-center text-xs text-text-faint">
-            {props.empty ?? 'No fields yet.'}
+            {props.empty ?? t("No fields yet.")}
           </div>
         }
       >
@@ -101,7 +102,7 @@ export default function FieldList(props: {
                 <span
                   draggable="true"
                   class="flex h-7 w-5 shrink-0 cursor-grab items-center justify-center text-text-faint active:cursor-grabbing"
-                  title="Drag to reorder"
+                  title={t("Drag to reorder")}
                   onDragStart={(event) => {
                     setDragged(index());
                     event.dataTransfer?.setData('text/plain', String(index()));
@@ -145,8 +146,8 @@ export default function FieldList(props: {
                   <button
                     type="button"
                     class="flex size-7 items-center justify-center rounded-ds text-text-muted hover:bg-surface hover:text-text disabled:opacity-30"
-                    title="Move up"
-                    aria-label={`Move ${field.label || field.id} up`}
+                    title={t("Move up")}
+                    aria-label={t("Move {{v0}} up", { v0: field.label || field.id })}
                     disabled={index() === 0}
                     onClick={() => move(index(), index() - 1)}
                   >
@@ -155,8 +156,8 @@ export default function FieldList(props: {
                   <button
                     type="button"
                     class="flex size-7 items-center justify-center rounded-ds text-text-muted hover:bg-surface hover:text-text disabled:opacity-30"
-                    title="Move down"
-                    aria-label={`Move ${field.label || field.id} down`}
+                    title={t("Move down")}
+                    aria-label={t("Move {{v0}} down", { v0: field.label || field.id })}
                     disabled={index() === props.fields.length - 1}
                     onClick={() => move(index(), index() + 1)}
                   >
@@ -165,8 +166,8 @@ export default function FieldList(props: {
                   <button
                     type="button"
                     class="flex size-7 items-center justify-center rounded-ds text-text-muted hover:bg-danger-tint hover:text-danger"
-                    title="Remove"
-                    aria-label={`Remove ${field.label || field.id}`}
+                    title={t("Remove")}
+                    aria-label={t("Remove {{v0}}", { v0: field.label || field.id })}
                     onClick={() => remove(index())}
                   >
                     <Trash2 size={14} />
@@ -184,8 +185,7 @@ export default function FieldList(props: {
         onClick={() => setPicking(true)}
       >
         <Plus size={14} />
-        Add field
-      </button>
+        {t("Add field")} </button>
 
       <FieldTypePicker
         open={picking()}
