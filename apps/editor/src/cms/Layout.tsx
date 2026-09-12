@@ -56,13 +56,7 @@ function Header(props: { onToggle: () => void }) {
   const isDesktop = () => typeof window !== 'undefined' && window.parent !== window;
 
   return (
-    <header
-      class="fixed top-0 inset-x-0 z-50 grid grid-cols-[1fr_auto] md:grid-cols-[1fr_2fr_1fr] items-center bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 text-sm h-14 text-white select-none"
-      classList={{
-        'pl-[80px]': isDesktop(),
-      }}
-      data-tauri-drag-region
-    >
+    <header class="fixed top-0 inset-x-0 z-50 grid grid-cols-[1fr_auto] md:grid-cols-[1fr_2fr_1fr] items-center bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 text-sm h-14 text-white select-none">
       <div class="flex items-center min-w-0 gap-2">
         <button
           onClick={props.onToggle}

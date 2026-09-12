@@ -411,6 +411,10 @@ pub mod commands {
         let url = format!("http://127.0.0.1:{}/", port);
         let preview_url = format!("http://127.0.0.1:{}/preview/", port);
 
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.set_title(&format!("Pillar — {}", site_name));
+        }
+
         Ok(ServerStatus {
             running: true,
             port: Some(port),
@@ -422,8 +426,11 @@ pub mod commands {
     }
 
     #[tauri::command]
-    pub fn stop_site_server(state: State<'_, DesktopState>) -> ServerStatus {
+    pub fn stop_site_server(app: AppHandle, state: State<'_, DesktopState>) -> ServerStatus {
         stop_active_server(&state);
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.set_title("Pillar");
+        }
         ServerStatus {
             running: false,
             port: None,

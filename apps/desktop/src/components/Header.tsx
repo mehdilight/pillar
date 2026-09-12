@@ -33,8 +33,7 @@ export function Header(props: HeaderProps) {
 
   return (
     <header
-      class="h-14 bg-[#1a1a1a] border-b border-[#2c2d30] flex items-center justify-between px-4 pl-[78px] select-none z-50 shrink-0 text-white"
-      data-tauri-drag-region
+      class="h-14 bg-[#1a1a1a] border-b border-[#2c2d30] flex items-center justify-between px-4 select-none z-50 shrink-0 text-white"
     >
       <div class="flex items-center min-w-0 gap-2.5">
         <Show

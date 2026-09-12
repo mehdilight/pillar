@@ -60,13 +60,7 @@ export default function TopBar() {
   };
 
   return (
-    <header
-      class="bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 flex items-center justify-between flex-shrink-0 text-sm h-14 select-none z-30 text-white"
-      classList={{
-        'pl-[80px]': isDesktop(),
-      }}
-      data-tauri-drag-region
-    >
+    <header class="bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 flex items-center justify-between flex-shrink-0 text-sm h-14 select-none z-30 text-white">
       {/* Left: exit and the panels */}
       <div class="flex items-center gap-2">
         <Tooltip content={t("Exit")}>
