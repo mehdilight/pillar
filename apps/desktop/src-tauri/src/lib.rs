@@ -741,6 +741,31 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle();
 
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_background_color(Some(tauri::window::Color(26, 26, 26, 255)));
+                let _ = window.set_theme(Some(tauri::Theme::Dark));
+
+                #[cfg(target_os = "macos")]
+                {
+                    use cocoa::appkit::{NSColor, NSWindow};
+                    use cocoa::base::id;
+                    if let Ok(ns_win) = window.ns_window() {
+                        let ns_window = ns_win as id;
+                        unsafe {
+                            let color = NSColor::colorWithRed_green_blue_alpha_(
+                                cocoa::base::nil,
+                                26.0 / 255.0,
+                                26.0 / 255.0,
+                                26.0 / 255.0,
+                                1.0,
+                            );
+                            ns_window.setBackgroundColor_(color);
+                            ns_window.setTitlebarAppearsTransparent_(cocoa::base::YES);
+                        }
+                    }
+                }
+            }
+
             let new_site_item = MenuItemBuilder::with_id("new_site", "New Site...")
                 .accelerator("CmdOrCtrl+N")
                 .build(handle)?;
