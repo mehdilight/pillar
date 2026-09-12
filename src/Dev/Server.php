@@ -64,8 +64,9 @@ final class Server {
 		$url = '' === $path ? '/' : $path;
 
 		try {
-			$pillar = Pillar::forSite( $this->root, editor: true, drafts: true, compile: false );
-			$extra = $pillar->routes->find( $url );
+			$isEditor = $request->query->getBoolean( 'editor', false );
+			$pillar   = Pillar::forSite( $this->root, editor: true, drafts: true, compile: false );
+			$extra    = $pillar->routes->find( $url );
 			if ( null !== $extra ) {
 				return new Response( ( $extra['render'] )(), 200, [ 'Content-Type' => $extra['type'], 'X-Robots-Tag' => 'noindex, nofollow' ] );
 			}
@@ -92,7 +93,9 @@ final class Server {
 				$html .= $this->errorOverlay( $pillar->errors->all() );
 			}
 
-			$html .= $this->bridge();
+			if ( $isEditor ) {
+				$html .= $this->bridge();
+			}
 
 			return new Response( $html, 200, [ 'Content-Type' => 'text/html; charset=utf-8', 'X-Robots-Tag' => 'noindex, nofollow' ] );
 		} catch ( PillarException $error ) {

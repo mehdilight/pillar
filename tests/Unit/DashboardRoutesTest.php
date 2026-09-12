@@ -60,6 +60,15 @@ final class DashboardRoutesTest extends SiteTestCase {
 		self::assertSame( 'text/css; charset=utf-8', $this->request( '/assets/base.css' )->headers->get( 'Content-Type' ) );
 	}
 
+	public function test_preview_only_injects_editor_bridge_when_editor_param_is_present(): void {
+		$standalonePreview = (string) $this->request( '/preview/' )->getContent();
+		self::assertStringNotContainsString( 'pillar-hover-outline', $standalonePreview );
+
+		$editorPreview = (string) $this->request( '/preview/?editor=1' )->getContent();
+		self::assertStringContainsString( 'pillar-hover-outline', $editorPreview );
+	}
+
+
 	private function request( string $uri ): Response {
 		return ( new Server( $this->root, $this->dashboard ) )->handle( Request::create( $uri ) );
 	}

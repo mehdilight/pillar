@@ -11,6 +11,11 @@
  * outside the document flow.
  */
 (function () {
+  // Only activate the selection and hover bridge when embedded inside the editor canvas
+  if (window.parent === window || new URLSearchParams(window.location.search).get('editor') !== '1') {
+    return;
+  }
+
   var ATTRIBUTE = 'data-pillar-section-id';
   var selected = null;
   var hovered = null;
