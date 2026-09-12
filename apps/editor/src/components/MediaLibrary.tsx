@@ -4,7 +4,7 @@ import { FileText, ImagePlus, Upload } from './ui/Icons';
 import { ACCEPTED, ACCEPTED_FILES, FILE_EXTENSIONS, bytes, createMediaLibrary, extension, mediaUrl, plural } from '../lib/media';
 import type { MediaItem } from '../types';
 import { controlClass } from './ui/Field';
-import NativeSelect from './ui/NativeSelect';
+import CustomSelect from './ui/CustomSelect';
 import AltField from './AltField';
 import ConfirmDialog from './ui/ConfirmDialog';
 import { showToast } from './ui/Toast';
@@ -62,9 +62,23 @@ export default function MediaLibrary(props: {
       <div class="flex-1 min-w-0 p-5">
         <div class="flex flex-wrap gap-2 mb-4">
           <input type="search" aria-label={copy("search")} class={`${controlClass} flex-1 min-w-[140px]`} placeholder={copy("search")} value={query()} onInput={(e) => { setQuery(e.currentTarget.value); setPage(1); }} />
-          <NativeSelect aria-label={copy("type")} wrapperClass="w-auto" class={controlClass} value={format()} onChange={(e) => { setFormat(e.currentTarget.value); setPage(1); }}>
-            <option value="" selected={format() === ''}>{copy("all")}</option><For each={kind() === 'image' ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg'] : props.extensions?.length ? props.extensions : FILE_EXTENSIONS}>{(type) => <option value={type} selected={format() === type}>{type.toUpperCase()}</option>}</For>
-          </NativeSelect>
+          <div class="w-32">
+            <CustomSelect
+              aria-label={copy("type")}
+              value={format()}
+              onChange={(val) => { setFormat(val); setPage(1); }}
+              options={[
+                { value: '', label: copy("all") },
+                ...(kind() === 'image'
+                  ? ['png', 'jpg', 'jpeg', 'webp', 'gif', 'avif', 'svg']
+                  : props.extensions?.length
+                    ? props.extensions
+                    : FILE_EXTENSIONS
+                ).map((type) => ({ value: type, label: type.toUpperCase() })),
+              ]}
+              triggerClass="h-9 bg-white border-[#c9cccf] rounded-lg px-3 text-[13px] leading-5 text-[#202223] focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] shadow-xs hover:border-[#8c9196]"
+            />
+          </div>
         </div>
         <Show when={error()}><p class="text-xs text-red-600 mb-4 whitespace-pre-wrap" role="alert">{error()}</p></Show>
         <Show when={images.error}><div class="text-xs text-red-600 mb-4" role="alert">{t("Could not load images.")} <button type="button" class="underline" onClick={() => void refetch()}>{t("Try again")}</button></div></Show>

@@ -5,6 +5,7 @@ import { A } from '@solidjs/router';
 import Page from '../ui/Page';
 import { Badge, Button, Input, Label, Loading, Notice, Postbox, SidebarLayout, buttonClass } from '../ui/ds';
 import FormFields from '../../components/fields/FormFields';
+import CustomSelect from '../../components/ui/CustomSelect';
 import { GitBranch, Check } from '../../components/ui/Icons';
 import { showToast } from '../../components/ui/Toast';
 import { api, editorConfig } from '../../api/client';
@@ -129,18 +130,18 @@ export default function Settings() {
                   {t("Configure whether Pillar uses your local Git CLI or remote GitHub APIs for headless hosting environments.")}
                 </p>
 
-                <div>
+                <div class="max-w-[420px]">
                   <Label for="git-provider">{t("Provider Mode")}</Label>
-                  <select
+                  <CustomSelect<'auto' | 'local' | 'github'>
                     id="git-provider"
-                    class="h-8 w-full max-w-[420px] rounded-ds border border-border-strong bg-surface px-2.5 text-xs text-text outline-none focus:border-brand focus:ring-2 focus:ring-brand-tint"
                     value={gitProvider()}
-                    onChange={(e) => setGitProvider(e.currentTarget.value as 'auto' | 'local' | 'github')}
-                  >
-                    <option value="auto">{t("Auto-detect (Local Git if present, otherwise GitHub API)")}</option>
-                    <option value="local">{t("Local Git CLI (direct repository working tree)")}</option>
-                    <option value="github">{t("GitHub API (Headless / Remote mode without local Git)")}</option>
-                  </select>
+                    onChange={(val) => setGitProvider(val)}
+                    options={[
+                      { value: 'auto', label: t("Auto-detect (Local Git if present, otherwise GitHub API)") },
+                      { value: 'local', label: t("Local Git CLI (direct repository working tree)") },
+                      { value: 'github', label: t("GitHub API (Headless / Remote mode without local Git)") },
+                    ]}
+                  />
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-[420px]">

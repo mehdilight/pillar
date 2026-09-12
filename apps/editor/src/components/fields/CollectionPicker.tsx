@@ -1,7 +1,7 @@
 import { t } from '../../i18n';
-import { For, Show, createSignal, onMount } from 'solid-js';
-import Field, { controlClass } from '../ui/Field';
-import NativeSelect from '../ui/NativeSelect';
+import { Show, createMemo, createSignal, onMount } from 'solid-js';
+import Field from '../ui/Field';
+import CustomSelect from '../ui/CustomSelect';
 import { api } from '../../api/client';
 import type { ContentCollection } from '../../types';
 
@@ -21,25 +21,32 @@ export default function CollectionPicker(props: { label?: string; info?: string;
 
   const missing = () => props.value !== '' && collections() !== null && !collections()!.some((collection) => collection.name === props.value);
 
+  const options = createMemo(() => {
+    const list: Array<{ value: string; label: string }> = [
+      { value: '', label: collections() === null ? t("Loading…") : t("Choose a collection") },
+    ];
+
+    if (collections()) {
+      for (const col of collections()!) {
+        list.push({ value: col.name, label: `${col.label} (${col.count})` });
+      }
+    }
+
+    if (missing()) {
+      list.push({ value: props.value, label: `${props.value} ${t("(missing)")}` });
+    }
+
+    return list;
+  });
+
   return (
     <Field label={props.label} info={props.info}>
-      {/* `selected` on each option, not `value` on the select: the options arrive after the value, and a select's value set before its options exist is lost. */}
-      <NativeSelect class={controlClass} onChange={(event) => props.onValue(event.currentTarget.value)}>
-        <option value="" selected={props.value === ''}>
-          {collections() === null ? t("Loading…") : t("Choose a collection")}
-        </option>
-        <For each={collections() ?? []}>
-          {(collection) => (
-            <option value={collection.name} selected={collection.name === props.value}>
-              {collection.label} ({collection.count})
-            </option>
-          )}
-        </For>
-        <Show when={missing()}>
-          <option value={props.value} selected>
-            {props.value} {t("(missing)")} </option>
-        </Show>
-      </NativeSelect>
+      <CustomSelect
+        value={props.value}
+        onChange={props.onValue}
+        options={options()}
+        triggerClass="h-9 bg-white border-[#c9cccf] rounded-lg px-3 text-[13px] leading-5 text-[#202223] focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] shadow-xs hover:border-[#8c9196]"
+      />
     </Field>
   );
 }

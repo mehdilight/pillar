@@ -1,5 +1,5 @@
-import { For, createUniqueId } from 'solid-js';
-import NativeSelect from './NativeSelect';
+import { createUniqueId } from 'solid-js';
+import CustomSelect from './CustomSelect';
 import Field from './Field';
 
 interface SelectInputProps {
@@ -17,20 +17,13 @@ export default function SelectInput(props: SelectInputProps) {
 
   return (
     <Field label={props.label} info={props.info} error={props.error} for={id}>
-      {/* `selected` on the options, not `value` on the select: options that arrive after the value (menus, collections) would otherwise leave the first one showing. */}
-      <NativeSelect
+      <CustomSelect
         id={id}
-        onChange={(event) => props.onValue(event.currentTarget.value)}
-        class="h-9 bg-white border border-[#c9cccf] rounded-lg pl-3 py-1.5 text-[13px] leading-5 text-[#202223] focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] outline-none shadow-xs transition-colors hover:border-[#8c9196]"
-      >
-        <For each={props.options}>
-          {(option) => (
-            <option value={option.value} selected={option.value === props.value}>
-              {option.label}
-            </option>
-          )}
-        </For>
-      </NativeSelect>
+        value={props.value}
+        onChange={props.onValue}
+        options={props.options}
+        triggerClass="h-9 bg-white border-[#c9cccf] rounded-lg px-3 text-[13px] leading-5 text-[#202223] focus:border-[#005bd3] focus:ring-1 focus:ring-[#005bd3] shadow-xs hover:border-[#8c9196]"
+      />
     </Field>
   );
 }

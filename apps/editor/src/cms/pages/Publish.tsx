@@ -3,6 +3,7 @@ import { For, Show, createResource, createSignal } from 'solid-js';
 import Page from '../ui/Page';
 import { Badge, Button, Input, Textarea, Label, Loading, Notice, Postbox, SidebarLayout } from '../ui/ds';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import CustomSelect from '../../components/ui/CustomSelect';
 import Modal from '../../components/ui/Modal';
 import { showToast } from '../../components/ui/Toast';
 import { api } from '../../api/client';
@@ -226,21 +227,17 @@ export default function Publish() {
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <Label>{t("Active branch")}</Label>
-                  <div class="flex items-center gap-2">
-                    <select
-                      class="h-8 rounded-ds border border-border-strong bg-surface px-2.5 text-xs font-mono text-text outline-none focus:border-brand focus:ring-2 focus:ring-brand-tint disabled:opacity-50"
+                  <div class="min-w-[220px]">
+                    <CustomSelect
                       value={currentBranch()}
                       disabled={branchPending() || branches().length === 0}
-                      onChange={(e) => handleSwitchBranch(e.currentTarget.value)}
-                    >
-                      <For each={branches()}>
-                        {(b) => (
-                          <option value={b}>
-                            {b} {b === currentBranch() ? `(${t("current")})` : ''} {b === 'main' || b === 'master' ? `(${t("default")})` : ''}
-                          </option>
-                        )}
-                      </For>
-                    </select>
+                      onChange={(val) => handleSwitchBranch(val)}
+                      triggerClass="font-mono text-xs"
+                      options={branches().map((b) => ({
+                        value: b,
+                        label: `${b}${b === currentBranch() ? ` (${t("current")})` : ''}${b === 'main' || b === 'master' ? ` (${t("default")})` : ''}`,
+                      }))}
+                    />
                   </div>
                 </div>
 

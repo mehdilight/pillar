@@ -6,7 +6,7 @@ import Page from '../ui/Page';
 import { Badge, Button, Filters, Label, Loading, Notice, Pager, Postbox, SidebarLayout } from '../ui/ds';
 import AltField from '../../components/AltField';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
-import NativeSelect from '../../components/ui/NativeSelect';
+import CustomSelect from '../../components/ui/CustomSelect';
 import { showToast } from '../../components/ui/Toast';
 import { ACCEPTED, bytes, createMediaLibrary, extension, mediaUrl, plural } from '../../lib/media';
 
@@ -226,11 +226,18 @@ export default function Media() {
               setPage(1);
             }}
           />
-          <NativeSelect aria-label={t("Sort images")} class={`${control} py-0 pl-2.5`} value={sort()} onChange={(event) => setSort(event.currentTarget.value as Sort)}>
-            <option value="newest">{t("Newest first")}</option>
-            <option value="name">{t("Name")}</option>
-            <option value="size">{t("Largest first")}</option>
-          </NativeSelect>
+          <div class="w-36">
+            <CustomSelect<Sort>
+              aria-label={t("Sort images")}
+              value={sort()}
+              onChange={(val) => setSort(val)}
+              options={[
+                { value: 'newest', label: t("Newest first") },
+                { value: 'name', label: t("Name") },
+                { value: 'size', label: t("Largest first") },
+              ]}
+            />
+          </div>
         </div>
       </div>
 
