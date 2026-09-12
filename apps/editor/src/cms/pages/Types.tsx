@@ -2,7 +2,7 @@ import { t } from '../../i18n';
 import { For, Show, createEffect, createResource, createSignal, on } from 'solid-js';
 import { A } from '@solidjs/router';
 import Page from '../ui/Page';
-import { Badge, Button, Empty, Input, Label, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/ds';
+import { Badge, Button, Empty, Input, Label, Loading, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/ds';
 import Drawer from '../../components/ui/Drawer';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import { IconChooser } from '../../components/fields/IconPicker';
@@ -27,10 +27,11 @@ export default function Types() {
 
   return (
     <Page title={t("Content types")} actions={<Button variant="primary" size="sm" onClick={() => setEditing('new')}>{t("New content type")}</Button>}>
-      <Show
-        when={collections()?.length}
-        fallback={<Empty title={t("No content types yet.")} description={t("A content type is a folder of markdown with a form for its frontmatter.")} />}
-      >
+      <Show when={collections() !== null} fallback={<Loading variant="table" rows={4} />}>
+        <Show
+          when={collections()?.length}
+          fallback={<Empty title={t("No content types yet.")} description={t("A content type is a folder of markdown with a form for its frontmatter.")} />}
+        >
         <Table>
           <TableHeader>
             <TableRow>
@@ -83,6 +84,7 @@ export default function Types() {
             </For>
           </TableBody>
         </Table>
+        </Show>
       </Show>
 
       <TypeDrawer subject={editing()} onClose={() => setEditing(null)} />

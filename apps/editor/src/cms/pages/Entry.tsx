@@ -216,7 +216,7 @@ export default function Entry() {
         </>
       }
     >
-      <Show when={isNew() || existing() !== undefined} fallback={<Loading label={t("Loading the entry…")} />}>
+      <Show when={isNew() || existing() !== undefined} fallback={<Loading variant="form" label={t("Loading the entry…")} />}>
         <Show
           when={isNew() || existing()}
           fallback={

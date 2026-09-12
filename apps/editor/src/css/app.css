@@ -143,3 +143,31 @@ body {
 @media (prefers-reduced-motion: reduce) {
     .pillar-drawer { animation: none; }
 }
+
+/* Shimmer loading effect for skeletons and placeholder content */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        #eceef0 0%,
+        #fbfcfd 50%,
+        #eceef0 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shimmer {
+        animation: none;
+        background: #eceef0;
+    }
+}

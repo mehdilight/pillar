@@ -97,7 +97,7 @@ export default function Collection() {
         />
       </div>
 
-      <Show when={!items.loading} fallback={<Loading label={t("Loading {{v0}}…", { v0: label().toLowerCase() })} />}>
+      <Show when={!items.loading} fallback={<Loading variant="table" rows={6} label={t("Loading {{v0}}…", { v0: label().toLowerCase() })} />}>
         <Show
           when={visible().length}
           fallback={

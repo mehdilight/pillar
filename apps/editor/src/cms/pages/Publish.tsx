@@ -342,7 +342,7 @@ export default function Publish() {
               </Show>
             }
           >
-            <Show when={status()} fallback={<Loading />}>
+            <Show when={status()} fallback={<Loading variant="list" rows={3} />}>
               <Show when={files().length} fallback={<p class="p-4 text-xs text-text-faint">{t("Nothing to publish — everything is committed.")}</p>}>
                 <ul>
                   <For each={files()}>
@@ -382,7 +382,7 @@ export default function Publish() {
 
           {/* History */}
           <Postbox title={t("History")} flush>
-            <Show when={!history.loading} fallback={<Loading />}>
+            <Show when={!history.loading} fallback={<Loading variant="list" rows={4} />}>
               <Show when={history()?.length} fallback={<p class="p-4 text-xs text-text-faint">{t("No commits yet.")}</p>}>
                 <ul>
                   <For each={history()}>

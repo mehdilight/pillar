@@ -243,7 +243,7 @@ export default function Media() {
 
       <SidebarLayout variant="form">
         <div class="min-w-0">
-          <Show when={!library.images.loading} fallback={<Loading label={t("Loading images…")} />}>
+          <Show when={!library.images.loading} fallback={<Loading variant="cards" rows={12} label={t("Loading images…")} />}>
             <Show when={library.images.error}>
               <Notice type="error">
                 {t("Could not load the images.")}{' '}

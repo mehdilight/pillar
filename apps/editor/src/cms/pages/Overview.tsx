@@ -3,7 +3,7 @@ import { For, Show, createResource, createSignal } from 'solid-js';
 import { A } from '@solidjs/router';
 import { Hammer } from '../../components/ui/Icons';
 import Page from '../ui/Page';
-import { Badge, Button, Grid, Loading, Postbox, SidebarLayout, Tile, buttonClass } from '../ui/ds';
+import { Badge, Button, Grid, Loading, Postbox, SidebarLayout, Skeleton, Tile, buttonClass } from '../ui/ds';
 import { showToast } from '../../components/ui/Toast';
 import { api, editorConfig } from '../../api/client';
 import { collections, entryUrl } from '../../store/content';
@@ -54,7 +54,11 @@ export default function Overview() {
     >
       <div class="mb-4">
         <Grid cols={4}>
-          <Tile label={t("Entries")} value={String(entries())} hint={t("count.collection", { count: collections()?.length ?? 0 })} />
+          <Tile
+            label={t("Entries")}
+            value={collections() === null ? <Skeleton class="h-7 w-12 my-0.5" /> : String(entries())}
+            hint={collections() === null ? undefined : t("count.collection", { count: collections()?.length ?? 0 })}
+          />
           <Tile label={t("Uncommitted")} value={String(status()?.count ?? 0)} hint={status()?.has_remote ? t("Publishing pushes") : t("No remote configured")} />
           <Tile label={t("Branch")} value={<span class="font-mono text-xl">{status()?.branch ?? '—'}</span>} />
           <Tile label={t("Site")} value={<span class="text-base">{editorConfig.siteName}</span>} />
@@ -63,7 +67,7 @@ export default function Overview() {
 
       <SidebarLayout>
         <Postbox title={t("Recently edited")} flush>
-          <Show when={recent()} fallback={<Loading />}>
+          <Show when={recent()} fallback={<Loading variant="list" rows={4} />}>
             <Show when={recent()!.length} fallback={<p class="p-4 text-xs text-text-faint">{t("Nothing yet.")}</p>}>
               <ul>
                 <For each={recent()}>{(item) => <RecentRow item={item} />}</For>

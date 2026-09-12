@@ -4,7 +4,7 @@ import { A, useNavigate, useParams } from '@solidjs/router';
 import { ChevronRight, GripVertical, Link2, Pencil, Plus, Trash2 } from '../../components/ui/Icons';
 import { DragDropProvider, DragDropSensors, SortableProvider, createSortable, transformStyle } from '@thisbeyond/solid-dnd';
 import Page from '../ui/Page';
-import { Button, Empty, Input, Label, Postbox } from '../ui/ds';
+import { Button, Empty, Input, Label, Loading, Notice, Postbox } from '../ui/ds';
 import LinkPicker from '../../components/ui/LinkPicker';
 import { api } from '../../api/client';
 import { showToast } from '../../components/ui/Toast';
@@ -48,7 +48,7 @@ function MenuIndex() {
   return (
     <Page title={t("Navigation")} actions={create}>
       <p class="mb-5 max-w-2xl text-[13px] leading-5 text-text-muted">{t("Link lists are reusable navigation for headers, footers, and sections. Open a menu to edit its links and order.")}</p>
-      <Show when={!menus.loading} fallback={<p class="text-text-muted">{t("Loading navigation…")}</p>}>
+      <Show when={!menus.loading} fallback={<Loading variant="table" rows={3} label={t("Loading navigation…")} />}>
         <Show when={Object.keys(menus() ?? {}).length} fallback={<Empty title={t("No menus yet.")} description={t("Create a menu to add navigation to your theme.")} action={create} />}>
           <Postbox flush>
             <div class="grid grid-cols-[minmax(12rem,.9fr)_minmax(0,1fr)] border-b border-border bg-surface-muted/60 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[.045em] text-text-faint"><span>{t("Menu")}</span><span>{t("Menu items")}</span></div>
@@ -120,7 +120,7 @@ function MenuEditor(props: { handle: string }) {
 
   return (
     <Page title={creating() ? t("Create menu") : current().title || props.handle} backTo="/menus" actions={<div class="flex items-center gap-2"><Show when={!creating()}><Button variant="link" class="text-danger" onClick={() => void remove()}>{t("Delete")}</Button></Show><Button variant="primary" disabled={menus.loading} onClick={() => void save()}>{t("Save changes")}</Button></div>}>
-      <Show when={!menus.loading} fallback={<p class="text-text-muted">{t("Loading menu…")}</p>}>
+      <Show when={!menus.loading} fallback={<Loading variant="form" label={t("Loading menu…")} />}>
         <div class="max-w-4xl">
           <Postbox title={t("Menu details")}>
             <div class="max-w-2xl"><Label>{t("Menu name")}</Label><Input autofocus placeholder={t("For example, Main menu")} value={current().title} onInput={(event) => update({ ...current(), title: event.currentTarget.value })} /><p class="mt-2 text-xs text-text-muted">{t("Handle:")} <code class="font-mono text-[11px] text-text-secondary">{handle()}</code><Show when={creating()}><span> {t("· Created from the menu name when you save.")}</span></Show></p></div>

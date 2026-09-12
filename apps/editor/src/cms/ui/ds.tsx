@@ -260,6 +260,113 @@ export function Empty(props: { title: string; description?: string; action?: JSX
   );
 }
 
-export function Loading(props: { label?: string }) {
-  return <div class="p-8 text-center text-xs text-text-faint">{props.label ?? t("Loading…")}</div>;
+export function Skeleton(props: { class?: string; style?: JSX.CSSProperties }) {
+  return <div class={`shimmer rounded-md ${props.class ?? 'h-4 w-full'}`} style={props.style} />;
+}
+
+export interface LoadingProps {
+  label?: string;
+  variant?: 'default' | 'table' | 'form' | 'cards' | 'list';
+  rows?: number;
+  class?: string;
+}
+
+export function Loading(props: LoadingProps) {
+  const variant = () => props.variant ?? 'default';
+  const count = () => props.rows ?? (variant() === 'table' ? 5 : variant() === 'cards' ? 12 : 3);
+
+  return (
+    <div class={`w-full ${props.class ?? ''}`} role="status" aria-label={props.label ?? t("Loading…")}>
+      <Show when={variant() === 'table'}>
+        <div class="overflow-hidden rounded-ds border border-border bg-surface shadow-ds-sm">
+          <div class="flex h-9 items-center gap-4 border-b border-border bg-surface-muted/70 px-4">
+            <Skeleton class="h-3 w-1/4" />
+            <Skeleton class="hidden h-3 w-1/4 sm:block" />
+            <Skeleton class="hidden h-3 w-1/6 md:block" />
+            <Skeleton class="hidden h-3 w-1/6 lg:block" />
+          </div>
+          <div class="divide-y divide-border">
+            <For each={Array.from({ length: count() })}>
+              {() => (
+                <div class="flex items-center gap-4 px-4 py-3">
+                  <div class="flex-1 space-y-1.5">
+                    <Skeleton class="h-4 w-1/3" />
+                    <Skeleton class="h-2.5 w-1/4" />
+                  </div>
+                  <Skeleton class="hidden h-5 w-16 rounded-full sm:block" />
+                  <Skeleton class="hidden h-3.5 w-20 md:block" />
+                  <Skeleton class="hidden h-3.5 w-16 lg:block" />
+                </div>
+              )}
+            </For>
+          </div>
+        </div>
+      </Show>
+
+      <Show when={variant() === 'list'}>
+        <div class="divide-y divide-border">
+          <For each={Array.from({ length: count() })}>
+            {() => (
+              <div class="flex items-center gap-3 px-4 py-3">
+                <Skeleton class="size-6 shrink-0 rounded-md" />
+                <div class="flex-1 space-y-1.5">
+                  <Skeleton class="h-3.5 w-2/5" />
+                  <Skeleton class="h-2.5 w-1/4" />
+                </div>
+                <Skeleton class="h-4 w-12 rounded-full" />
+              </div>
+            )}
+          </For>
+        </div>
+      </Show>
+
+      <Show when={variant() === 'cards'}>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+          <For each={Array.from({ length: count() })}>
+            {() => (
+              <div class="space-y-2 overflow-hidden rounded-ds border border-border bg-surface p-2 shadow-ds-sm">
+                <Skeleton class="aspect-square w-full rounded-md" />
+                <Skeleton class="h-3 w-3/4" />
+                <Skeleton class="h-2.5 w-1/2" />
+              </div>
+            )}
+          </For>
+        </div>
+      </Show>
+
+      <Show when={variant() === 'form'}>
+        <div class="space-y-4 rounded-ds border border-border bg-surface p-4 shadow-ds-sm">
+          <div class="space-y-1.5">
+            <Skeleton class="h-3 w-20" />
+            <Skeleton class="h-8 w-full max-w-[420px] rounded-ds" />
+          </div>
+          <div class="space-y-1.5">
+            <Skeleton class="h-3 w-28" />
+            <Skeleton class="h-8 w-full max-w-[420px] rounded-ds" />
+          </div>
+          <div class="space-y-1.5">
+            <Skeleton class="h-3 w-24" />
+            <Skeleton class="h-24 w-full rounded-ds" />
+          </div>
+          <div class="pt-2">
+            <Skeleton class="h-8 w-24 rounded-ds" />
+          </div>
+        </div>
+      </Show>
+
+      <Show when={variant() === 'default'}>
+        <div class="space-y-3 p-4">
+          <div class="flex items-center gap-3">
+            <Skeleton class="h-4 w-1/3" />
+            <Skeleton class="h-4 w-1/5" />
+          </div>
+          <div class="space-y-2 pt-1">
+            <Skeleton class="h-3.5 w-full" />
+            <Skeleton class="h-3.5 w-4/5" />
+            <Skeleton class="h-3.5 w-2/3" />
+          </div>
+        </div>
+      </Show>
+    </div>
+  );
 }
