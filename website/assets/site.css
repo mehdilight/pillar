@@ -265,10 +265,29 @@ p {
 }
 
 .header-github {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
   font-size: var(--text-body);
   font-weight: var(--font-weight-regular);
   letter-spacing: var(--tracking-body);
   color: var(--color-chalk);
+}
+
+.header-github .ph-github-logo {
+  font-size: 17px;
+  vertical-align: -0.15em;
+}
+
+.header-github .ph-arrow-up-right {
+  font-size: 13px;
+  color: var(--color-ash);
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.header-github:hover .ph-arrow-up-right {
+  color: var(--color-chalk);
+  transform: translate(1px, -1px);
 }
 
 .mobile-nav {
@@ -326,6 +345,9 @@ p {
 }
 
 .install-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   color: var(--color-ash);
   font-family: var(--font-mono);
   font-size: 13px;
@@ -368,6 +390,9 @@ p {
   letter-spacing: var(--tracking-body);
   color: var(--color-ash);
   margin-bottom: var(--spacing-40);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ── Feature Grid (Two-column project grid aesthetic) ─────────────────── */
@@ -387,11 +412,27 @@ p {
   text-align: left;
 }
 
-.feature-num {
-  font-size: var(--text-body);
-  color: var(--color-ash);
+.feature-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: var(--spacing-10);
-  display: block;
+}
+
+.feature-num {
+  font-size: 14px;
+  font-family: var(--font-mono);
+  color: var(--color-ash);
+}
+
+.feature-header .ph {
+  font-size: 20px;
+  color: var(--color-ash);
+  transition: color 0.15s ease;
+}
+
+.feature-item:hover .feature-header .ph {
+  color: var(--color-chalk);
 }
 
 .feature-title {
@@ -429,10 +470,12 @@ p {
 }
 
 .post-meta {
-  font-size: var(--text-body);
+  font-size: 13px;
   color: var(--color-ash);
   margin-bottom: var(--spacing-5);
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .post-title {
@@ -489,11 +532,18 @@ p {
 }
 
 .docs-group-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-ash);
   margin-bottom: var(--spacing-10);
+}
+
+.docs-group-title .ph {
+  font-size: 13px;
 }
 
 .docs-group ul {
@@ -545,6 +595,9 @@ p {
 }
 
 .doc-breadcrumb a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--color-ash);
 }
 
@@ -553,6 +606,9 @@ p {
 }
 
 .doc-breadcrumb .sep {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
   color: var(--color-ash);
 }
 
@@ -707,6 +763,10 @@ h4:hover .heading-anchor {
   position: absolute;
   top: 10px;
   left: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.05em;
@@ -714,14 +774,27 @@ h4:hover .heading-anchor {
   text-transform: uppercase;
 }
 
+.code-label .ph {
+  font-size: 13px;
+}
+
 .copy-code {
   position: absolute;
   top: 8px;
   right: 14px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-mono);
   font-size: 12px;
   color: var(--color-ash);
   cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.copy-code .ph {
+  font-size: 14px;
 }
 
 .copy-code:hover {
@@ -820,11 +893,18 @@ h4:hover .heading-anchor {
 }
 
 .docs-outline-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--color-ash);
   margin-bottom: var(--spacing-10);
+}
+
+.docs-outline-title .ph {
+  font-size: 13px;
 }
 
 .docs-outline nav {
@@ -862,12 +942,25 @@ h4:hover .heading-anchor {
 }
 
 .edit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   color: var(--color-ash);
 }
 
+.edit-link .ph-arrow-up-right {
+  font-size: 12px;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
 .edit-link:hover {
   color: var(--color-chalk);
+}
+
+.edit-link:hover .ph-arrow-up-right {
+  color: var(--color-chalk);
+  transform: translate(1px, -1px);
 }
 
 /* ── Footer ──────────────────────────────────────────────────────────── */
@@ -903,6 +996,14 @@ h4:hover .heading-anchor {
 .footer-meta {
   font-size: var(--text-body);
   color: var(--color-ash);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-meta .ph {
+  font-size: 17px;
+  color: var(--color-chalk);
 }
 
 .footer-cols {

@@ -1,9 +1,15 @@
+---
+const defaultIcons = ['folder', 'sliders', 'cursor-click', 'git-branch', 'lightning', 'puzzle-piece'];
+---
 <div class="wrap features-section">
   <div class="section-label">Architecture and capabilities</div>
   <div class="features-grid">
     {section.blocks.map((block, idx) =>
       <div class="feature-item">
-        <span class="feature-num">0{idx + 1}</span>
+        <div class="feature-header">
+          <span class="feature-num">0{idx + 1}</span>
+          <i class={`ph ph-${block.settings.icon || defaultIcons[idx % defaultIcons.length]}`}></i>
+        </div>
         <h3 class="feature-title">{block.settings.title}</h3>
         <p class="feature-body">{block.settings.body}</p>
       </div>
@@ -21,7 +27,8 @@
   "blocks": [
     { "type": "feature", "name": "Feature", "settings": [
       { "id": "title", "type": "text", "label": "Title", "default": "Title" },
-      { "id": "body", "type": "textarea", "label": "Body", "default": "Description" }
+      { "id": "body", "type": "textarea", "label": "Body", "default": "Description" },
+      { "id": "icon", "type": "text", "label": "Icon", "default": "" }
     ] }
   ]
 }

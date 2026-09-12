@@ -5,10 +5,12 @@
     <div class="install-row">
       <span class="install-prompt-symbol">$</span>
       <code>composer create-project phpmystic/pillar my-site</code>
-      <button type="button" class="install-copy-btn" data-copy-install aria-label="Copy install command">Copy</button>
+      <button type="button" class="install-copy-btn" data-copy-install aria-label="Copy install command">
+        <i class="ph ph-copy"></i> <span>Copy</span>
+      </button>
     </div>
     <p class="hero-meta">Requires PHP 8.2+ and Composer. Node.js 22+ for dashboard build.</p>
-    <div class="section-indicator">↓ System architecture and workflow</div>
+    <div class="section-indicator"><i class="ph ph-arrow-down"></i> System architecture and workflow</div>
   </div>
 </div>
 <schema>

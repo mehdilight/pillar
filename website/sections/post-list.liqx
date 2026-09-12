@@ -3,12 +3,12 @@ const source = section.settings.source || 'posts';
 const entries = paginate ? paginate.items : (collections[source]?.items ?? []).slice(0, section.settings.limit);
 ---
 <div class="wrap posts-section">
-  <div class="section-label">↓ Changelog and releases</div>
+  <div class="section-label"><i class="ph ph-arrow-down"></i> Changelog and releases</div>
   <div class="posts-list">
     {entries.map((post) =>
       <article class="post-item">
         <time datetime={post.date} class="post-meta">
-          {post.date | date('%B %e, %Y')}
+          <i class="ph ph-calendar-blank"></i> {post.date | date('%B %e, %Y')}
         </time>
         <h3 class="post-title">
           <a href={post.url}>{post.title}</a>
@@ -23,12 +23,12 @@ const entries = paginate ? paginate.items : (collections[source]?.items ?? []).s
     <nav class="docs-pager" aria-label="Pagination">
       <if {paginate.previous}>
         <a class="docs-pager-link" href={paginate.previous}>
-          <span class="pager-hint">← Newer</span>
+          <span class="pager-hint"><i class="ph ph-arrow-left"></i> Newer</span>
         </a>
       </if>
       <if {paginate.next}>
         <a class="docs-pager-link docs-pager-next" href={paginate.next}>
-          <span class="pager-hint">Older →</span>
+          <span class="pager-hint">Older <i class="ph ph-arrow-right"></i></span>
         </a>
       </if>
     </nav>

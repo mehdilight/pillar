@@ -4,7 +4,7 @@
       <a class="brand" href="/">{site.title}</a>
       <p class="footer-tagline">A static site generator with a CMS and visual editor built in. Your site is files in Git.</p>
       <div class="footer-meta">
-        <span>Open source · MIT</span>
+        <span><i class="ph ph-shield-check"></i> Open source · MIT</span>
       </div>
     </div>
     <if {section.blocks.length}>
@@ -35,7 +35,9 @@
       <a href="/docs/introduction/">Docs</a>
       <a href="/docs/liqx-templates/">Liqx syntax</a>
       <a href="/blog/">Changelog</a>
-      <a href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      <a href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">
+        <i class="ph ph-github-logo"></i> GitHub <i class="ph ph-arrow-up-right"></i>
+      </a>
     </div>
   </div>
 </footer>

@@ -1,13 +1,13 @@
 (() => {
   async function copyText(text, button) {
-    const original = button.textContent;
+    const original = button.innerHTML;
     try {
       await navigator.clipboard.writeText(text);
-      button.textContent = 'Copied';
+      button.innerHTML = '<i class="ph ph-check"></i> <span>Copied</span>';
     } catch {
-      button.textContent = 'Select to copy';
+      button.innerHTML = '<i class="ph ph-warning"></i> <span>Select to copy</span>';
     }
-    setTimeout(() => { button.textContent = original; }, 1800);
+    setTimeout(() => { button.innerHTML = original; }, 1800);
   }
   document.querySelectorAll('[data-copy-install]').forEach(button => {
     button.addEventListener('click', () => copyText(button.parentElement.querySelector('code').textContent, button));
@@ -30,11 +30,12 @@
     wrap.append(pre);
     const label = document.createElement('span');
     label.className = 'code-label';
-    label.textContent = [...code.classList].find(name => name.startsWith('language-'))?.slice(9) || 'Code';
+    const lang = [...code.classList].find(name => name.startsWith('language-'))?.slice(9) || 'Code';
+    label.innerHTML = `<i class="ph ph-code"></i> <span>${lang}</span>`;
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'copy-code';
-    button.textContent = 'Copy';
+    button.innerHTML = '<i class="ph ph-copy"></i> <span>Copy</span>';
     button.setAttribute('aria-label', 'Copy code example');
     button.addEventListener('click', () => copyText(code.textContent, button));
     wrap.append(label, button);

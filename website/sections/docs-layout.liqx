@@ -13,12 +13,18 @@ const activeGroup = groups.find((g) => g.key === page.section)?.title ?? '';
 <div class="wrap docs">
   <details class="docs-navigation" open>
     <summary class="docs-nav-toggle">
-      <span>↓ Index — {page.title}</span>
+      <span><i class="ph ph-list"></i> Index — {page.title}</span>
     </summary>
     <aside class="docs-nav" aria-label="Documentation">
       {groups.filter((group) => docs.some((entry) => entry.section === group.key)).map((group) =>
         <div class="docs-group">
-          <div class="docs-group-title">{group.title}</div>
+          <div class="docs-group-title">
+            <if {group.key === 'start'}><i class="ph ph-rocket-launch"></i> </if>
+            <if {group.key === 'build'}><i class="ph ph-browsers"></i> </if>
+            <if {group.key === 'content'}><i class="ph ph-article"></i> </if>
+            <if {group.key === 'media'}><i class="ph ph-image"></i> </if>
+            {group.title}
+          </div>
           <ul>
             {docs.filter((entry) => entry.section === group.key).map((entry) =>
               <li>
@@ -30,7 +36,7 @@ const activeGroup = groups.find((g) => g.key === page.section)?.title ?? '';
       )}
       <if {loose.length}>
         <div class="docs-group">
-          <div class="docs-group-title">{section.settings.heading}</div>
+          <div class="docs-group-title"><i class="ph ph-squares-four"></i> {section.settings.heading}</div>
           <ul>
             {loose.map((entry) =>
               <li>
@@ -45,14 +51,14 @@ const activeGroup = groups.find((g) => g.key === page.section)?.title ?? '';
   <article class="prose docs-body doc-content">
     <div class="doc-header">
       <nav class="doc-breadcrumb" aria-label="Breadcrumb">
-        <a href="/">Pillar</a>
-        <span class="sep">/</span>
+        <a href="/"><i class="ph ph-house"></i> Pillar</a>
+        <span class="sep"><i class="ph ph-caret-right"></i></span>
         <a href="/docs/introduction/">Docs</a>
         <if {activeGroup}>
-          <span class="sep">/</span>
+          <span class="sep"><i class="ph ph-caret-right"></i></span>
           <span>{activeGroup}</span>
         </if>
-        <span class="sep">/</span>
+        <span class="sep"><i class="ph ph-caret-right"></i></span>
         <span class="current-crumb">{page.title}</span>
       </nav>
       <h1>{page.title}</h1>
@@ -62,13 +68,13 @@ const activeGroup = groups.find((g) => g.key === page.section)?.title ?? '';
     <nav class="docs-pager" aria-label="Previous and next">
       <if {previous}>
         <a class="docs-pager-link" href={previous.url}>
-          <span class="pager-hint">← Previous</span>
+          <span class="pager-hint"><i class="ph ph-arrow-left"></i> Previous</span>
           <span class="pager-title">{previous.title}</span>
         </a>
       </if>
       <if {next}>
         <a class="docs-pager-link docs-pager-next" href={next.url}>
-          <span class="pager-hint">Next →</span>
+          <span class="pager-hint">Next <i class="ph ph-arrow-right"></i></span>
           <span class="pager-title">{next.title}</span>
         </a>
       </if>
@@ -76,11 +82,11 @@ const activeGroup = groups.find((g) => g.key === page.section)?.title ?? '';
   </article>
   <aside class="docs-outline-aside" aria-label="Table of contents">
     <div class="docs-outline">
-      <div class="docs-outline-title">On this page</div>
+      <div class="docs-outline-title"><i class="ph ph-list-bullets"></i> On this page</div>
       <nav data-page-outline aria-label="Page sections"></nav>
       <div class="docs-outline-footer">
         <a class="edit-link" href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">
-          GitHub ↗
+          <i class="ph ph-github-logo"></i> GitHub <i class="ph ph-arrow-up-right"></i>
         </a>
       </div>
     </div>

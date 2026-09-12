@@ -10,14 +10,18 @@
     </div>
     <div class="header-right">
       <span class="site-label">Local-first static site generator</span>
-      <a class="header-github" href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+      <a class="header-github" href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">
+        <i class="ph ph-github-logo"></i> GitHub <i class="ph ph-arrow-up-right"></i>
+      </a>
     </div>
   </div>
   <nav class="mobile-nav" aria-label="Mobile navigation">
     <a href="/docs/introduction/" class:active={page.collection === 'docs' && !page.url?.startsWith('/docs/liqx-')}>Documentation</a>
     <a href="/docs/liqx-templates/" class:active={page.url?.startsWith('/docs/liqx-')}>Liqx syntax</a>
     <a href="/blog/" class:active={template === 'blog'}>Changelog</a>
-    <a href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    <a href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">
+      <i class="ph ph-github-logo"></i> GitHub <i class="ph ph-arrow-up-right"></i>
+    </a>
   </nav>
 </header>
 <schema>
