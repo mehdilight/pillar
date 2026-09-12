@@ -218,6 +218,18 @@ export interface PullRequestResult {
   number?: number;
 }
 
+export interface GitConfig {
+  provider: 'auto' | 'local' | 'github';
+  active_provider: string;
+  author_name: string;
+  author_email: string;
+  github: {
+    repo: string;
+    branch: string;
+    has_token: boolean;
+  };
+}
+
 
 export interface HistoryEntry {
   hash: string;

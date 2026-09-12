@@ -236,6 +236,33 @@ final class DevApiTest extends SiteTestCase {
 		self::assertStringContainsString( 'Updated', $diff['diff'] );
 	}
 
+	public function test_git_config_endpoint(): void {
+		$initial = $this->json( 'GET', '/api/git/config' );
+		self::assertArrayHasKey( 'provider', $initial );
+		self::assertArrayHasKey( 'active_provider', $initial );
+		self::assertArrayHasKey( 'author_name', $initial );
+
+		$saveRes = $this->request( 'POST', '/api/git/config', [
+			'provider'     => 'local',
+			'author_name'  => 'Test Editor',
+			'author_email' => 'editor@example.com',
+			'github'       => [
+				'repo'   => 'acme/mysite',
+				'branch' => 'main',
+				'token'  => 'ghp_secret123',
+			],
+		] );
+		self::assertSame( 200, $saveRes->getStatusCode() );
+
+		$updated = $this->json( 'GET', '/api/git/config' );
+		self::assertSame( 'local', $updated['provider'] );
+		self::assertSame( 'Test Editor', $updated['author_name'] );
+		self::assertSame( 'editor@example.com', $updated['author_email'] );
+		self::assertSame( 'acme/mysite', $updated['github']['repo'] );
+		self::assertTrue( $updated['github']['has_token'] );
+		self::assertArrayNotHasKey( 'token', $updated['github'], 'raw token is never returned' );
+	}
+
 	public function test_site_assets_are_served_with_their_real_content_type(): void {
 		$response = $this->request( 'GET', '/assets/base.css' );
 

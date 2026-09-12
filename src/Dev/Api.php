@@ -9,6 +9,7 @@ use Phpmystic\Pillar\Content\ContentType;
 use Phpmystic\Pillar\Content\FrontmatterWriter;
 use Phpmystic\Pillar\Content\MarkdownFile;
 use Phpmystic\Pillar\Content\MenuStore;
+use Phpmystic\Pillar\Git\GitFactory;
 use Phpmystic\Pillar\Git\GitProviderInterface;
 use Phpmystic\Pillar\Git\LocalGit;
 use Phpmystic\Pillar\Pillar;
@@ -36,7 +37,7 @@ final class Api {
 
 	public function __construct(
 		private readonly string $root,
-		private readonly GitProviderInterface $git,
+		private GitProviderInterface $git,
 	) {}
 
 	public function handle( Request $request, string $path ): Response {
@@ -112,6 +113,8 @@ final class Api {
 				[ 'git', 'diff' ] === $segments && 'GET' === $method => $this->json( [
 					'diff' => $this->git->diff( $request->query->get( 'path' ) ? (string) $request->query->get( 'path' ) : null ),
 				] ),
+				[ 'git', 'config' ] === $segments && 'GET' === $method => $this->json( $this->getGitConfig() ),
+				[ 'git', 'config' ] === $segments && 'POST' === $method => $this->saveGitConfig( $this->body( $request ) ),
 
 				[ 'build' ] === $segments && 'POST' === $method => $this->json( $this->build() ),
 				[ 'markdown' ] === $segments && 'POST' === $method
@@ -647,12 +650,22 @@ final class Api {
 			return $this->json( [ 'error' => 'This site is not a git repository, so there is nothing to publish to.' ], 422 );
 		}
 
+		$author = isset( $body['author'] ) && '' !== trim( (string) $body['author'] ) ? (string) $body['author'] : null;
+		if ( null === $author ) {
+			$gitConfig = $this->readGitConfigFile();
+			$name  = trim( (string) ( $gitConfig['author_name'] ?? '' ) );
+			$email = trim( (string) ( $gitConfig['author_email'] ?? '' ) );
+			if ( '' !== $name && '' !== $email ) {
+				$author = sprintf( '%s <%s>', $name, $email );
+			}
+		}
+
 		// Pushed unless the author asked for a local commit only — to review
 		// it first, or because there is no connection.
 		$result = $this->git->commit(
 			(string) ( $body['message'] ?? 'Update site content' ),
 			push: filter_var( $body['push'] ?? true, FILTER_VALIDATE_BOOL ),
-			author: isset( $body['author'] ) && '' !== trim( (string) $body['author'] ) ? (string) $body['author'] : null
+			author: $author,
 		);
 
 		return $this->json( [ 'message' => $result['message'] ], $result['ok'] ? 200 : 422 );
@@ -721,6 +734,107 @@ final class Api {
 		$result = $this->git->createPullRequest( $title, $msg, $head, $base );
 
 		return $this->json( $result, $result['ok'] ? 200 : 422 );
+	}
+
+	/** @return array<string, mixed> */
+	private function readGitConfigFile(): array {
+		$file = $this->root . '/config/git.json';
+		if ( is_file( $file ) ) {
+			$raw = file_get_contents( $file );
+			if ( false !== $raw ) {
+				$decoded = json_decode( $raw, true );
+				if ( is_array( $decoded ) ) {
+					return $decoded;
+				}
+			}
+		}
+
+		return [];
+	}
+
+	/** @return array<string, mixed> */
+	private function getGitConfig(): array {
+		$config = $this->readGitConfigFile();
+
+		$provider    = (string) ( $config['provider'] ?? 'auto' );
+		$authorName  = (string) ( $config['author_name'] ?? '' );
+		$authorEmail = (string) ( $config['author_email'] ?? '' );
+
+		$githubConfig = is_array( $config['github'] ?? null ) ? $config['github'] : [];
+		$token        = (string) ( getenv( 'GITHUB_TOKEN' ) ?: ( $_SERVER['GITHUB_TOKEN'] ?? ( $githubConfig['token'] ?? '' ) ) );
+		$repo         = (string) ( getenv( 'GITHUB_REPO' ) ?: ( $_SERVER['GITHUB_REPO'] ?? ( $githubConfig['repo'] ?? '' ) ) );
+		$branch       = (string) ( getenv( 'GITHUB_BRANCH' ) ?: ( $_SERVER['GITHUB_BRANCH'] ?? ( $githubConfig['branch'] ?? 'main' ) ) );
+
+		return [
+			'provider'        => $provider,
+			'active_provider' => $this->git->providerName(),
+			'author_name'     => $authorName,
+			'author_email'    => $authorEmail,
+			'github'          => [
+				'repo'      => $repo,
+				'branch'    => $branch,
+				'has_token' => '' !== $token,
+			],
+		];
+	}
+
+	/** @param array<string, mixed> $body */
+	private function saveGitConfig( array $body ): Response {
+		$config = $this->readGitConfigFile();
+
+		if ( isset( $body['provider'] ) && is_string( $body['provider'] ) ) {
+			$config['provider'] = in_array( $body['provider'], [ 'auto', 'local', 'github' ], true )
+				? $body['provider']
+				: 'auto';
+		}
+
+		if ( array_key_exists( 'author_name', $body ) ) {
+			$config['author_name'] = trim( (string) $body['author_name'] );
+		}
+
+		if ( array_key_exists( 'author_email', $body ) ) {
+			$config['author_email'] = trim( (string) $body['author_email'] );
+		}
+
+		if ( isset( $body['github'] ) && is_array( $body['github'] ) ) {
+			$github = is_array( $config['github'] ?? null ) ? $config['github'] : [];
+
+			if ( array_key_exists( 'repo', $body['github'] ) ) {
+				$github['repo'] = trim( (string) $body['github']['repo'] );
+			}
+			if ( array_key_exists( 'branch', $body['github'] ) ) {
+				$github['branch'] = trim( (string) $body['github']['branch'] );
+			}
+			// Only overwrite token if a non-empty string is provided
+			if ( isset( $body['github']['token'] ) && is_string( $body['github']['token'] ) && '' !== trim( $body['github']['token'] ) ) {
+				$github['token'] = trim( $body['github']['token'] );
+			}
+
+			$config['github'] = $github;
+		}
+
+		$configDir = $this->root . '/config';
+		if ( ! is_dir( $configDir ) ) {
+			mkdir( $configDir, 0777, true );
+		}
+
+		$saved = file_put_contents(
+			$configDir . '/git.json',
+			(string) json_encode( $config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES )
+		);
+
+		if ( false === $saved ) {
+			return $this->json( [ 'error' => 'Could not write config/git.json' ], 500 );
+		}
+
+		// Re-initialize git provider with new settings
+		$this->git = GitFactory::create( $this->root );
+
+		return $this->json( [
+			'ok'      => true,
+			'message' => 'Git configuration saved successfully.',
+			'config'  => $this->getGitConfig(),
+		] );
 	}
 
 

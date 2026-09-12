@@ -5,6 +5,7 @@ import type {
   MediaItem,
   ContentItem,
   DraftStatus,
+  GitConfig,
   HistoryEntry,
   PageSection,
   SchemaSetting,
@@ -345,6 +346,38 @@ export const api = {
 
   diff: (path?: string): Promise<{ diff: string }> =>
     request(`/git/diff${path ? `?path=${encodeURIComponent(path)}` : ''}`, undefined, () => ({ diff: '' })),
+
+  gitConfig: (): Promise<GitConfig> =>
+    request('/git/config', undefined, () => ({
+      provider: 'auto',
+      active_provider: 'local',
+      author_name: '',
+      author_email: '',
+      github: {
+        repo: '',
+        branch: 'main',
+        has_token: false,
+      },
+    })),
+
+  saveGitConfig: (
+    data: Partial<Omit<GitConfig, 'github'>> & { github?: { repo?: string; branch?: string; token?: string } }
+  ): Promise<{ ok: boolean; message: string; config: GitConfig }> =>
+    request('/git/config', { method: 'POST', body: JSON.stringify(data) }, () => ({
+      ok: true,
+      message: 'Git configuration saved',
+      config: {
+        provider: data.provider ?? 'auto',
+        active_provider: 'local',
+        author_name: data.author_name ?? '',
+        author_email: data.author_email ?? '',
+        github: {
+          repo: data.github?.repo ?? '',
+          branch: data.github?.branch ?? 'main',
+          has_token: Boolean(data.github?.token),
+        },
+      },
+    })),
 
 
   /** Rendered by the site's own converter, so the preview matches the build. */
