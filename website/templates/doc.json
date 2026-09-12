@@ -1,0 +1,22 @@
+{
+  "sections": {
+    "body": {
+      "section_type": "docs-layout",
+      "settings": {
+        "heading": "Documentation",
+        "groups": [
+          { "key": "start", "title": "Start here" },
+          { "key": "sites", "title": "Building sites" },
+          { "key": "content", "title": "Content" },
+          { "key": "media", "title": "Media" },
+          { "key": "editing", "title": "Editing" },
+          { "key": "publishing", "title": "Build and publish" },
+          { "key": "extending", "title": "Extending" },
+          { "key": "reference", "title": "Reference" }
+        ]
+      },
+      "order": 0
+    }
+  },
+  "order": ["body"]
+}

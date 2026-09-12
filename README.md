@@ -29,6 +29,19 @@ npm --prefix apps/editor run build
 section with a sidebar — three uses, one set of parts. Open the dashboard,
 click a section, change a setting, and watch the file on disk change with it.
 
+## Documentation
+
+The documentation is a Pillar site too: [`website/`](website/), built on the
+starter as an addon, with its own content, menus and a grouped docs layout.
+
+```bash
+./bin/pillar dev --site website --port 7790     # read and edit it at http://127.0.0.1:7790
+./bin/pillar build --site website               # → website/dist/
+```
+
+Start at `content/docs/introduction.md`, or at `/preview/docs/introduction/`
+once the server runs.
+
 ## Editing content and images
 
 **Content → New entry** opens a form for a title and URL name, then takes you to
@@ -98,6 +111,7 @@ src/                  the PHP package (Pillar\)
 plugins/seo/          SEO plugin ported from Bastet
 apps/editor/          the dashboard (SolidJS): a CMS, and the visual editor at /editor
 examples/starter/     a real site: landing page, blog, docs
+website/              the documentation — a Pillar site on the starter
 schema/               field-types.json — PHP and TypeScript are generated from it
 tests/                phpunit, against a real fixture site
 ```
@@ -125,5 +139,10 @@ selection and content analysis. Plugins now register head contributors, Liqx
 extensions, file routes, build hooks, settings and editor previews; their theme
 addons join the layer cascade. See [the plugin guide](plugins/seo/README.md).
 
-Remaining plugin work: runtime-loaded editor extensions, Composer discovery,
-lifecycle commands and feed/search plugins. Deploy adapters follow.
+The dashboard is a CMS — collections, a field builder with 29 field types,
+relationships, rules and conditions, media with alt text, navigation — and a
+visual editor for sections and blocks. Images are resized at build time.
+Plugin dashboard bundles load at runtime.
+
+Still to come: Composer discovery for plugins, lifecycle commands,
+feed/search plugins, and deploy adapters (`pillar deploy`).

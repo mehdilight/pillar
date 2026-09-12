@@ -1,0 +1,11 @@
+{
+  "label": "Changelog",
+  "icon": "clock-counter-clockwise",
+  "fields": [
+    { "id": "title", "type": "text", "label": "Title", "required": true },
+    { "id": "date", "type": "date", "label": "Date", "required": true, "time": true },
+    { "id": "summary", "type": "textarea", "label": "Summary", "character_limit": 200 },
+    { "id": "tags", "type": "tags", "label": "Tags" },
+    { "id": "draft", "type": "checkbox", "label": "Draft", "default": false }
+  ]
+}

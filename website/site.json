@@ -1,0 +1,11 @@
+{
+  "name": "Pillar",
+  "base_url": "https://example.com",
+  "output": "dist",
+  "deploy": "static",
+  "addons": ["../examples/starter"],
+  "plugins": ["seo"],
+  "images": {
+    "sizes": "(min-width: 1000px) 720px, calc(100vw - 48px)"
+  }
+}

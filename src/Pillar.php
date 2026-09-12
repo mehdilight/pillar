@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Pillar;
 
-use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Event\DocumentParsedEvent;
 use Phpmystic\Liqx\Environment;
 use Pillar\Content\ContentStore;
@@ -68,7 +67,7 @@ final class Pillar {
 		array $extensions = [],
 	): self {
 		$site     = Site::load( $root );
-		$markdown = new CommonMarkConverter( [ 'html_input' => 'allow', 'allow_unsafe_links' => false ] );
+		$markdown = \Pillar\Content\Markdown::converter();
 		$alt      = new AltText( $site );
 		$images   = new Images( $site, ImageConfig::fromSite( $site ) );
 

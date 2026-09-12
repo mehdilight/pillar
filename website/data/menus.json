@@ -1,0 +1,46 @@
+{
+  "main": {
+    "title": "Main menu",
+    "items": [
+      {
+        "title": "Docs",
+        "url": "/docs/introduction/",
+        "items": [
+          { "title": "Introduction", "url": "/docs/introduction/" },
+          { "title": "Quick start", "url": "/docs/quick-start/" },
+          { "title": "Field types", "url": "/docs/field-types/" },
+          { "title": "CLI", "url": "/docs/cli/" }
+        ]
+      },
+      { "title": "Dashboard", "url": "/docs/dashboard/" },
+      { "title": "Changelog", "url": "/blog/" }
+    ]
+  },
+  "learn": {
+    "title": "Learn",
+    "items": [
+      { "title": "Introduction", "url": "/docs/introduction/" },
+      { "title": "Quick start", "url": "/docs/quick-start/" },
+      { "title": "How Pillar works", "url": "/docs/how-it-works/" },
+      { "title": "Project structure", "url": "/docs/project-structure/" }
+    ]
+  },
+  "build": {
+    "title": "Build",
+    "items": [
+      { "title": "Templates and sections", "url": "/docs/templates-and-sections/" },
+      { "title": "Content types", "url": "/docs/content-types/" },
+      { "title": "Field types", "url": "/docs/field-types/" },
+      { "title": "Plugins", "url": "/docs/plugins/" }
+    ]
+  },
+  "reference": {
+    "title": "Reference",
+    "items": [
+      { "title": "CLI", "url": "/docs/cli/" },
+      { "title": "site.json", "url": "/docs/site-json/" },
+      { "title": "Filters and globals", "url": "/docs/filters-and-globals/" },
+      { "title": "Changelog", "url": "/blog/" }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+    "site_title": "Pillar",
+    "tagline": "The static site generator you can edit",
+    "color_ink": "#0a1217",
+    "color_paper": "#ffffff",
+    "color_surface": "#eef2f5",
+    "color_muted": "#6b7075",
+    "color_accent": "#cdfe00",
+    "page_max": 1240,
+    "measure": 760,
+    "section_gap": 64,
+    "radius_cards": 20
+}

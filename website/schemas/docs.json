@@ -1,0 +1,21 @@
+{
+  "label": "Docs",
+  "icon": "book-open",
+  "fields": [
+    { "id": "title", "type": "text", "label": "Title", "required": true },
+    { "id": "summary", "type": "textarea", "label": "Summary", "required": true, "character_limit": 200,
+      "info": "One or two sentences, shown under the title and used as the page description." },
+    { "id": "section", "type": "select", "label": "Sidebar group", "default": "start",
+      "options": [
+        { "value": "start", "label": "Start here" },
+        { "value": "sites", "label": "Building sites" },
+        { "value": "content", "label": "Content" },
+        { "value": "media", "label": "Media" },
+        { "value": "editing", "label": "Editing" },
+        { "value": "publishing", "label": "Build and publish" },
+        { "value": "extending", "label": "Extending" },
+        { "value": "reference", "label": "Reference" }
+      ] },
+    { "id": "order", "type": "number", "label": "Position", "default": 100, "info": "Lower comes first, across the whole sidebar." }
+  ]
+}

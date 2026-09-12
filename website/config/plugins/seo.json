@@ -1,0 +1,29 @@
+{
+  "site_name": "Pillar",
+  "home_description": "Pillar is a local-first static site generator: markdown and git underneath, a visual editor and a CMS on top, plain HTML out.",
+  "title_docs": "%%title%% %%sep%% Pillar docs",
+  "tagline": "",
+  "separator": "·",
+  "title_home": "%%sitename%% %%sep%% %%tagline%%",
+  "title_page": "%%title%% %%sep%% %%sitename%%",
+  "description_page": "%%excerpt%%",
+  "description_docs": null,
+  "title_posts": null,
+  "description_posts": null,
+  "organization_name": "",
+  "organization_logo": "",
+  "social_image": "",
+  "twitter_site": "",
+  "organization_type": "Organization",
+  "schema_enabled": true,
+  "breadcrumbs_enabled": true,
+  "sitemap_enabled": true,
+  "sitemap_page_size": 1000,
+  "robots_extra": "",
+  "routes": {
+    "/blog/": {
+      "title": "Changelog",
+      "description": "What changed in Pillar, newest first."
+    }
+  }
+}

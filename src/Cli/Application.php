@@ -8,7 +8,7 @@ use Symfony\Component\Console\Application as ConsoleApplication;
 /** The `pillar` command. */
 final class Application {
 
-	public const VERSION = '0.1.1';
+	public const VERSION = '0.1.2';
 
 	public function run(): int {
 		$application = new ConsoleApplication( 'pillar', self::VERSION );

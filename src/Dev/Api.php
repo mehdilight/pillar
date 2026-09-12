@@ -3,7 +3,6 @@ declare( strict_types=1 );
 
 namespace Pillar\Dev;
 
-use League\CommonMark\CommonMarkConverter;
 use Pillar\Build\Builder;
 use Pillar\Content\ContentStore;
 use Pillar\Content\ContentType;
@@ -633,7 +632,7 @@ final class Api {
 	 * markdown implementations do not agree about enough to promise that.
 	 */
 	private function markdown( string $body ): string {
-		return ( new CommonMarkConverter( [ 'html_input' => 'allow', 'allow_unsafe_links' => false ] ) )
+		return \Pillar\Content\Markdown::converter()
 			->convert( $body )
 			->getContent();
 	}

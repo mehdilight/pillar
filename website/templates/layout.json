@@ -1,0 +1,24 @@
+{
+  "sections": {
+    "header": {
+      "section_type": "header",
+      "settings": { "menu": "main", "cta_label": "Get started", "cta_url": "/docs/quick-start/" },
+      "order": 0,
+      "enabled": true,
+      "is_layout": true
+    },
+    "footer": {
+      "section_type": "footer",
+      "settings": { "note": "Pillar — a local-first static site generator. This site is built with Pillar." },
+      "order": 1,
+      "enabled": true,
+      "is_layout": true,
+      "blocks": [
+        { "id": "col_learn", "type": "link_column", "settings": { "menu": "learn", "heading": "" } },
+        { "id": "col_build", "type": "link_column", "settings": { "menu": "build", "heading": "" } },
+        { "id": "col_reference", "type": "link_column", "settings": { "menu": "reference", "heading": "" } }
+      ]
+    }
+  },
+  "order": ["header", "footer"]
+}
