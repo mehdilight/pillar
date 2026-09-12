@@ -301,6 +301,73 @@ export function GitBranchIcon(props: IconProps) {
     </svg>
   );
 }
+export function CodeIcon(props: IconProps) {
+  const size = () => props.size ?? 18;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size()}
+      height={size()}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={props.class}
+      {...props}
+    >
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
+  );
+}
+
+export function CloudArrowUpIcon(props: IconProps) {
+  const size = () => props.size ?? 18;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size()}
+      height={size()}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={props.class}
+      {...props}
+    >
+      <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242" />
+      <path d="M12 12v9" />
+      <path d="m16 16-4-4-4 4" />
+    </svg>
+  );
+}
+
+export function HammerIcon(props: IconProps) {
+  const size = () => props.size ?? 18;
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size()}
+      height={size()}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class={props.class}
+      {...props}
+    >
+      <path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9" />
+      <path d="M17.64 15 22 10.64" />
+      <path d="m20.91 3.26-6.36 6.36" />
+    </svg>
+  );
+}
 
 export function PillarLogo(props: { class?: string }) {
   return (

@@ -457,3 +457,235 @@ pub fn github_push_site(app: AppHandle, site_path: String) -> Result<String, Str
 
     Ok("Successfully pushed changes to GitHub.".into())
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct GitSiteStatus {
+    pub is_git: bool,
+    pub branch: String,
+    pub uncommitted_changes: usize,
+    pub ahead: usize,
+    pub behind: usize,
+    pub has_remote: bool,
+    pub remote_url: Option<String>,
+}
+
+#[tauri::command]
+pub fn get_git_site_status(_app: AppHandle, site_path: String) -> Result<GitSiteStatus, String> {
+    let site_dir = Path::new(&site_path);
+    if !site_dir.exists() {
+        return Err("Site directory does not exist.".into());
+    }
+
+    let is_git_output = Command::new("git")
+        .current_dir(site_dir)
+        .arg("rev-parse")
+        .arg("--is-inside-work-tree")
+        .output();
+
+    let is_git = match is_git_output {
+        Ok(out) => out.status.success() && String::from_utf8_lossy(&out.stdout).trim() == "true",
+        Err(_) => false,
+    };
+
+    if !is_git {
+        return Ok(GitSiteStatus {
+            is_git: false,
+            branch: "".into(),
+            uncommitted_changes: 0,
+            ahead: 0,
+            behind: 0,
+            has_remote: false,
+            remote_url: None,
+        });
+    }
+
+    let branch = Command::new("git")
+        .current_dir(site_dir)
+        .arg("rev-parse")
+        .arg("--abbrev-ref")
+        .arg("HEAD")
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .unwrap_or_else(|_| "main".into());
+
+    let uncommitted_changes = Command::new("git")
+        .current_dir(site_dir)
+        .arg("status")
+        .arg("--porcelain")
+        .output()
+        .map(|o| {
+            String::from_utf8_lossy(&o.stdout)
+                .lines()
+                .filter(|l| !l.trim().is_empty())
+                .count()
+        })
+        .unwrap_or(0);
+
+    let remote_url = Command::new("git")
+        .current_dir(site_dir)
+        .arg("config")
+        .arg("--get")
+        .arg("remote.origin.url")
+        .output()
+        .ok()
+        .and_then(|o| {
+            let s = String::from_utf8_lossy(&o.stdout).trim().to_string();
+            if s.is_empty() {
+                None
+            } else {
+                Some(s)
+            }
+        });
+
+    let has_remote = remote_url.is_some();
+    let mut ahead = 0;
+    let mut behind = 0;
+
+    if has_remote {
+        if let Ok(out) = Command::new("git")
+            .current_dir(site_dir)
+            .arg("rev-list")
+            .arg("--count")
+            .arg("@{u}..HEAD")
+            .output()
+        {
+            if out.status.success() {
+                ahead = String::from_utf8_lossy(&out.stdout)
+                    .trim()
+                    .parse::<usize>()
+                    .unwrap_or(0);
+            }
+        }
+
+        if let Ok(out) = Command::new("git")
+            .current_dir(site_dir)
+            .arg("rev-list")
+            .arg("--count")
+            .arg("HEAD..@{u}")
+            .output()
+        {
+            if out.status.success() {
+                behind = String::from_utf8_lossy(&out.stdout)
+                    .trim()
+                    .parse::<usize>()
+                    .unwrap_or(0);
+            }
+        }
+    }
+
+    Ok(GitSiteStatus {
+        is_git: true,
+        branch,
+        uncommitted_changes,
+        ahead,
+        behind,
+        has_remote,
+        remote_url,
+    })
+}
+
+#[tauri::command]
+pub fn sync_git_site(
+    app: AppHandle,
+    site_path: String,
+    commit_msg: Option<String>,
+) -> Result<String, String> {
+    let site_dir = Path::new(&site_path);
+    if !site_dir.exists() {
+        return Err("Site directory does not exist.".into());
+    }
+
+    if let Some(token) = get_saved_token(&app) {
+        let header_config = format!("AUTHORIZATION: bearer {}", token.trim());
+        let _ = Command::new("git")
+            .current_dir(site_dir)
+            .arg("config")
+            .arg("http.https://github.com/.extraHeader")
+            .arg(&header_config)
+            .output();
+    }
+
+    let status_out = Command::new("git")
+        .current_dir(site_dir)
+        .arg("status")
+        .arg("--porcelain")
+        .output()
+        .map_err(|e| format!("Failed to read git status: {}", e))?;
+
+    let has_uncommitted = !String::from_utf8_lossy(&status_out.stdout).trim().is_empty();
+
+    if has_uncommitted {
+        let _ = Command::new("git")
+            .current_dir(site_dir)
+            .arg("add")
+            .arg(".")
+            .output();
+
+        let msg = commit_msg.unwrap_or_else(|| "Content updates from Pillar Desktop".into());
+        let commit_res = Command::new("git")
+            .current_dir(site_dir)
+            .arg("commit")
+            .arg("-m")
+            .arg(&msg)
+            .output()
+            .map_err(|e| format!("Failed to commit: {}", e))?;
+
+        if !commit_res.status.success() {
+            let stderr = String::from_utf8_lossy(&commit_res.stderr);
+            return Err(format!("Commit failed: {}", stderr));
+        }
+    }
+
+    let pull_res = Command::new("git")
+        .current_dir(site_dir)
+        .arg("pull")
+        .arg("--rebase")
+        .output();
+
+    if let Ok(out) = pull_res {
+        if !out.status.success() {
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            if !stderr.contains("no tracking information") {
+                return Err(format!("Pull failed: {}", stderr));
+            }
+        }
+    }
+
+    let push_res = Command::new("git")
+        .current_dir(site_dir)
+        .arg("push")
+        .output()
+        .map_err(|e| format!("Push failed: {}", e))?;
+
+    if !push_res.status.success() {
+        let stderr = String::from_utf8_lossy(&push_res.stderr);
+        if stderr.contains("has no upstream branch") {
+            let branch = Command::new("git")
+                .current_dir(site_dir)
+                .arg("rev-parse")
+                .arg("--abbrev-ref")
+                .arg("HEAD")
+                .output()
+                .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+                .unwrap_or_else(|_| "main".into());
+
+            let push_u = Command::new("git")
+                .current_dir(site_dir)
+                .arg("push")
+                .arg("-u")
+                .arg("origin")
+                .arg(&branch)
+                .output()
+                .map_err(|e| format!("Push failed: {}", e))?;
+
+            if !push_u.status.success() {
+                let stderr = String::from_utf8_lossy(&push_u.stderr);
+                return Err(format!("Push failed: {}", stderr));
+            }
+        } else {
+            return Err(format!("Push failed: {}", stderr));
+        }
+    }
+
+    Ok("Successfully synced with GitHub.".into())
+}

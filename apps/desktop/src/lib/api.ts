@@ -55,6 +55,16 @@ export interface GitHubAuthStatus {
   user: GitHubUser | null;
 }
 
+export interface GitSiteStatus {
+  is_git: boolean;
+  branch: string;
+  uncommitted_changes: number;
+  ahead: number;
+  behind: number;
+  has_remote: boolean;
+  remote_url: string | null;
+}
+
 export const api = {
   async detectPhp(): Promise<PhpInfo> {
     return invoke<PhpInfo>('detect_php');
@@ -94,6 +104,14 @@ export const api = {
 
   async openInBrowser(url: string): Promise<void> {
     return invoke<void>('open_in_browser', { url });
+  },
+
+  async openInCodeEditor(path: string, editor?: string): Promise<void> {
+    return invoke<void>('open_in_code_editor', { path, editor: editor ?? null });
+  },
+
+  async buildStaticSite(sitePath: string): Promise<string> {
+    return invoke<string>('build_static_site', { sitePath });
   },
 
   async createSite(folderPath: string, siteName: string): Promise<SiteInfo> {
@@ -142,6 +160,18 @@ export const api = {
     return invoke<string>('github_push_site', { sitePath });
   },
 
+  async getGitSiteStatus(sitePath: string): Promise<GitSiteStatus> {
+    return invoke<GitSiteStatus>('get_git_site_status', { sitePath });
+  },
+
+  async syncGitSite(sitePath: string, commitMsg?: string): Promise<string> {
+    return invoke<string>('sync_git_site', { sitePath, commitMsg: commitMsg ?? null });
+  },
+
+  listenMenuNewSite(callback: () => void) {
+    return listen('menu-new-site', () => callback());
+  },
+
   listenMenuOpenSite(callback: () => void) {
     return listen('menu-open-site', () => callback());
   },
@@ -152,5 +182,17 @@ export const api = {
 
   listenMenuRevealFinder(callback: () => void) {
     return listen('menu-reveal-finder', () => callback());
+  },
+
+  listenMenuOpenCodeEditor(callback: () => void) {
+    return listen('menu-open-code-editor', () => callback());
+  },
+
+  listenMenuExportSite(callback: () => void) {
+    return listen('menu-export-site', () => callback());
+  },
+
+  listenMenuSyncGithub(callback: () => void) {
+    return listen('menu-sync-github', () => callback());
   },
 };

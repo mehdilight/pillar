@@ -43,6 +43,11 @@ export function Launcher(props: LauncherProps) {
     await api.openInFinder(path);
   };
 
+  const handleOpenCode = async (path: string, e: MouseEvent) => {
+    e.stopPropagation();
+    await api.openInCodeEditor(path);
+  };
+
   const handleRemove = async (path: string, e: MouseEvent) => {
     e.stopPropagation();
     props.onRemoveRecent(path);
@@ -269,6 +274,14 @@ export function Launcher(props: LauncherProps) {
                           title="Reveal site in Finder"
                         >
                           Finder
+                        </button>
+
+                        <button
+                          onClick={(e) => handleOpenCode(site.path, e)}
+                          class="h-7 px-2.5 rounded-md border border-[#c9cccf] bg-white text-[#202223] hover:bg-[#f1f2f4] text-xs font-medium transition-colors"
+                          title="Open in VS Code / Cursor"
+                        >
+                          Code
                         </button>
 
                         <button

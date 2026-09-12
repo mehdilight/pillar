@@ -4,10 +4,12 @@ import { For, Show, createSignal, onMount, type JSX } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import {
   ArrowLeft,
-  ExternalLink,
+  Code,
   ContentTypeIcon,
+  ExternalLink,
   Folder,
   GitBranch,
+  Hammer,
   House,
   Images,
   Layers,
@@ -54,7 +56,13 @@ function Header(props: { onToggle: () => void }) {
   const isDesktop = () => typeof window !== 'undefined' && window.parent !== window;
 
   return (
-    <header class="fixed top-0 inset-x-0 z-50 grid grid-cols-[1fr_auto] md:grid-cols-[1fr_2fr_1fr] items-center bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 text-sm h-14 text-white">
+    <header
+      class="fixed top-0 inset-x-0 z-50 grid grid-cols-[1fr_auto] md:grid-cols-[1fr_2fr_1fr] items-center bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 text-sm h-14 text-white select-none"
+      classList={{
+        'pl-[80px]': isDesktop(),
+      }}
+      data-tauri-drag-region
+    >
       <div class="flex items-center min-w-0 gap-2">
         <button
           onClick={props.onToggle}
@@ -82,7 +90,7 @@ function Header(props: { onToggle: () => void }) {
         <span class="hidden sm:inline truncate text-gray-300 text-[13px]">{editorConfig.siteName}</span>
       </div>
 
-      <div class="hidden md:flex justify-center">
+      <div class="hidden md:flex items-center justify-center gap-2">
         <A
           href="/publish"
           class="h-7 inline-flex items-center gap-2 rounded-full border px-3 text-[11.5px] font-medium transition-colors"
@@ -96,10 +104,41 @@ function Header(props: { onToggle: () => void }) {
           <span class="font-mono">{status()?.branch ?? 'main'}</span>
           <span>{pending() > 0 ? t("{{v0}} uncommitted", { v0: pending() }) : t("Committed")}</span>
         </A>
+
+        <Show when={isDesktop()}>
+          <button
+            type="button"
+            onClick={() => window.parent.postMessage({ type: 'pillar:sync-github' }, '*')}
+            class="h-7 inline-flex items-center gap-1.5 rounded-full border border-[#3e4045] bg-[#2c2d30] px-2.5 text-[11px] font-medium text-gray-300 hover:text-white hover:border-gray-500 transition-colors cursor-pointer"
+            title={t("Sync changes with GitHub")}
+          >
+            <span>Sync</span>
+          </button>
+        </Show>
       </div>
 
       <div class="flex justify-end items-center gap-1.5">
         <Show when={isDesktop()}>
+          <button
+            type="button"
+            onClick={() => window.parent.postMessage({ type: 'pillar:open-code-editor' }, '*')}
+            class={headerButton}
+            title={t("Open project in VS Code / Cursor")}
+          >
+            <Code size={14} />
+            <span class="hidden sm:inline">{t("Code")}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.parent.postMessage({ type: 'pillar:build-static' }, '*')}
+            class={headerButton}
+            title={t("Build static site to dist/")}
+          >
+            <Hammer size={14} />
+            <span class="hidden sm:inline">{t("Build")}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => window.parent.postMessage({ type: 'pillar:reveal-finder' }, '*')}

@@ -195,6 +195,39 @@ fn resolve_pillar_paths(app: &AppHandle, site_path: &Path) -> Result<(PathBuf, P
     ))
 }
 
+fn resolve_pillar_cli(app: &AppHandle, site_path: &Path) -> Option<PathBuf> {
+    let vendor_bin = site_path.join("vendor/bin/pillar");
+    if vendor_bin.exists() {
+        return Some(vendor_bin);
+    }
+
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        let bundled_bin = resource_dir.join("bin/pillar");
+        if bundled_bin.exists() {
+            return Some(bundled_bin);
+        }
+    }
+
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    if let Some(root) = find_pillar_root(&manifest_dir) {
+        let cli = root.join("bin/pillar");
+        if cli.exists() {
+            return Some(cli);
+        }
+    }
+
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(root) = find_pillar_root(&exe) {
+            let cli = root.join("bin/pillar");
+            if cli.exists() {
+                return Some(cli);
+            }
+        }
+    }
+
+    None
+}
+
 fn wait_for_server(port: u16, timeout: Duration) -> bool {
     let start = Instant::now();
     let addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
@@ -473,6 +506,97 @@ pub mod commands {
     }
 
     #[tauri::command]
+    pub fn open_in_code_editor(path: String, editor: Option<String>) -> Result<(), String> {
+        let preferred = editor.as_deref().unwrap_or("auto");
+        if preferred == "cursor" {
+            if let Ok(status) = Command::new("cursor").arg(&path).status() {
+                if status.success() {
+                    return Ok(());
+                }
+            }
+            #[cfg(target_os = "macos")]
+            if let Ok(status) = Command::new("open").arg("-a").arg("Cursor").arg(&path).status() {
+                if status.success() {
+                    return Ok(());
+                }
+            }
+        }
+
+        // Try VS Code CLI
+        if let Ok(status) = Command::new("code").arg(&path).status() {
+            if status.success() {
+                return Ok(());
+            }
+        }
+
+        #[cfg(target_os = "macos")]
+        {
+            if let Ok(status) = Command::new("open")
+                .arg("-a")
+                .arg("Visual Studio Code")
+                .arg(&path)
+                .status()
+            {
+                if status.success() {
+                    return Ok(());
+                }
+            }
+            if let Ok(status) = Command::new("open")
+                .arg("-a")
+                .arg("Cursor")
+                .arg(&path)
+                .status()
+            {
+                if status.success() {
+                    return Ok(());
+                }
+            }
+            Command::new("open")
+                .arg(&path)
+                .spawn()
+                .map_err(|e| format!("Failed to open path: {}", e))?;
+            return Ok(());
+        }
+
+        #[cfg(not(target_os = "macos"))]
+        {
+            open::that(&path).map_err(|e| format!("Failed to open: {}", e))?;
+            Ok(())
+        }
+    }
+
+    #[tauri::command]
+    pub fn build_static_site(app: AppHandle, site_path: String) -> Result<String, String> {
+        let (php_bin, _) = resolve_php_binary()?;
+        let site_dir = PathBuf::from(&site_path);
+        let cli_bin = resolve_pillar_cli(&app, &site_dir)
+            .ok_or_else(|| "Could not locate Pillar CLI binary (bin/pillar).".to_string())?;
+
+        let output = Command::new(&php_bin)
+            .arg(&cli_bin)
+            .arg("build")
+            .arg(format!("--site={}", site_path))
+            .arg("--force")
+            .current_dir(&site_dir)
+            .output()
+            .map_err(|e| format!("Failed to execute pillar build: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stdout = String::from_utf8_lossy(&output.stdout);
+            return Err(format!("Build failed:\n{}{}", stdout, stderr));
+        }
+
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let clean = stdout.trim();
+        if clean.is_empty() {
+            Ok("Site successfully built to dist/".into())
+        } else {
+            Ok(clean.to_string())
+        }
+    }
+
+    #[tauri::command]
     pub fn create_site(
         app: AppHandle,
         folder_path: String,
@@ -610,6 +734,9 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle();
 
+            let new_site_item = MenuItemBuilder::with_id("new_site", "New Site...")
+                .accelerator("CmdOrCtrl+N")
+                .build(handle)?;
             let open_site_item = MenuItemBuilder::with_id("open_site", "Open Site Folder...")
                 .accelerator("CmdOrCtrl+O")
                 .build(handle)?;
@@ -617,14 +744,28 @@ pub fn run() {
                 .accelerator("CmdOrCtrl+W")
                 .build(handle)?;
             let reveal_item = MenuItemBuilder::with_id("reveal_finder", "Reveal Site in Finder")
-                .accelerator("CmdOrCtrl+Shift+R")
+                .accelerator("CmdOrCtrl+Shift+F")
+                .build(handle)?;
+            let open_editor_item = MenuItemBuilder::with_id("open_code_editor", "Open in VS Code / Cursor")
+                .accelerator("CmdOrCtrl+Shift+E")
+                .build(handle)?;
+            let export_site_item = MenuItemBuilder::with_id("export_site", "Build Static Site (dist/)")
+                .accelerator("CmdOrCtrl+Shift+B")
+                .build(handle)?;
+            let sync_github_item = MenuItemBuilder::with_id("sync_github", "Sync with GitHub")
+                .accelerator("CmdOrCtrl+Shift+P")
                 .build(handle)?;
 
             let file_menu = SubmenuBuilder::new(handle, "File")
+                .item(&new_site_item)
                 .item(&open_site_item)
                 .item(&close_site_item)
                 .separator()
                 .item(&reveal_item)
+                .item(&open_editor_item)
+                .separator()
+                .item(&export_site_item)
+                .item(&sync_github_item)
                 .separator()
                 .quit()
                 .build()?;
@@ -659,6 +800,9 @@ pub fn run() {
 
             app.on_menu_event(move |app_handle, event| {
                 match event.id().as_ref() {
+                    "new_site" => {
+                        let _ = app_handle.emit("menu-new-site", ());
+                    }
                     "open_site" => {
                         let _ = app_handle.emit("menu-open-site", ());
                     }
@@ -667,6 +811,15 @@ pub fn run() {
                     }
                     "reveal_finder" => {
                         let _ = app_handle.emit("menu-reveal-finder", ());
+                    }
+                    "open_code_editor" => {
+                        let _ = app_handle.emit("menu-open-code-editor", ());
+                    }
+                    "export_site" => {
+                        let _ = app_handle.emit("menu-export-site", ());
+                    }
+                    "sync_github" => {
+                        let _ = app_handle.emit("menu-sync-github", ());
                     }
                     _ => {}
                 }
@@ -685,6 +838,8 @@ pub fn run() {
             commands::remove_recent_site,
             commands::open_in_finder,
             commands::open_in_browser,
+            commands::open_in_code_editor,
+            commands::build_static_site,
             commands::create_site,
             commands::get_starter_example_path,
             github::github_get_status,
@@ -694,6 +849,8 @@ pub fn run() {
             github::github_clone_repo,
             github::github_create_and_push_repo,
             github::github_push_site,
+            github::get_git_site_status,
+            github::sync_git_site,
         ]);
 
     builder
