@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Media;
+namespace Phpmystic\Pillar\Media;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 
 /**
  * Resizes one raster image with GD.

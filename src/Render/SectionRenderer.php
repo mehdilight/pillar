@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
 use Phpmystic\Liqx\Environment;
 use Phpmystic\Liqx\Template;
-use Pillar\Render\Drops\SectionDrop;
-use Pillar\Schema\SchemaParser;
-use Pillar\Schema\SettingsCaster;
-use Pillar\Template\SectionInstance;
+use Phpmystic\Pillar\Render\Drops\SectionDrop;
+use Phpmystic\Pillar\Schema\SchemaParser;
+use Phpmystic\Pillar\Schema\SettingsCaster;
+use Phpmystic\Pillar\Template\SectionInstance;
 
 /**
  * One section, rendered.
@@ -70,7 +70,7 @@ final class SectionRenderer {
 	 *
 	 * @return list<array<string, mixed>>
 	 */
-	private function castBlocks( ?\Pillar\Schema\SectionSchema $schema, array $blocks ): array {
+	private function castBlocks( ?\Phpmystic\Pillar\Schema\SectionSchema $schema, array $blocks ): array {
 		if ( null === $schema ) {
 			return $blocks;
 		}

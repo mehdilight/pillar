@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Dev;
+namespace Phpmystic\Pillar\Dev;
 
-use Pillar\Media\AltText;
-use Pillar\PillarException;
-use Pillar\Site\PathPolicy;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Media\AltText;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\PathPolicy;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * The media library: images chosen in the dashboard are ordinary site assets.

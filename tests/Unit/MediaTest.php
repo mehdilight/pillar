@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Dev\Media;
-use Pillar\Dev\Server;
-use Pillar\Media\AltText;
+use Phpmystic\Pillar\Dev\Media;
+use Phpmystic\Pillar\Dev\Server;
+use Phpmystic\Pillar\Media\AltText;
 use Symfony\Component\HttpFoundation\Request;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /**
  * The media library lists each image with the site files that mention it, so

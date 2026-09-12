@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
 /**
  * What a section tells the dashboard about itself.

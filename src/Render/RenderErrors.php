@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
 /**
  * Section failures collected during a render.

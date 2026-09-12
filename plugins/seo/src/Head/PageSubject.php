@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo\Head;
+namespace Phpmystic\Pillar\Seo\Head;
 
-use Pillar\Render\Drops\PageDrop;
-use Pillar\Render\Drops\PaginateDrop;
-use Pillar\Render\Head\HeadContext;
-use Pillar\Seo\Replacements;
-use Pillar\Seo\SeoSettings;
+use Phpmystic\Pillar\Render\Drops\PageDrop;
+use Phpmystic\Pillar\Render\Drops\PaginateDrop;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Seo\Replacements;
+use Phpmystic\Pillar\Seo\SeoSettings;
 
 /**
  * One page's resolved SEO values.

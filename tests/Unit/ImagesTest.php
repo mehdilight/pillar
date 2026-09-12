@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\Builder;
-use Pillar\Dev\Server;
-use Pillar\Media\ImageResizer;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Dev\Server;
+use Phpmystic\Pillar\Media\ImageResizer;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\Builder;
-use Pillar\Build\RouteTable;
-use Pillar\Render\Drops\PaginateDrop;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Build\RouteTable;
+use Phpmystic\Pillar\Render\Drops\PaginateDrop;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /** A template that paginates is not one page but N, known before rendering. */
 final class PaginationTest extends SiteTestCase {
@@ -93,7 +93,7 @@ final class PaginationTest extends SiteTestCase {
 		self::assertFileExists( $this->root . '/dist/blog/page/3/index.html' );
 	}
 
-	/** @return list<\Pillar\Build\Route> */
+	/** @return list<\Phpmystic\Pillar\Build\Route> */
 	private function routes(): array {
 		$pillar = $this->pillar( compile: false );
 

@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo;
+namespace Phpmystic\Pillar\Seo;
 
 /**
  * Yoast's replacement variables, rebuilt: `%%title%% %%sep%% %%sitename%%`

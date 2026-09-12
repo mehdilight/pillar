@@ -1,16 +1,16 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo;
+namespace Phpmystic\Pillar\Seo;
 
-use Pillar\Content\MarkdownFile;
-use Pillar\Plugin\PluginContext;
-use Pillar\Render\Head\HeadContext;
-use Pillar\Schema\ContentSchema;
-use Pillar\Seo\Head\CanonicalUrl;
-use Pillar\Seo\Head\MetaTagsContributor;
-use Pillar\Seo\Head\PageSubject;
-use Pillar\Seo\Head\SchemaContributor;
+use Phpmystic\Pillar\Content\MarkdownFile;
+use Phpmystic\Pillar\Plugin\PluginContext;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Schema\ContentSchema;
+use Phpmystic\Pillar\Seo\Head\CanonicalUrl;
+use Phpmystic\Pillar\Seo\Head\MetaTagsContributor;
+use Phpmystic\Pillar\Seo\Head\PageSubject;
+use Phpmystic\Pillar\Seo\Head\SchemaContributor;
 
 /**
  * Search and sharing: titles, descriptions, canonicals, social cards, a
@@ -22,7 +22,7 @@ use Pillar\Seo\Head\SchemaContributor;
  * sitemap and robots.txt, `extend` for a Liqx global, a theme layer for the
  * breadcrumbs section, and `editor` for the panels.
  */
-final class Plugin implements \Pillar\Plugin\Plugin {
+final class Plugin implements \Phpmystic\Pillar\Plugin\Plugin {
 
 	public function register( PluginContext $context ): void {
 		$themeSettings = $this->themeSettings( $context );

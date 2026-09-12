@@ -8,7 +8,7 @@
  */
 declare( strict_types=1 );
 
-use Pillar\Dev\Server;
+use Phpmystic\Pillar\Dev\Server;
 use Symfony\Component\HttpFoundation\Request;
 
 foreach ( [ __DIR__ . '/../../vendor/autoload.php', __DIR__ . '/../../../../autoload.php' ] as $autoload ) {

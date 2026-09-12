@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
 /** A repeatable block a section hosts. */
 final class BlockSchema {

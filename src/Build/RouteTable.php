@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Build;
+namespace Phpmystic\Pillar\Build;
 
-use Pillar\Content\ContentStore;
-use Pillar\Content\MarkdownFile;
-use Pillar\Render\Drops\PaginateDrop;
-use Pillar\Site\Site;
-use Pillar\Template\PageTemplate;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Content\MarkdownFile;
+use Phpmystic\Pillar\Render\Drops\PaginateDrop;
+use Phpmystic\Pillar\Site\Site;
+use Phpmystic\Pillar\Template\PageTemplate;
 
 /**
  * Every page the site has: its static templates, plus one route per content
@@ -81,7 +81,7 @@ final class RouteTable {
 	}
 
 	/** @return list<Route> */
-	private function pagesOf( string $template, \Pillar\Template\Pagination $paginate ): array {
+	private function pagesOf( string $template, \Phpmystic\Pillar\Template\Pagination $paginate ): array {
 		$items = $this->content->collection( $paginate->collection )->items();
 		$total = count( $items );
 		$pages = max( 1, (int) ceil( $total / $paginate->perPage ) );
@@ -109,7 +109,7 @@ final class RouteTable {
 		return $out;
 	}
 
-	private function paginationOf( string $template ): ?\Pillar\Template\Pagination {
+	private function paginationOf( string $template ): ?\Phpmystic\Pillar\Template\Pagination {
 		$path = $this->site->layers()->resolve( 'templates/' . $template . '.json' );
 
 		return null === $path ? null : PageTemplate::fromFile( $path, $template )->paginate;
@@ -138,7 +138,7 @@ final class RouteTable {
 	 * collection's entry template is not a page of its own either.
 	 */
 	private function isContentTemplate( string $name ): bool {
-		$this->declared ??= array_map( 'strval', array_keys( \Pillar\Schema\ContentSchema::all( $this->site->layers() ) ) );
+		$this->declared ??= array_map( 'strval', array_keys( \Phpmystic\Pillar\Schema\ContentSchema::all( $this->site->layers() ) ) );
 
 		foreach ( array_unique( array_merge( $this->content->collectionNames(), $this->declared ) ) as $collection ) {
 			if ( $this->singular( $collection ) === $name ) {

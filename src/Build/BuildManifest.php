@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Build;
+namespace Phpmystic\Pillar\Build;
 
 /**
  * What the last build produced, and what each page depended on.

@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Head;
+namespace Phpmystic\Pillar\Render\Head;
 
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * What a contributor knows about the page being rendered.

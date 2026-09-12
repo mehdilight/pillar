@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Drops;
+namespace Phpmystic\Pillar\Render\Drops;
 
 /**
  * One page of a collection, and how to reach the others.

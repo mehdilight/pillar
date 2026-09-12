@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo;
+namespace Phpmystic\Pillar\Seo;
 
 use Phpmystic\Liqx\Environment;
-use Pillar\Render\Head\HeadContext;
-use Pillar\Render\LiqxExtension;
-use Pillar\Seo\Head\CanonicalUrl;
-use Pillar\Seo\Head\PageSubject;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Render\LiqxExtension;
+use Phpmystic\Pillar\Seo\Head\CanonicalUrl;
+use Phpmystic\Pillar\Seo\Head\PageSubject;
 
 /**
  * The resolver every surface shares — the head contributors, the sitemap, and

@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
-use Pillar\Site\Layers;
+use Phpmystic\Pillar\Site\Layers;
 
 /**
  * `schemas/<collection>.json` — the content model.

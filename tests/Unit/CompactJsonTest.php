@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Pillar\Support\CompactJson;
+use Phpmystic\Pillar\Support\CompactJson;
 
 final class CompactJsonTest extends TestCase {
 

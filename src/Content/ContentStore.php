@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Content;
+namespace Phpmystic\Pillar\Content;
 
 use League\CommonMark\CommonMarkConverter;
-use Pillar\Render\Drops\CollectionDrop;
-use Pillar\Render\Drops\PageDrop;
-use Pillar\Schema\ContentSchema;
-use Pillar\Schema\FieldType;
-use Pillar\Schema\Setting;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Render\Drops\CollectionDrop;
+use Phpmystic\Pillar\Render\Drops\PageDrop;
+use Phpmystic\Pillar\Schema\ContentSchema;
+use Phpmystic\Pillar\Schema\FieldType;
+use Phpmystic\Pillar\Schema\Setting;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * Every markdown file in the site, grouped by collection.
@@ -145,7 +145,7 @@ final class ContentStore {
 		$parts = [];
 
 		foreach ( $this->files()[ $name ] ?? [] as $file ) {
-			$parts[] = $file->path . ':' . \Pillar\Build\FileHash::of( $file->path );
+			$parts[] = $file->path . ':' . \Phpmystic\Pillar\Build\FileHash::of( $file->path );
 		}
 
 		sort( $parts );

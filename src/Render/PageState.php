@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
-use Pillar\Template\SectionInstance;
+use Phpmystic\Pillar\Template\SectionInstance;
 
 /**
  * The page currently rendering.

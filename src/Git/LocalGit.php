@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Git;
+namespace Phpmystic\Pillar\Git;
 
 /**
  * Git, through the binary.

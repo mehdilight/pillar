@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Cli;
+namespace Phpmystic\Pillar\Cli;
 
 use Symfony\Component\Console\Application as ConsoleApplication;
 

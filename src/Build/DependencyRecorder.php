@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Build;
+namespace Phpmystic\Pillar\Build;
 
-use Pillar\Content\ContentStore;
-use Pillar\Render\LayeredFileSystem;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Render\LayeredFileSystem;
 
 /**
  * Every template a page actually pulled in.

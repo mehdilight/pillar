@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Dev;
+namespace Phpmystic\Pillar\Dev;
 
-use Pillar\Build\RouteTable;
-use Pillar\Git\LocalGit;
-use Pillar\Pillar;
-use Pillar\PillarException;
-use Pillar\Site\PathPolicy;
+use Phpmystic\Pillar\Build\RouteTable;
+use Phpmystic\Pillar\Git\LocalGit;
+use Phpmystic\Pillar\Pillar;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\PathPolicy;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -253,7 +253,7 @@ final class Server {
 		return new Response( $html, 200, [ 'Content-Type' => 'text/html; charset=utf-8' ] );
 	}
 
-	/** @param list<\Pillar\Build\Route> $routes */
+	/** @param list<\Phpmystic\Pillar\Build\Route> $routes */
 	private function notFound( string $url, array $routes ): string {
 		$known = implode( '', array_map(
 			static fn ( $route ): string => sprintf( '<li><a href="/preview%s">%s</a></li>', $route->url, htmlspecialchars( $route->url ) ),

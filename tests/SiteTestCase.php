@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests;
+namespace Phpmystic\Pillar\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Pillar\Pillar;
+use Phpmystic\Pillar\Pillar;
 
 /**
  * Renders against `tests/fixtures/site`, copied into a temp directory so a test

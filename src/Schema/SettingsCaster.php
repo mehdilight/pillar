@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
 /**
  * Turns what the dashboard stored into what a template should see.
@@ -15,7 +15,7 @@ namespace Pillar\Schema;
 final class SettingsCaster {
 
 	/** With the site's content, a relationship setting reads as the entries it names. */
-	public function __construct( private readonly ?\Pillar\Content\ContentStore $content = null ) {}
+	public function __construct( private readonly ?\Phpmystic\Pillar\Content\ContentStore $content = null ) {}
 
 	/**
 	 * @param array<string, mixed> $stored

@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Head;
+namespace Phpmystic\Pillar\Render\Head;
 
 /**
  * One element a contributor wants in `<head>`, as data rather than markup.

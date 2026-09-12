@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Template;
+namespace Phpmystic\Pillar\Template;
 
 /** One section on a page: which type, with which settings and blocks. */
 final class SectionInstance {

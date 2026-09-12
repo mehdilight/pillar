@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Content;
+namespace Phpmystic\Pillar\Content;
 
-use Pillar\PillarException;
-use Pillar\Schema\ContentSchema;
-use Pillar\Schema\Setting;
-use Pillar\Site\Site;
-use Pillar\Support\CompactJson;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Schema\ContentSchema;
+use Phpmystic\Pillar\Schema\Setting;
+use Phpmystic\Pillar\Site\Site;
+use Phpmystic\Pillar\Support\CompactJson;
 
 /**
  * Creating and changing a content type.

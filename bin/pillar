@@ -10,4 +10,4 @@ foreach ( [ __DIR__ . '/../vendor/autoload.php', __DIR__ . '/../../../autoload.p
 	}
 }
 
-exit( ( new Pillar\Cli\Application() )->run() );
+exit( ( new Phpmystic\Pillar\Cli\Application() )->run() );

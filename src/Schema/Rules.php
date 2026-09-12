@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
 /**
  * What a field's value must satisfy: required, a character limit, an email

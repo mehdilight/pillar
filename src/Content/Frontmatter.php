@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Content;
+namespace Phpmystic\Pillar\Content;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 

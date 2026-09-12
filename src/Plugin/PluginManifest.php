@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Plugin;
+namespace Phpmystic\Pillar\Plugin;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 use Symfony\Component\Yaml\Yaml;
 
 /** `plugin.yaml` — the only file a plugin must have. */

@@ -1,5 +1,5 @@
 {
-    "name": "pillar/pillar",
+    "name": "phpmystic/pillar",
     "description": "A local-first static site generator built on Liqx: markdown and liqx templates in, plain HTML out, with a schema-driven visual editor and git as the store.",
     "type": "library",
     "license": "MIT",
@@ -7,7 +7,7 @@
         "php": ">=8.2",
         "ext-mbstring": "*",
         "ext-json": "*",
-        "phpmystic/liqx": "*",
+        "phpmystic/liqx": "^0.1",
         "league/commonmark": "^2.5",
         "symfony/console": "^7.0",
         "symfony/finder": "^7.0",
@@ -18,18 +18,11 @@
         "phpstan/phpstan": "^2.2",
         "phpunit/phpunit": "^11.0"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../phpmystic/liqx",
-            "options": { "symlink": true }
-        }
-    ],
     "autoload": {
-        "psr-4": { "Pillar\\": "src/" }
+        "psr-4": { "Phpmystic\\Pillar\\": "src/" }
     },
     "autoload-dev": {
-        "psr-4": { "Pillar\\Tests\\": "tests/" }
+        "psr-4": { "Phpmystic\\Pillar\\Tests\\": "tests/" }
     },
     "bin": ["bin/pillar"],
     "config": {

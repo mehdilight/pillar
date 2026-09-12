@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Build;
+namespace Phpmystic\Pillar\Build;
 
 /**
  * Routes a plugin contributes: a sitemap, a feed, a robots.txt.
@@ -28,10 +28,10 @@ final class RouteRegistry {
 	public function add( string $url, string $type, callable $render ): void {
 		$url = '/' . ltrim( $url, '/' );
 		if ( ! preg_match( '#^/(?:[a-zA-Z0-9_-]+/)*[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+$#', $url ) ) {
-			throw new \Pillar\PillarException( 'Plugin routes must be file URLs without traversal: ' . $url );
+			throw new \Phpmystic\Pillar\PillarException( 'Plugin routes must be file URLs without traversal: ' . $url );
 		}
 		if ( isset( $this->routes[ $url ] ) ) {
-			throw new \Pillar\PillarException( 'Duplicate plugin route: ' . $url );
+			throw new \Phpmystic\Pillar\PillarException( 'Duplicate plugin route: ' . $url );
 		}
 
 		$this->routes[ $url ] = [ 'url' => $url, 'type' => $type, 'render' => $render ];

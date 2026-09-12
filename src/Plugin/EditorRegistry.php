@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Plugin;
+namespace Phpmystic\Pillar\Plugin;
 
-use Pillar\PillarException;
-use Pillar\Schema\Setting;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Schema\Setting;
 
 /**
  * What plugins add to the dashboard: settings panels, content-editor panels,

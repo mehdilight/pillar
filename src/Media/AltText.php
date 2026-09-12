@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Media;
+namespace Phpmystic\Pillar\Media;
 
 use League\CommonMark\Event\DocumentParsedEvent;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
 use League\CommonMark\Node\Inline\Text;
-use Pillar\PillarException;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * An image's alt text, written once in the media library and used wherever

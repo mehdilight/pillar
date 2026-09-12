@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Site;
+namespace Phpmystic\Pillar\Site;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 
 /**
  * The lookup cascade: the site's own files, then theme addons in the order

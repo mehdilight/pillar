@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Template;
+namespace Phpmystic\Pillar\Template;
 
 /**
  * A template's declaration that it paginates a collection.

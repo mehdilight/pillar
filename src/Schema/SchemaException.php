@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 
 /** A `<schema>` block that cannot be believed. */
 final class SchemaException extends PillarException {}

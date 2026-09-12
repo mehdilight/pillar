@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Content;
+namespace Phpmystic\Pillar\Content;
 
 use League\CommonMark\CommonMarkConverter;
 use League\CommonMark\Extension\Autolink\AutolinkExtension;

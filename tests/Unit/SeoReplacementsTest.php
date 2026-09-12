@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Pillar\Seo\Replacements;
+use Phpmystic\Pillar\Seo\Replacements;
 
 // Plugin classes autoload at runtime via PluginLoader, not composer's static map.
 require_once dirname( __DIR__, 2 ) . '/plugins/seo/src/Replacements.php';

@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Drops;
+namespace Phpmystic\Pillar\Render\Drops;
 
 /**
  * `{collections.posts}` — a list of `PageDrop`s, plus what a theme asks about the list.

@@ -48,7 +48,7 @@ $php = <<<PHP
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
 /**
  * The setting types a `<schema>` block may declare.

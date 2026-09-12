@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Content;
+namespace Phpmystic\Pillar\Content;
 
-use Pillar\PillarException;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * Editor-owned navigation data.

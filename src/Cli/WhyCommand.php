@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Cli;
+namespace Phpmystic\Pillar\Cli;
 
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Site\Site;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

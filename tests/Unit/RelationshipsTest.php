@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Render\Drops\PageDrop;
-use Pillar\Schema\Setting;
-use Pillar\Schema\SettingsCaster;
-use Pillar\Schema\Validator;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Render\Drops\PageDrop;
+use Phpmystic\Pillar\Schema\Setting;
+use Phpmystic\Pillar\Schema\SettingsCaster;
+use Phpmystic\Pillar\Schema\Validator;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /**
  * A relationship is stored as references and read as entries: a template

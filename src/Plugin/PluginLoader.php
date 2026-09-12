@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Plugin;
+namespace Phpmystic\Pillar\Plugin;
 
-use Pillar\Build\BuildHooks;
-use Pillar\Build\RouteRegistry;
-use Pillar\PillarException;
-use Pillar\Render\Head\HeadRegistry;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Build\BuildHooks;
+use Phpmystic\Pillar\Build\RouteRegistry;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Render\Head\HeadRegistry;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * Finding, autoloading and registering a site's plugins.
@@ -33,7 +33,7 @@ final class PluginLoader {
 		private readonly HeadRegistry $head,
 		private readonly RouteRegistry $routes,
 		private readonly BuildHooks $build,
-		private readonly \Pillar\Content\ContentStore $content,
+		private readonly \Phpmystic\Pillar\Content\ContentStore $content,
 		private readonly EditorRegistry $editor,
 	) {}
 

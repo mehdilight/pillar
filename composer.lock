@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b7ab90574741d4a728629f5f13280e8d",
+    "content-hash": "f94244baf0af9083eb8ecec7e590e356",
     "packages": [
         {
             "name": "dflydev/dot-access-data",
@@ -430,11 +430,17 @@
         },
         {
             "name": "phpmystic/liqx",
-            "version": "0.1.0",
+            "version": "v0.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mehdilight/liqx.git",
+                "reference": "e716ee2df34036f2f2da2022d6df6b2f5592fa35"
+            },
             "dist": {
-                "type": "path",
-                "url": "../phpmystic/liqx",
-                "reference": "e1f0e071c4baa48b8f6f9cb7558b00ebe3720c1c"
+                "type": "zip",
+                "url": "https://api.github.com/repos/mehdilight/liqx/zipball/e716ee2df34036f2f2da2022d6df6b2f5592fa35",
+                "reference": "e716ee2df34036f2f2da2022d6df6b2f5592fa35",
+                "shasum": ""
             },
             "require": {
                 "ext-mbstring": "*",
@@ -450,30 +456,25 @@
                     "Phpmystic\\Liqx\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Phpmystic\\Liqx\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "phpunit"
-                ],
-                "lint": [
-                    "@php -r 'foreach (array_merge(glob(\"src/**/*.php\"), glob(\"tests/**/*.php\")) as $f) { exec(\"php -l \" . escapeshellarg($f) . \" 2>&1\", $o, $c); if ($c) { echo implode(PHP_EOL, $o), PHP_EOL; exit(1); } } echo \"lint clean\", PHP_EOL;'"
-                ],
-                "analyse": [
-                    "phpstan analyse"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
-            "description": "A compiler-grounded JSX-flavored template engine for PHP. Keeps Liquid's section/schema/block model but swaps {{ }} / {% %} for real HTML + real JS-style { } expressions, with a restricted, sandboxed frontmatter subset.",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "description": "A JSX-style template engine for PHP with compiled rendering, components, schema validation, and restricted JavaScript-style expressions.",
+            "homepage": "https://github.com/mehdilight/liqx",
+            "keywords": [
+                "compiler",
+                "jsx",
+                "liquid",
+                "template",
+                "templating"
+            ],
+            "support": {
+                "docs": "https://github.com/mehdilight/liqx/tree/main/docs/syntax",
+                "issues": "https://github.com/mehdilight/liqx/issues",
+                "source": "https://github.com/mehdilight/liqx"
+            },
+            "time": "2026-09-12T16:03:47+00:00"
         },
         {
             "name": "psr/container",

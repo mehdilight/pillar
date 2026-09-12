@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Cli;
+namespace Phpmystic\Pillar\Cli;
 
-use Pillar\PillarException;
-use Pillar\Schema\Validator;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Schema\Validator;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

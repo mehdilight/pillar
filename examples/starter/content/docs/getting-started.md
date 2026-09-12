@@ -5,7 +5,7 @@ order: 1
 Install the package, then work on a directory:
 
 ```bash
-composer require pillar/pillar
+composer require phpmystic/pillar
 pillar dev --site ./my-site
 ```
 

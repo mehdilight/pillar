@@ -1,15 +1,15 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Dev\Server;
-use Pillar\Schema\ContentSchema;
-use Pillar\Schema\Rules;
-use Pillar\Schema\SchemaException;
-use Pillar\Schema\Setting;
-use Pillar\Schema\Validator;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Dev\Server;
+use Phpmystic\Pillar\Schema\ContentSchema;
+use Phpmystic\Pillar\Schema\Rules;
+use Phpmystic\Pillar\Schema\SchemaException;
+use Phpmystic\Pillar\Schema\Setting;
+use Phpmystic\Pillar\Schema\Validator;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo\Head;
+namespace Phpmystic\Pillar\Seo\Head;
 
-use Pillar\Render\Head\HeadContext;
-use Pillar\Render\Head\HeadContributor;
-use Pillar\Render\Head\HeadTag;
-use Pillar\Seo\SeoEngine;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Render\Head\HeadContributor;
+use Phpmystic\Pillar\Render\Head\HeadTag;
+use Phpmystic\Pillar\Seo\SeoEngine;
 
 /**
  * One connected schema.org graph per page.
@@ -16,7 +16,7 @@ use Pillar\Seo\SeoEngine;
  * publisher — which is what search engines actually read, rather than a pile
  * of unrelated fragments. Adapted from bastet's product graph to a
  * general-purpose site: an entry becomes an article node when its collection
- * says it is one (see {@see \Pillar\Seo\SeoSettings::articleType()}).
+ * says it is one (see {@see \Phpmystic\Pillar\Seo\SeoSettings::articleType()}).
  */
 final class SchemaContributor implements HeadContributor {
 

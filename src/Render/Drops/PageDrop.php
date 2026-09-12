@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Drops;
+namespace Phpmystic\Pillar\Render\Drops;
 
-use Pillar\Content\MarkdownFile;
+use Phpmystic\Pillar\Content\MarkdownFile;
 
 /**
  * One content item — a post, a page — as a template sees it.

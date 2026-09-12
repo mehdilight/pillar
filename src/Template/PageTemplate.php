@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Template;
+namespace Phpmystic\Pillar\Template;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 
 /**
  * `templates/<name>.json` — the author's composition of a page.

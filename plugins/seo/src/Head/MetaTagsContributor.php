@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo\Head;
+namespace Phpmystic\Pillar\Seo\Head;
 
-use Pillar\Render\Head\HeadContext;
-use Pillar\Render\Head\HeadContributor;
-use Pillar\Render\Head\HeadTag;
-use Pillar\Seo\SeoEngine;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Render\Head\HeadContributor;
+use Phpmystic\Pillar\Render\Head\HeadTag;
+use Phpmystic\Pillar\Seo\SeoEngine;
 
 /**
  * Title, description, robots, canonical, Open Graph and Twitter — as one

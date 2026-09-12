@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Media;
+namespace Phpmystic\Pillar\Media;
 
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * How images are resized — `images` in `site.json`, every key optional:

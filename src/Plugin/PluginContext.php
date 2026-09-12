@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Plugin;
+namespace Phpmystic\Pillar\Plugin;
 
-use Pillar\Build\BuildHooks;
-use Pillar\Build\RouteRegistry;
-use Pillar\Content\ContentStore;
-use Pillar\Render\Head\HeadRegistry;
-use Pillar\Render\LiqxExtension;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Build\BuildHooks;
+use Phpmystic\Pillar\Build\RouteRegistry;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Render\Head\HeadRegistry;
+use Phpmystic\Pillar\Render\LiqxExtension;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * What a plugin is handed: the site, the registries, its own settings.
@@ -72,7 +72,7 @@ final class PluginContext {
 		$raw = json_decode( (string) file_get_contents( $path ), true );
 
 		if ( ! is_array( $raw ) ) {
-			throw new \Pillar\PillarException( 'Invalid plugin settings: ' . $path );
+			throw new \Phpmystic\Pillar\PillarException( 'Invalid plugin settings: ' . $path );
 		}
 
 		return $raw;

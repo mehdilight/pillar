@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
 use Phpmystic\Liqx\FileSystem;
 use Phpmystic\Liqx\FileSystemException;
-use Pillar\Site\Layers;
-use Pillar\Support\Str;
+use Phpmystic\Pillar\Site\Layers;
+use Phpmystic\Pillar\Support\Str;
 
 /**
  * How Liqx resolves a bare name to source, across Pillar's layer cascade.

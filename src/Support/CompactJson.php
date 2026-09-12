@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Support;
+namespace Phpmystic\Pillar\Support;
 
 /**
  * JSON written the way a person writes a schema file: two-space indent, a

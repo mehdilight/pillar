@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Build;
+namespace Phpmystic\Pillar\Build;
 
-use Pillar\Pillar;
+use Phpmystic\Pillar\Pillar;
 
 /**
  * The build: every route rendered, written to `dist/`.
@@ -94,7 +94,7 @@ final class Builder {
 		foreach ( $this->pillar->routes->all() as $route ) {
 			$relative = ltrim( $route['url'], '/' );
 			if ( in_array( $relative, $outputs, true ) ) {
-				throw new \Pillar\PillarException( 'Plugin route conflicts with a page: ' . $route['url'] );
+				throw new \Phpmystic\Pillar\PillarException( 'Plugin route conflicts with a page: ' . $route['url'] );
 			}
 			$contents = ( $route['render'] )();
 			@mkdir( dirname( $output . '/' . $relative ), 0777, true );
@@ -207,7 +207,7 @@ final class Builder {
 	 */
 	private function fingerprint( array $assets, array $copies ): string {
 		$parts = [
-			'pillar:' . \Pillar\Cli\Application::VERSION,
+			'pillar:' . \Phpmystic\Pillar\Cli\Application::VERSION,
 			'assets:' . md5( (string) json_encode( $assets ) ),
 			'images:' . md5( (string) json_encode( $copies ) . '|' . $this->pillar->images->config->sizes ),
 		];
@@ -234,7 +234,7 @@ final class Builder {
 	/** @param list<string> $active */
 	private function removeOutput( string $relative, array $active, string $output ): void {
 		if ( str_starts_with( $relative, '/' ) || str_contains( $relative, '..' ) || str_contains( $relative, '\\' ) ) {
-			throw new \Pillar\PillarException( 'Unsafe output in build manifest: ' . $relative );
+			throw new \Phpmystic\Pillar\PillarException( 'Unsafe output in build manifest: ' . $relative );
 		}
 		if ( ! in_array( $relative, $active, true ) && is_file( $output . '/' . $relative ) ) {
 			unlink( $output . '/' . $relative );

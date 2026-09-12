@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Drops;
+namespace Phpmystic\Pillar\Render\Drops;
 
 /**
  * `{section.settings.heading}` — what a section knows about itself.

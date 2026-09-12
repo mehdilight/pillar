@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Head;
+namespace Phpmystic\Pillar\Render\Head;
 
 /**
  * Every `<head>` contributor, and the one place their output is ordered,
@@ -27,7 +27,7 @@ final class HeadRegistry {
 
 	private int $sequence = 0;
 
-	public function __construct( private readonly ?\Pillar\Render\RenderErrors $errors = null ) {}
+	public function __construct( private readonly ?\Phpmystic\Pillar\Render\RenderErrors $errors = null ) {}
 
 	public function register( HeadContributor $contributor ): void {
 		$this->contributors[] = [ 'contributor' => $contributor, 'seq' => $this->sequence++ ];

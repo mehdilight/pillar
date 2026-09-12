@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Content;
+namespace Phpmystic\Pillar\Content;
 
 /** One `content/<collection>/<slug>.md`, parsed but not yet rendered. */
 final class MarkdownFile {

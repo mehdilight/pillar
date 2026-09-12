@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Media;
+namespace Phpmystic\Pillar\Media;
 
 use League\CommonMark\Event\DocumentParsedEvent;
 use League\CommonMark\Extension\CommonMark\Node\Inline\Image;
-use Pillar\PillarException;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * Smaller copies of the site's images, and what a page needs to use them.

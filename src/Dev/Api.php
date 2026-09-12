@@ -1,25 +1,25 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Dev;
+namespace Phpmystic\Pillar\Dev;
 
-use Pillar\Build\Builder;
-use Pillar\Content\ContentStore;
-use Pillar\Content\ContentType;
-use Pillar\Content\FrontmatterWriter;
-use Pillar\Content\MarkdownFile;
-use Pillar\Content\MenuStore;
-use Pillar\Git\LocalGit;
-use Pillar\Pillar;
-use Pillar\PillarException;
-use Pillar\Schema\ContentSchema;
-use Pillar\Schema\SchemaException;
-use Pillar\Schema\SectionSchema;
-use Pillar\Schema\Rules;
-use Pillar\Schema\Setting;
-use Pillar\Site\PathPolicy;
-use Pillar\Template\PageTemplate;
-use Pillar\Template\SectionInstance;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Content\ContentType;
+use Phpmystic\Pillar\Content\FrontmatterWriter;
+use Phpmystic\Pillar\Content\MarkdownFile;
+use Phpmystic\Pillar\Content\MenuStore;
+use Phpmystic\Pillar\Git\LocalGit;
+use Phpmystic\Pillar\Pillar;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Schema\ContentSchema;
+use Phpmystic\Pillar\Schema\SchemaException;
+use Phpmystic\Pillar\Schema\SectionSchema;
+use Phpmystic\Pillar\Schema\Rules;
+use Phpmystic\Pillar\Schema\Setting;
+use Phpmystic\Pillar\Site\PathPolicy;
+use Phpmystic\Pillar\Template\PageTemplate;
+use Phpmystic\Pillar\Template\SectionInstance;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -632,7 +632,7 @@ final class Api {
 	 * markdown implementations do not agree about enough to promise that.
 	 */
 	private function markdown( string $body ): string {
-		return \Pillar\Content\Markdown::converter()
+		return \Phpmystic\Pillar\Content\Markdown::converter()
 			->convert( $body )
 			->getContent();
 	}

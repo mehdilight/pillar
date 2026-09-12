@@ -1,20 +1,20 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
 use Phpmystic\Liqx\Environment;
 use Phpmystic\Liqx\Template;
-use Pillar\Content\ContentStore;
-use Pillar\Content\MenuStore;
-use Pillar\PillarException;
-use Pillar\Render\Drops\SiteDrop;
-use Pillar\Render\Head\HeadContext;
-use Pillar\Render\Head\HeadRegistry;
-use Pillar\Site\Layers;
-use Pillar\Site\Site;
-use Pillar\Template\PageTemplate;
-use Pillar\Template\SectionInstance;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Content\MenuStore;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Render\Drops\SiteDrop;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Render\Head\HeadRegistry;
+use Phpmystic\Pillar\Site\Layers;
+use Phpmystic\Pillar\Site\Site;
+use Phpmystic\Pillar\Template\PageTemplate;
+use Phpmystic\Pillar\Template\SectionInstance;
 
 /**
  * A whole page: the page's template JSON, each section rendered, wrapped in

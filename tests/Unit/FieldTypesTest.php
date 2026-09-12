@@ -1,17 +1,17 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Content\FrontmatterWriter;
-use Pillar\Dev\Media;
-use Pillar\PillarException;
-use Pillar\Schema\ContentSchema;
-use Pillar\Schema\SchemaException;
-use Pillar\Schema\Setting;
-use Pillar\Schema\SettingsCaster;
-use Pillar\Schema\Validator;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Content\FrontmatterWriter;
+use Phpmystic\Pillar\Dev\Media;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Schema\ContentSchema;
+use Phpmystic\Pillar\Schema\SchemaException;
+use Phpmystic\Pillar\Schema\Setting;
+use Phpmystic\Pillar\Schema\SettingsCaster;
+use Phpmystic\Pillar\Schema\Validator;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /**
  * Groups, repeaters, tables, checkboxes, icons and files — and the options

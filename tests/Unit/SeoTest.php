@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\Builder;
-use Pillar\Build\RouteTable;
-use Pillar\Dev\Server;
-use Pillar\PillarException;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Build\RouteTable;
+use Phpmystic\Pillar\Dev\Server;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 final class SeoTest extends SiteTestCase {

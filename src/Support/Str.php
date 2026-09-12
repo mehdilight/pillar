@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Support;
+namespace Phpmystic\Pillar\Support;
 
 /** The two naming conventions Pillar straddles: PHP's camelCase, templates' snake_case. */
 final class Str {

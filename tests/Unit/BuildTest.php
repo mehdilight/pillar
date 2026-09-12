@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\Builder;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /** B3: the build writes `dist/`, and rebuilds only what changed. */
 final class BuildTest extends SiteTestCase {
@@ -57,7 +57,7 @@ final class BuildTest extends SiteTestCase {
 		file_put_contents( $this->root . '/schemas/guides.json', '{"label": "Guides", "fields": [{"id": "title", "type": "text"}]}' );
 		copy( $this->root . '/templates/post.json', $this->root . '/templates/guide.json' );
 
-		$urls = array_map( static fn ( $route ): string => $route->url, ( new \Pillar\Build\RouteTable( $this->pillar()->site, $this->pillar()->content ) )->all() );
+		$urls = array_map( static fn ( $route ): string => $route->url, ( new \Phpmystic\Pillar\Build\RouteTable( $this->pillar()->site, $this->pillar()->content ) )->all() );
 
 		self::assertNotContains( '/guide/', $urls );
 	}

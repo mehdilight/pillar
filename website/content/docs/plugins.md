@@ -48,10 +48,10 @@ One method:
 namespace Acme\ReadingTime;
 
 use Phpmystic\Liqx\Environment;
-use Pillar\Plugin\PluginContext;
-use Pillar\Render\LiqxExtension;
+use Phpmystic\Pillar\Plugin\PluginContext;
+use Phpmystic\Pillar\Render\LiqxExtension;
 
-final class Plugin implements \Pillar\Plugin\Plugin, LiqxExtension {
+final class Plugin implements \Phpmystic\Pillar\Plugin\Plugin, LiqxExtension {
 
 	public function register( PluginContext $context ): void {
 		$context->extend( $this );

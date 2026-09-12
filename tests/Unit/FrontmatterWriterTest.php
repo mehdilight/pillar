@@ -1,11 +1,11 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Pillar\Content\Frontmatter;
-use Pillar\Content\FrontmatterWriter;
+use Phpmystic\Pillar\Content\Frontmatter;
+use Phpmystic\Pillar\Content\FrontmatterWriter;
 
 /** Saving an entry must not restyle the lines nobody edited. */
 final class FrontmatterWriterTest extends TestCase {

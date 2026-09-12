@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Dev\Server;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Dev\Server;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

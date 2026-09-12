@@ -24,7 +24,7 @@ No database or hosted account is required. The generated site can be served by a
 
 Pillar is under active development. The renderer, dashboard, visual editor, validation, Git integration, and SEO plugin are implemented. APIs and file formats may evolve.
 
-The current installation uses a local Composer path repository for Liqx. Composer plugin discovery, plugin lifecycle commands, feed/search plugins, and deployment adapters are planned.
+Composer plugin discovery, plugin lifecycle commands, feed/search plugins, and deployment adapters are planned.
 
 ## Requirements
 
@@ -39,12 +39,9 @@ PHP's `gd` extension enables image resizing; `exif` enables photo orientation co
 
 ### 1. Clone and install
 
-Clone Pillar and Liqx into the layout expected by [`composer.json`](composer.json). Run these commands in the directory where you keep your projects:
+Clone Pillar and install its dependencies:
 
 ```bash
-mkdir pillar-dev
-cd pillar-dev
-git clone https://github.com/mehdilight/liqx.git phpmystic/liqx
 git clone https://github.com/mehdilight/pillar.git pillar
 cd pillar
 
@@ -53,7 +50,7 @@ npm --prefix apps/editor ci
 npm --prefix apps/editor run build
 ```
 
-The relative path `../phpmystic/liqx` is required by the current Composer configuration. Both repositories must be accessible to your Git account. The dashboard build also compiles the bundled plugin interfaces.
+Composer installs the published Liqx package from Packagist. The lockfile pins the dependency versions. The dashboard build also compiles the bundled plugin interfaces.
 
 ### 2. Open the starter site
 

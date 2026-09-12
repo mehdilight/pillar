@@ -1,31 +1,31 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar;
+namespace Phpmystic\Pillar;
 
 use League\CommonMark\Event\DocumentParsedEvent;
 use Phpmystic\Liqx\Environment;
-use Pillar\Content\ContentStore;
-use Pillar\Media\AltText;
-use Pillar\Media\ImageConfig;
-use Pillar\Media\Images;
-use Pillar\Render\EnvironmentFactory;
-use Pillar\Render\Filters;
-use Pillar\Render\LayeredFileSystem;
-use Pillar\Render\LiqxExtension;
-use Pillar\Render\PageRenderer;
-use Pillar\Render\PageState;
-use Pillar\Render\RenderErrors;
-use Pillar\Render\SectionRenderer;
-use Pillar\Schema\SchemaParser;
-use Pillar\Schema\SettingsCaster;
-use Pillar\Site\Site;
-use Pillar\Plugin\PluginLoader;
-use Pillar\Plugin\EditorRegistry;
-use Pillar\Build\BuildHooks;
-use Pillar\Build\RouteRegistry;
-use Pillar\Render\Head\HeadRegistry;
-use Pillar\Render\Head\DefaultContributor;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Media\AltText;
+use Phpmystic\Pillar\Media\ImageConfig;
+use Phpmystic\Pillar\Media\Images;
+use Phpmystic\Pillar\Render\EnvironmentFactory;
+use Phpmystic\Pillar\Render\Filters;
+use Phpmystic\Pillar\Render\LayeredFileSystem;
+use Phpmystic\Pillar\Render\LiqxExtension;
+use Phpmystic\Pillar\Render\PageRenderer;
+use Phpmystic\Pillar\Render\PageState;
+use Phpmystic\Pillar\Render\RenderErrors;
+use Phpmystic\Pillar\Render\SectionRenderer;
+use Phpmystic\Pillar\Schema\SchemaParser;
+use Phpmystic\Pillar\Schema\SettingsCaster;
+use Phpmystic\Pillar\Site\Site;
+use Phpmystic\Pillar\Plugin\PluginLoader;
+use Phpmystic\Pillar\Plugin\EditorRegistry;
+use Phpmystic\Pillar\Build\BuildHooks;
+use Phpmystic\Pillar\Build\RouteRegistry;
+use Phpmystic\Pillar\Render\Head\HeadRegistry;
+use Phpmystic\Pillar\Render\Head\DefaultContributor;
 
 /**
  * The composition root: one site, wired.
@@ -51,7 +51,7 @@ final class Pillar {
 		public readonly RouteRegistry $routes,
 		public readonly BuildHooks $build,
 		public readonly EditorRegistry $editor,
-		/** @var list<\Pillar\Plugin\PluginContext> */
+		/** @var list<\Phpmystic\Pillar\Plugin\PluginContext> */
 		public readonly array $plugins,
 		public readonly Images $images,
 	) {}
@@ -67,7 +67,7 @@ final class Pillar {
 		array $extensions = [],
 	): self {
 		$site     = Site::load( $root );
-		$markdown = \Pillar\Content\Markdown::converter();
+		$markdown = \Phpmystic\Pillar\Content\Markdown::converter();
 		$alt      = new AltText( $site );
 		$images   = new Images( $site, ImageConfig::fromSite( $site ) );
 

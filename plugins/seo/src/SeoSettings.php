@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo;
+namespace Phpmystic\Pillar\Seo;
 
-use Pillar\Content\ContentType;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Content\ContentType;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * The plugin's settings: `config/plugins/seo.json`, over these defaults.

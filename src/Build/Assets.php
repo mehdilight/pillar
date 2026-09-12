@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Build;
+namespace Phpmystic\Pillar\Build;
 
-use Pillar\Site\PathPolicy;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Site\PathPolicy;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * Copies `assets/` from every layer into `dist/assets/`, content-hashing each

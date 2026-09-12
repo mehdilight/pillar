@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\PillarException;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /** B1's contract: a template JSON, some `.liqx` and some markdown become HTML. */
 final class PageRenderTest extends SiteTestCase {

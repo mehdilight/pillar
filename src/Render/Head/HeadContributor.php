@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Head;
+namespace Phpmystic\Pillar\Render\Head;
 
 /**
  * Something that wants tags in `<head>`.

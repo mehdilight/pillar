@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Site;
+namespace Phpmystic\Pillar\Site;
 
-use Pillar\PillarException;
+use Phpmystic\Pillar\PillarException;
 
 /**
  * `site.json` — everything the build needs to know that is not a template.

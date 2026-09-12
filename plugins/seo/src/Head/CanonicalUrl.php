@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo\Head;
+namespace Phpmystic\Pillar\Seo\Head;
 
 /**
  * One URL normalisation, shared by the meta tags, the social cards, the graph

@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\Builder;
-use Pillar\Content\ContentType;
-use Pillar\PillarException;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Content\ContentType;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /** Creating a content type: the three files, written the way a person would. */
 final class ContentTypeTest extends SiteTestCase {
@@ -19,10 +19,10 @@ final class ContentTypeTest extends SiteTestCase {
 		file_put_contents( $path, json_encode( $raw ) );
 		$this->types()->update( 'guides', 'Help', $raw['fields'] );
 		$updated = json_decode( (string) file_get_contents( $path ), true );
-		$schema = \Pillar\Schema\ContentSchema::fromArray( 'guides', $updated );
+		$schema = \Phpmystic\Pillar\Schema\ContentSchema::fromArray( 'guides', $updated );
 		self::assertSame( 'book-open', $schema->toArray()['icon'] );
 		self::assertSame( 'Help', $schema->label );
-		self::assertSame( 'file-text', \Pillar\Schema\ContentSchema::fromArray( 'plain', [] )->icon );
+		self::assertSame( 'file-text', \Phpmystic\Pillar\Schema\ContentSchema::fromArray( 'plain', [] )->icon );
 	}
 
 	public function test_it_writes_the_schema_the_folder_and_the_template(): void {

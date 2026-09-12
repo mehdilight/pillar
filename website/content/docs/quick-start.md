@@ -14,14 +14,12 @@ Node is only needed to work on Pillar's own dashboard; it ships prebuilt in `pub
 
 ## Install
 
-Pillar is not on Packagist yet, and depends on Liqx through a path repository. Clone the two side by side:
+Install Pillar from its Git repository. Composer installs the published Liqx dependency from Packagist:
 
 ```bash
-mkdir pillar-dev && cd pillar-dev
-git clone <liqx repository> phpmystic/liqx
-git clone <pillar repository> pillar
+git clone https://github.com/mehdilight/pillar.git pillar
 cd pillar && composer install
-(cd apps/editor && npm install && npm run build)   # the dashboard
+(cd apps/editor && npm ci && npm run build)   # the dashboard
 ```
 
 Every command in these docs is `bin/pillar` from that checkout; `pillar` below is short for it.

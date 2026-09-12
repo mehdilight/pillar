@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Seo;
+namespace Phpmystic\Pillar\Seo;
 
-use Pillar\Build\RouteTable;
-use Pillar\Plugin\PluginContext;
-use Pillar\Render\Head\HeadContext;
-use Pillar\Seo\Head\CanonicalUrl;
+use Phpmystic\Pillar\Build\RouteTable;
+use Phpmystic\Pillar\Plugin\PluginContext;
+use Phpmystic\Pillar\Render\Head\HeadContext;
+use Phpmystic\Pillar\Seo\Head\CanonicalUrl;
 
 /**
  * `/sitemap.xml` — and, past the page-size limit, `/sitemap-N.xml` behind an

@@ -1,13 +1,13 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
 use PHPUnit\Framework\Attributes\DataProvider;
-use Pillar\PillarException;
-use Pillar\Site\PathPolicy;
-use Pillar\Site\Site;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\PathPolicy;
+use Phpmystic\Pillar\Site\Site;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /**
  * The cascade: site → addons (in declared order) → theme.

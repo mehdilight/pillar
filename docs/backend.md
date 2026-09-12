@@ -13,7 +13,7 @@ Nothing runs on the public path.
 
 ## 1. Shape
 
-One composer package, `pillar/pillar`, shipping a `pillar` CLI (and a PHAR).
+One composer package, `phpmystic/pillar`, shipping a `pillar` CLI (and a PHAR).
 **No framework.** The dependency set is deliberately narrow:
 
 | Dependency | For |
@@ -31,29 +31,29 @@ path prefix is the honest amount of machinery. Bastet needs
 `illuminate/database` + routing + DI because it is a commerce application with
 real users and real money; Pillar's runtime is a directory and a build command.
 
-A **service locator** (`Pillar\Support\Services`) — a typed array of
+A **service locator** (`Phpmystic\Pillar\Support\Services`) — a typed array of
 constructed singletons, ~60 lines — is enough for what plugins need
 (§10). Reach for a container only if that stops being true.
 
 ## 2. Namespaces
 
 ```
-Pillar\Cli          NewCommand, DevCommand, BuildCommand, ServeCommand,
+Phpmystic\Pillar\Cli          NewCommand, DevCommand, BuildCommand, ServeCommand,
                     CheckCommand, DeployCommand, PluginCommand
-Pillar\Site         Site (site.json), Paths, PathPolicy, Layers
-Pillar\Content      ContentStore, MarkdownFile, Frontmatter, ContentSchema
-Pillar\Schema       SchemaParser, SectionSchema, BlockSchema, Setting,
+Phpmystic\Pillar\Site         Site (site.json), Paths, PathPolicy, Layers
+Phpmystic\Pillar\Content      ContentStore, MarkdownFile, Frontmatter, ContentSchema
+Phpmystic\Pillar\Schema       SchemaParser, SectionSchema, BlockSchema, Setting,
                     FieldType, FieldTypeRegistry, SettingsCaster
-Pillar\Render       LayeredFileSystem, EnvironmentFactory, PageRenderer,
+Phpmystic\Pillar\Render       LayeredFileSystem, EnvironmentFactory, PageRenderer,
                     SectionRenderer, Filters, Head\*, Drops\*
-Pillar\Build        RouteTable, Builder, BuildManifest, DependencyRecorder,
+Phpmystic\Pillar\Build        RouteTable, Builder, BuildManifest, DependencyRecorder,
                     Assets, Images, Sitemap, Feed, SearchIndex
-Pillar\Dev          Server, Router, Api\*Controller, PreviewController,
+Phpmystic\Pillar\Dev          Server, Router, Api\*Controller, PreviewController,
                     DashboardController
-Pillar\Git          GitSource, LocalGit, GitHubApi
-Pillar\Deploy       DeployAdapter, StaticAdapter, VercelAdapter,
+Phpmystic\Pillar\Git          GitSource, LocalGit, GitHubApi
+Phpmystic\Pillar\Deploy       DeployAdapter, StaticAdapter, VercelAdapter,
                     NetlifyAdapter, CloudflareAdapter, PagesAdapter
-Pillar\Plugin       Plugin, PluginManifest, PluginLoader, PluginContext,
+Phpmystic\Pillar\Plugin       Plugin, PluginManifest, PluginLoader, PluginContext,
                     Registries\*
 ```
 
@@ -387,8 +387,8 @@ plugins/<slug>/
 slug: seo
 name: SEO
 version: 1.2.0
-plugin_class: Pillar\Seo\Plugin
-namespace: Pillar\Seo\
+plugin_class: Phpmystic\Pillar\Seo\Plugin
+namespace: Phpmystic\Pillar\Seo\
 src: src/
 theme: theme/              # optional addon
 editor: editor/dist/editor.js   # the dashboard bundle — see "Dashboard panels"
@@ -524,13 +524,13 @@ to point people at. A plugin is for when PHP is genuinely required.
 
 | | Deliverable | Done when | |
 |---|---|---|---|
-| **B1** | `Pillar\Render` — `LayeredFileSystem`, `EnvironmentFactory`, drops, `SectionRenderer`, `PageRenderer` | one `.liqx` plus one `.md` render to correct HTML in a unit test | **done** |
-| **B2** | `Pillar\Schema` + generated field types + `pillar check` | catches a bad field type, an unknown section in a template JSON, a content file violating its schema | **done** |
-| **B3** | `Pillar\Build` — routes, incremental, assets, images; `pillar build` / `serve` | a 500-page site builds; an unchanged rebuild is near-instant | **done** (images and `serve` outstanding) |
-| **B4** | `Pillar\Dev` — the §8 API and `/preview` | the editor drops its fixtures and drives real files | **done** |
-| **B5** | `Pillar\Plugin` + the registries; core's sitemap/feed/search rewritten onto them; **the SEO plugin ported from bastet** | removing the sitemap plugin removes the sitemap, and nothing else changes | SEO and supporting registries done; remaining registries/feed/search pending |
+| **B1** | `Phpmystic\Pillar\Render` — `LayeredFileSystem`, `EnvironmentFactory`, drops, `SectionRenderer`, `PageRenderer` | one `.liqx` plus one `.md` render to correct HTML in a unit test | **done** |
+| **B2** | `Phpmystic\Pillar\Schema` + generated field types + `pillar check` | catches a bad field type, an unknown section in a template JSON, a content file violating its schema | **done** |
+| **B3** | `Phpmystic\Pillar\Build` — routes, incremental, assets, images; `pillar build` / `serve` | a 500-page site builds; an unchanged rebuild is near-instant | **done** (images and `serve` outstanding) |
+| **B4** | `Phpmystic\Pillar\Dev` — the §8 API and `/preview` | the editor drops its fixtures and drives real files | **done** |
+| **B5** | `Phpmystic\Pillar\Plugin` + the registries; core's sitemap/feed/search rewritten onto them; **the SEO plugin ported from bastet** | removing the sitemap plugin removes the sitemap, and nothing else changes | SEO and supporting registries done; remaining registries/feed/search pending |
 | **B6** | Theme addons — the cascade, `addon.yaml`, `--why` | an addon adds a section, the site overrides it, and `--why` explains both | cascade + `why` done in B1 |
-| **B7** | `Pillar\Git` + `Pillar\Deploy` | `pillar deploy` puts the same `dist/` on Vercel and on Pages | |
+| **B7** | `Phpmystic\Pillar\Git` + `Phpmystic\Pillar\Deploy` | `pillar deploy` puts the same `dist/` on Vercel and on Pages | |
 
 B1–B3 are testable with no HTTP at all, which is why they come first. B4 is
 mostly wiring, because the frontend already fixed the contract. B5 lands

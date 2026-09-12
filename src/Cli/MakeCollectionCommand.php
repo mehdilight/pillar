@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Cli;
+namespace Phpmystic\Pillar\Cli;
 
-use Pillar\Content\ContentType;
-use Pillar\PillarException;
+use Phpmystic\Pillar\Content\ContentType;
+use Phpmystic\Pillar\PillarException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

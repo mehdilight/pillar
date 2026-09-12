@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /** The markdown the dashboard's editor writes is the markdown the site reads. */
 final class MarkdownTest extends SiteTestCase {

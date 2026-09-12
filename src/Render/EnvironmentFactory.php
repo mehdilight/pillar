@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
 use League\CommonMark\CommonMarkConverter;
-use Pillar\Media\AltText;
-use Pillar\Media\ImageConfig;
-use Pillar\Media\Images;
+use Phpmystic\Pillar\Media\AltText;
+use Phpmystic\Pillar\Media\ImageConfig;
+use Phpmystic\Pillar\Media\Images;
 use Phpmystic\Liqx\Environment;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * Builds the Liqx environment a site renders against: its filters, its

@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Head;
+namespace Phpmystic\Pillar\Render\Head;
 
-use Pillar\Render\Drops\PageDrop;
+use Phpmystic\Pillar\Render\Drops\PageDrop;
 
 /**
  * The head a site gets with no plugin at all: a title and a description.

@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render;
+namespace Phpmystic\Pillar\Render;
 
 use League\CommonMark\CommonMarkConverter;
-use Pillar\Media\AltText;
-use Pillar\Media\Images;
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Media\AltText;
+use Phpmystic\Pillar\Media\Images;
+use Phpmystic\Pillar\Site\Site;
 
 /**
  * The filters a static site needs that Liqx does not ship.

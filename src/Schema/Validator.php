@@ -1,14 +1,14 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Schema;
+namespace Phpmystic\Pillar\Schema;
 
-use Pillar\Content\ContentStore;
-use Pillar\Content\MarkdownFile;
-use Pillar\PillarException;
-use Pillar\Site\Site;
-use Pillar\Template\PageTemplate;
-use Pillar\Template\SectionInstance;
+use Phpmystic\Pillar\Content\ContentStore;
+use Phpmystic\Pillar\Content\MarkdownFile;
+use Phpmystic\Pillar\PillarException;
+use Phpmystic\Pillar\Site\Site;
+use Phpmystic\Pillar\Template\PageTemplate;
+use Phpmystic\Pillar\Template\SectionInstance;
 
 /**
  * What `pillar check` checks.

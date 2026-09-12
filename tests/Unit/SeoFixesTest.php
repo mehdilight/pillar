@@ -1,11 +1,11 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\RouteRegistry;
-use Pillar\Plugin\PluginContext;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\RouteRegistry;
+use Phpmystic\Pillar\Plugin\PluginContext;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /**
  * The review fixes to the SEO port: collections are not a fixed list, the

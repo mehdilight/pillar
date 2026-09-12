@@ -1,12 +1,12 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Tests\Unit;
+namespace Phpmystic\Pillar\Tests\Unit;
 
-use Pillar\Build\Builder;
-use Pillar\Pillar;
-use Pillar\Schema\Validator;
-use Pillar\Tests\SiteTestCase;
+use Phpmystic\Pillar\Build\Builder;
+use Phpmystic\Pillar\Pillar;
+use Phpmystic\Pillar\Schema\Validator;
+use Phpmystic\Pillar\Tests\SiteTestCase;
 
 /**
  * `examples/starter` is what someone opens first, so it is held to what it

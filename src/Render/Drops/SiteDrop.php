@@ -1,9 +1,9 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Drops;
+namespace Phpmystic\Pillar\Render\Drops;
 
-use Pillar\Site\Site;
+use Phpmystic\Pillar\Site\Site;
 
 /** `{site.title}` — the site itself, as a theme sees it. */
 final class SiteDrop extends Drop {

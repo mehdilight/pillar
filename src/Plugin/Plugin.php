@@ -1,7 +1,7 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Plugin;
+namespace Phpmystic\Pillar\Plugin;
 
 /**
  * A plugin: PHP that runs inside the build and the dev server.

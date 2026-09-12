@@ -1,10 +1,10 @@
 <?php
 declare( strict_types=1 );
 
-namespace Pillar\Render\Drops;
+namespace Phpmystic\Pillar\Render\Drops;
 
 use Phpmystic\Liqx\Drop as LiqxDrop;
-use Pillar\Support\Str;
+use Phpmystic\Pillar\Support\Str;
 
 /**
  * Base for objects that control how a template sees them.
