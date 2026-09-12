@@ -273,10 +273,25 @@ final class Api {
 		}
 
 		$path = $this->pillar()->site->layers()->resolve( 'templates/' . $name . '.json' );
-		$existing = null === $path ? [] : json_decode( (string) file_get_contents( $path ), true );
+		$existing = null === $path ? [] : (array) json_decode( (string) file_get_contents( $path ), true );
+
+		if ( isset( $existing['paginate'] ) && is_array( $existing['paginate'] ) ) {
+			$paginateCollection = (string) ( $existing['paginate']['collection'] ?? '' );
+
+			foreach ( $sections as $section ) {
+				$settings = (array) ( $section['settings'] ?? [] );
+				$source   = (string) ( $settings['source'] ?? 'posts' );
+
+				if ( $source === $paginateCollection && isset( $settings['limit'] ) && is_numeric( $settings['limit'] ) ) {
+					$existing['paginate']['per_page'] = max( 1, (int) $settings['limit'] );
+					break;
+				}
+			}
+		}
+
 		$this->write(
 			'templates/' . $name . '.json',
-			(string) json_encode( array_replace( (array) $existing, [ 'sections' => (object) $sections, 'order' => $order ] ), self::JSON )
+			(string) json_encode( array_replace( $existing, [ 'sections' => (object) $sections, 'order' => $order ] ), self::JSON )
 		);
 
 		return $this->json( [ 'ok' => true ] );

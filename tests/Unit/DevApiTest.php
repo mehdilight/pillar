@@ -75,6 +75,38 @@ final class DevApiTest extends SiteTestCase {
 		self::assertSame( [ 'hero_a1', 'features_b2', 'posts_c3', 'hidden_d4' ], $written['order'], 'order is preserved' );
 	}
 
+	public function test_saving_a_paginated_template_syncs_per_page_with_section_limit(): void {
+		file_put_contents(
+			$this->root . '/templates/blog.json',
+			(string) json_encode( [
+				'paginate' => [ 'collection' => 'posts', 'per_page' => 10 ],
+				'sections' => [
+					'list' => [
+						'section_type' => 'post-list',
+						'settings'     => [ 'source' => 'posts', 'limit' => 10 ],
+					],
+				],
+				'order'    => [ 'list' ],
+			] )
+		);
+
+		$this->request( 'PUT', '/api/templates/blog', [
+			'sections' => [
+				[
+					'section_id'   => 'list',
+					'section_type' => 'post-list',
+					'settings'     => [ 'source' => 'posts', 'limit' => 2 ],
+				],
+			],
+		] );
+
+		$written = json_decode( (string) file_get_contents( $this->root . '/templates/blog.json' ), true );
+
+		self::assertSame( 2, $written['paginate']['per_page'] );
+		self::assertSame( 2, $written['sections']['list']['settings']['limit'] );
+	}
+
+
 	public function test_navigation_lists_are_saved_and_available_to_templates(): void {
 		$this->request( 'PUT', '/api/menus', [ 'menus' => [
 			'main' => [

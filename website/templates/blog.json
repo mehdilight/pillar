@@ -1,16 +1,31 @@
 {
-  "paginate": { "collection": "posts", "per_page": 10 },
-  "sections": {
-    "intro": {
-      "section_type": "rich-text",
-      "settings": { "body": "# Changelog\n\nWhat changed in Pillar, newest first." },
-      "order": 0
+    "paginate": {
+        "collection": "posts",
+        "per_page": 2
     },
-    "list": {
-      "section_type": "post-list",
-      "settings": { "heading": "", "source": "posts", "limit": 50, "show_excerpt": true },
-      "order": 1
-    }
-  },
-  "order": ["intro", "list"]
+    "sections": {
+        "intro": {
+            "section_type": "rich-text",
+            "settings": {
+                "body": "# Changelog\n\nWhat changed in Pillar, newest first."
+            },
+            "order": 0,
+            "enabled": true
+        },
+        "list": {
+            "section_type": "post-list",
+            "settings": {
+                "heading": "",
+                "source": "posts",
+                "limit": 2,
+                "show_excerpt": true
+            },
+            "order": 1,
+            "enabled": true
+        }
+    },
+    "order": [
+        "intro",
+        "list"
+    ]
 }

@@ -61,6 +61,17 @@ final class PaginationTest extends SiteTestCase {
 		self::assertNull( $pages['/blog/page/3/']->nextUrl() );
 	}
 
+	public function test_paginate_drop_provides_previous_and_next_aliases(): void {
+		$pages  = $this->pageDrops();
+		$second = $pages['/blog/page/2/'];
+
+		self::assertSame( '/blog/', $second->previous() );
+		self::assertSame( '/blog/page/3/', $second->next() );
+		self::assertNull( $pages['/blog/']->previous() );
+		self::assertNull( $pages['/blog/page/3/']->next() );
+	}
+
+
 	public function test_parts_mark_the_current_page(): void {
 		$parts = $this->pageDrops()['/blog/page/2/']->parts();
 

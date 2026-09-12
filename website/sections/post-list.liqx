@@ -1,9 +1,11 @@
 ---
 const source = section.settings.source || 'posts';
-const entries = paginate ? paginate.items : (collections[source]?.items ?? []).slice(0, section.settings.limit);
+const limit = section.settings.limit ?? 5;
+const list = paginate ? paginate.items : (collections[source]?.items ?? []);
+const entries = limit ? list.slice(0, limit) : list;
 ---
 <div class="wrap posts-section">
-  <div class="section-label"><i class="ph ph-arrow-down"></i> Changelog and releases</div>
+  <div class="section-label"><i class="ph ph-arrow-down"></i> {section.settings.heading || 'Changelog and releases'}</div>
   <div class="posts-list">
     {entries.map((post) =>
       <article class="post-item">
@@ -19,15 +21,15 @@ const entries = paginate ? paginate.items : (collections[source]?.items ?? []).s
       </article>
     )}
   </div>
-  <if {paginate}>
+  <if {paginate && paginate.pages > 1}>
     <nav class="docs-pager" aria-label="Pagination">
-      <if {paginate.previous}>
-        <a class="docs-pager-link" href={paginate.previous}>
+      <if {paginate.previous_url}>
+        <a class="docs-pager-link" href={paginate.previous_url}>
           <span class="pager-hint"><i class="ph ph-arrow-left"></i> Newer</span>
         </a>
       </if>
-      <if {paginate.next}>
-        <a class="docs-pager-link docs-pager-next" href={paginate.next}>
+      <if {paginate.next_url}>
+        <a class="docs-pager-link docs-pager-next" href={paginate.next_url}>
           <span class="pager-hint">Older <i class="ph ph-arrow-right"></i></span>
         </a>
       </if>

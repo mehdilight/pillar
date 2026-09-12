@@ -61,6 +61,17 @@ final class PaginateDrop extends Drop {
 		return $this->hasNext() ? $this->urlFor( $this->currentPage + 1 ) : null;
 	}
 
+	/** Alias for previousUrl() in templates. */
+	public function previous(): ?string {
+		return $this->previousUrl();
+	}
+
+	/** Alias for nextUrl() in templates. */
+	public function next(): ?string {
+		return $this->nextUrl();
+	}
+
+
 	/** Where the numbered links point. */
 	public function urlFor( int $page ): string {
 		return $page <= 1 ? $this->baseUrl : rtrim( $this->baseUrl, '/' ) . '/page/' . $page . '/';
