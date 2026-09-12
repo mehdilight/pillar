@@ -5,13 +5,12 @@
   "identifier": "com.phpmystic.pillar",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173",
-    "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Pillar",
         "width": 1280,
         "height": 850,

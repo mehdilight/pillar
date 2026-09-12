@@ -1,4 +1,4 @@
-import { createSignal, onMount, Show } from 'solid-js';
+import { createEffect, createSignal, onMount, Show } from 'solid-js';
 import { ArrowsClockwiseIcon, WarningCircleIcon } from './Icons';
 
 interface SiteFrameProps {
@@ -11,6 +11,14 @@ export function SiteFrame(props: SiteFrameProps) {
   const [isLoading, setIsLoading] = createSignal(true);
   const [hasError, setHasError] = createSignal(false);
   let iframeRef: HTMLIFrameElement | undefined;
+
+  createEffect(() => {
+    if (props.reloadKey > 0 && iframeRef) {
+      setIsLoading(true);
+      setHasError(false);
+      iframeRef.src = props.url;
+    }
+  });
 
   const handleIframeLoad = () => {
     setIsLoading(false);
@@ -31,10 +39,9 @@ export function SiteFrame(props: SiteFrameProps) {
   };
 
   onMount(() => {
-    // Timeout to check if iframe never loaded
     const timer = setTimeout(() => {
       if (isLoading()) {
-        // Still loading after 8s, allow user to retry
+        // Still loading after 8s
       }
     }, 8000);
     return () => clearTimeout(timer);
@@ -84,7 +91,6 @@ export function SiteFrame(props: SiteFrameProps) {
       {/* Embedded site editor iframe */}
       <iframe
         ref={iframeRef}
-        key={props.reloadKey}
         src={props.url}
         onLoad={handleIframeLoad}
         onError={handleIframeError}

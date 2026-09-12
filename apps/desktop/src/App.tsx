@@ -6,10 +6,10 @@ import { CreateSiteModal } from './components/CreateSiteModal';
 import {
   api,
   type PhpInfo,
-  type RecentSite,
   type ServerStatus,
   type SiteInfo,
 } from './lib/api';
+
 
 export function App() {
   const [phpInfo, setPhpInfo] = createSignal<PhpInfo | null>(null);
