@@ -131,20 +131,35 @@ export function App() {
       unlistenFinder = un;
     });
 
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'pillar:close-site') {
+        handleBackToLauncher();
+      } else if (event.data?.type === 'pillar:reveal-finder') {
+        const currentPath = status().site_path;
+        if (currentPath) {
+          api.openInFinder(currentPath);
+        }
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
     onCleanup(() => {
       unlistenOpen?.();
       unlistenClose?.();
       unlistenFinder?.();
+      window.removeEventListener('message', handleMessage);
     });
   });
 
   return (
     <div class="h-screen w-screen flex flex-col bg-[#f6f6f7] text-[#202223] overflow-hidden font-sans">
-      <Header
-        status={status()}
-        onBackToLauncher={handleBackToLauncher}
-        onReload={handleReload}
-      />
+      <Show when={!status().running}>
+        <Header
+          status={status()}
+          onBackToLauncher={handleBackToLauncher}
+          onReload={handleReload}
+        />
+      </Show>
 
       <Show
         when={status().running && status().url}

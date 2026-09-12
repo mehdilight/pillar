@@ -33,10 +33,9 @@ export function Header(props: HeaderProps) {
 
   return (
     <header
-      data-tauri-drag-region
-      class="h-14 bg-[#1a1a1a] border-b border-[#2c2d30] flex items-center justify-between px-3.5 pl-20 select-none z-50 shrink-0 text-white"
+      class="h-14 bg-[#1a1a1a] border-b border-[#2c2d30] flex items-center justify-between px-4 select-none z-50 shrink-0 text-white"
     >
-      <div class="flex items-center min-w-0 gap-2.5" data-tauri-drag-region>
+      <div class="flex items-center min-w-0 gap-2.5">
         <Show
           when={isSiteActive()}
           fallback={

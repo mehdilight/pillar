@@ -3,6 +3,7 @@ import { t } from '../i18n';
 import { For, Show, createSignal, onMount, type JSX } from 'solid-js';
 import { A, useLocation } from '@solidjs/router';
 import {
+  ArrowLeft,
   ExternalLink,
   ContentTypeIcon,
   Folder,
@@ -50,6 +51,7 @@ const headerButton =
 
 function Header(props: { onToggle: () => void }) {
   const pending = () => status()?.count ?? 0;
+  const isDesktop = () => typeof window !== 'undefined' && window.parent !== window;
 
   return (
     <header class="fixed top-0 inset-x-0 z-50 grid grid-cols-[1fr_auto] md:grid-cols-[1fr_2fr_1fr] items-center bg-[#1a1a1a] border-b border-[#2c2d30] px-3.5 text-sm h-14 text-white">
@@ -61,6 +63,20 @@ function Header(props: { onToggle: () => void }) {
         >
           <Menu size={18} />
         </button>
+
+        <Show when={isDesktop()}>
+          <button
+            type="button"
+            onClick={() => window.parent.postMessage({ type: 'pillar:close-site' }, '*')}
+            class="h-8 cursor-pointer flex items-center gap-1.5 text-gray-200 rounded-md hover:text-white hover:bg-[#272626] px-2 text-xs transition-colors"
+            title={t("Sites Overview")}
+          >
+            <ArrowLeft size={14} />
+            <span>{t("Sites")}</span>
+          </button>
+          <span class="text-gray-600">/</span>
+        </Show>
+
         <span class="font-semibold text-base tracking-tight">Pillar</span>
         <span class="hidden sm:inline text-gray-500">/</span>
         <span class="hidden sm:inline truncate text-gray-300 text-[13px]">{editorConfig.siteName}</span>
@@ -83,6 +99,17 @@ function Header(props: { onToggle: () => void }) {
       </div>
 
       <div class="flex justify-end items-center gap-1.5">
+        <Show when={isDesktop()}>
+          <button
+            type="button"
+            onClick={() => window.parent.postMessage({ type: 'pillar:reveal-finder' }, '*')}
+            class={headerButton}
+            title={t("Reveal site in Finder")}
+          >
+            <Folder size={14} />
+            <span class="hidden sm:inline">{t("Folder")}</span>
+          </button>
+        </Show>
         <LanguageSwitcher />
         <a href="/preview/" target="_blank" rel="noopener" class={headerButton} title={t("Open the site")}>
           <ExternalLink size={14} />
