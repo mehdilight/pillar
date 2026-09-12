@@ -142,6 +142,17 @@ fn find_free_port() -> u16 {
     7788
 }
 
+fn find_pillar_root(start_dir: &Path) -> Option<PathBuf> {
+    let mut current = Some(start_dir.to_path_buf());
+    while let Some(dir) = current {
+        if dir.join("src/Dev/router.php").exists() {
+            return Some(dir);
+        }
+        current = dir.parent().map(|p| p.to_path_buf());
+    }
+    None
+}
+
 fn resolve_pillar_paths(app: &AppHandle, site_path: &Path) -> Result<(PathBuf, PathBuf), String> {
     let vendor_router = site_path.join("vendor/phpmystic/pillar/src/Dev/router.php");
     let vendor_dashboard = site_path.join("vendor/phpmystic/pillar/public/editor");
@@ -157,17 +168,28 @@ fn resolve_pillar_paths(app: &AppHandle, site_path: &Path) -> Result<(PathBuf, P
         }
     }
 
-    let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let router = manifest_root.join("src/Dev/router.php");
-    let dashboard = manifest_root.join("public/editor");
+    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    if let Some(root) = find_pillar_root(&manifest_dir) {
+        let router = root.join("src/Dev/router.php");
+        let dashboard = root.join("public/editor");
+        if router.exists() {
+            return Ok((router, dashboard));
+        }
+    }
 
-    if router.exists() {
-        return Ok((router, dashboard));
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(root) = find_pillar_root(&exe) {
+            let router = root.join("src/Dev/router.php");
+            let dashboard = root.join("public/editor");
+            if router.exists() {
+                return Ok((router, dashboard));
+            }
+        }
     }
 
     Err(format!(
-        "Could not locate Pillar router.php (checked workspace at {})",
-        manifest_root.display()
+        "Could not locate Pillar router.php (searched upward from {})",
+        manifest_dir.display()
     ))
 }
 
@@ -548,13 +570,22 @@ You can edit this page, write blog posts, configure layouts, and preview changes
 
     #[tauri::command]
     pub fn get_starter_example_path() -> Result<String, String> {
-        let manifest_root = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../..");
-        let starter = manifest_root.join("examples/starter");
-        if starter.join("site.json").exists() {
-            Ok(starter.to_string_lossy().to_string())
-        } else {
-            Err("Starter example not found".into())
+        let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        if let Some(root) = find_pillar_root(&manifest_dir) {
+            let starter = root.join("examples/starter");
+            if starter.join("site.json").exists() {
+                return Ok(starter.to_string_lossy().to_string());
+            }
         }
+        if let Ok(exe) = std::env::current_exe() {
+            if let Some(root) = find_pillar_root(&exe) {
+                let starter = root.join("examples/starter");
+                if starter.join("site.json").exists() {
+                    return Ok(starter.to_string_lossy().to_string());
+                }
+            }
+        }
+        Err("Starter example not found".into())
     }
 }
 
