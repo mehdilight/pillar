@@ -4,7 +4,6 @@ import {
   FolderIcon,
   ArrowSquareOutIcon,
   ArrowsClockwiseIcon,
-  PillarLogo,
 } from './Icons';
 import { api, type ServerStatus } from '../lib/api';
 
@@ -13,6 +12,9 @@ interface HeaderProps {
   onBackToLauncher: () => void;
   onReload: () => void;
 }
+
+const headerButton =
+  'h-8 cursor-pointer flex items-center gap-2 text-gray-200 rounded-md hover:text-white focus:text-white hover:bg-[#272626] focus:bg-[#272626] px-2.5 text-xs outline-none transition-colors';
 
 export function Header(props: HeaderProps) {
   const isSiteActive = () => props.status.running && !!props.status.site_path;
@@ -32,40 +34,43 @@ export function Header(props: HeaderProps) {
   return (
     <header
       data-tauri-drag-region
-      class="h-11 bg-stone-900 border-b border-stone-800 flex items-center justify-between px-3 pl-20 select-none z-30 shrink-0 text-xs font-medium text-stone-300"
+      class="h-14 bg-[#1a1a1a] border-b border-[#2c2d30] flex items-center justify-between px-3.5 pl-20 select-none z-50 shrink-0 text-white"
     >
-      <div class="flex items-center gap-3" data-tauri-drag-region>
+      <div class="flex items-center min-w-0 gap-2.5" data-tauri-drag-region>
         <Show
           when={isSiteActive()}
           fallback={
             <div class="flex items-center gap-2" data-tauri-drag-region>
-              <PillarLogo class="w-4 h-4" />
-              <span class="font-semibold text-stone-200">Pillar</span>
-              <span class="text-stone-500 text-[11px]">v0.2.0</span>
+              <span class="font-semibold text-base tracking-tight text-white">Pillar</span>
+              <span class="text-gray-500 text-sm">/</span>
+              <span class="text-gray-400 text-[13px] font-medium">Desktop</span>
+              <span class="text-gray-500 text-xs ml-1">v0.2.0</span>
             </div>
           }
         >
           <button
             onClick={props.onBackToLauncher}
-            class="flex items-center gap-1.5 px-2 py-1 rounded bg-stone-800 hover:bg-stone-700 text-stone-200 transition-colors"
+            class="h-8 cursor-pointer flex items-center gap-1.5 text-gray-200 rounded-md hover:text-white hover:bg-[#272626] px-2.5 text-xs transition-colors"
             title="Return to site launcher"
           >
             <CaretLeftIcon size={14} />
             <span>Sites</span>
           </button>
 
-          <div class="h-4 w-px bg-stone-800" />
+          <span class="text-gray-600">/</span>
 
-          <div class="flex items-center gap-2" data-tauri-drag-region>
-            <span class="font-semibold text-stone-100 max-w-[220px] truncate">
-              {props.status.site_name || 'Active Site'}
-            </span>
-            <Show when={props.status.port}>
-              <span class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-800/60 text-emerald-400 text-[11px]">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>localhost:{props.status.port}</span>
-              </span>
-            </Show>
+          <span class="font-medium text-white text-[13px] truncate max-w-[240px]" data-tauri-drag-region>
+            {props.status.site_name || 'Active Site'}
+          </span>
+        </Show>
+      </div>
+
+      <div class="flex items-center justify-center">
+        <Show when={isSiteActive() && props.status.port}>
+          <div class="h-7 inline-flex items-center gap-2 rounded-full border border-[#3e4045] bg-[#2c2d30] px-3 text-[11.5px] font-medium text-gray-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400" />
+            <span class="font-mono">127.0.0.1:{props.status.port}</span>
+            <span class="text-emerald-400 text-[11px] font-semibold">Running</span>
           </div>
         </Show>
       </div>
@@ -74,25 +79,25 @@ export function Header(props: HeaderProps) {
         <Show when={isSiteActive()}>
           <button
             onClick={handleRevealFinder}
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded hover:bg-stone-800 text-stone-300 hover:text-stone-100 transition-colors"
+            class={headerButton}
             title="Reveal site folder in Finder / Explorer"
           >
             <FolderIcon size={14} />
-            <span>Folder</span>
+            <span class="hidden sm:inline">Folder</span>
           </button>
 
           <button
             onClick={handleOpenBrowser}
-            class="flex items-center gap-1.5 px-2.5 py-1 rounded hover:bg-stone-800 text-stone-300 hover:text-stone-100 transition-colors"
+            class={headerButton}
             title="Open live preview in external browser"
           >
             <ArrowSquareOutIcon size={14} />
-            <span>Live Preview</span>
+            <span class="hidden sm:inline">Live Preview</span>
           </button>
 
           <button
             onClick={props.onReload}
-            class="p-1.5 rounded hover:bg-stone-800 text-stone-400 hover:text-stone-200 transition-colors"
+            class="h-8 w-8 flex items-center justify-center cursor-pointer text-gray-200 rounded-md hover:text-white hover:bg-[#272626] transition-colors"
             title="Reload editor"
           >
             <ArrowsClockwiseIcon size={14} />

@@ -8,6 +8,11 @@ interface CreateSiteModalProps {
   onCreated: (folderPath: string) => void;
 }
 
+const buttonBase =
+  'inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium leading-none shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50';
+const buttonSecondary = `${buttonBase} border-[#c9cccf] bg-white text-[#202223] hover:border-[#6d7175] hover:bg-[#f1f2f4] cursor-pointer`;
+const buttonPrimary = `${buttonBase} border-[#005bd3] bg-[#005bd3] text-white hover:border-[#004bb5] hover:bg-[#004bb5] bg-[linear-gradient(rgba(0,0,0,0)_63%,rgba(255,255,255,0.12)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] cursor-pointer`;
+
 export function CreateSiteModal(props: CreateSiteModalProps) {
   const [siteName, setSiteName] = createSignal('My Pillar Site');
   const [parentDir, setParentDir] = createSignal('');
@@ -67,18 +72,13 @@ export function CreateSiteModal(props: CreateSiteModalProps) {
 
   return (
     <Show when={props.isOpen}>
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-        <div class="w-full max-w-md bg-stone-900 border border-stone-800 rounded-xl shadow-2xl p-6 text-stone-100 flex flex-col gap-4">
-          <div class="flex items-center justify-between border-b border-stone-800 pb-3">
-            <div class="flex items-center gap-2">
-              <div class="p-1.5 rounded-md bg-amber-500/10 text-amber-400">
-                <PlusIcon size={18} />
-              </div>
-              <h2 class="text-base font-semibold">Create New Site</h2>
-            </div>
+      <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150 font-sans">
+        <div class="w-full max-w-md bg-white border border-[#e1e3e5] rounded-lg shadow-[0_12px_32px_rgba(0,0,0,0.12)] p-5 text-[#202223] flex flex-col gap-4">
+          <div class="flex items-center justify-between border-b border-[#e1e3e5] pb-3">
+            <h2 class="text-sm font-semibold text-[#202223]">Create New Site</h2>
             <button
               onClick={props.onClose}
-              class="text-stone-400 hover:text-stone-200 text-sm font-medium px-2 py-1 rounded hover:bg-stone-800"
+              class="text-[#6d7175] hover:text-[#202223] text-sm font-medium px-2 py-0.5 rounded hover:bg-[#f1f2f4] transition-colors cursor-pointer"
             >
               ✕
             </button>
@@ -86,13 +86,13 @@ export function CreateSiteModal(props: CreateSiteModalProps) {
 
           <form onSubmit={handleSubmit} class="flex flex-col gap-4">
             <Show when={error()}>
-              <div class="p-3 rounded-lg bg-rose-950/50 border border-rose-800 text-rose-300 text-xs leading-relaxed">
+              <div class="p-3 rounded-md bg-[rgba(216,44,13,0.08)] border border-[rgba(216,44,13,0.3)] text-[#d82c0d] text-xs leading-relaxed">
                 {error()}
               </div>
             </Show>
 
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-stone-300 uppercase tracking-wider">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-[#303030]">
                 Site Name
               </label>
               <input
@@ -100,59 +100,59 @@ export function CreateSiteModal(props: CreateSiteModalProps) {
                 value={siteName()}
                 onInput={(e) => setSiteName(e.currentTarget.value)}
                 placeholder="e.g. My Architecture Journal"
-                class="w-full px-3 py-2 bg-stone-950 border border-stone-700 rounded-lg text-sm text-stone-100 placeholder:text-stone-600 focus:outline-none focus:border-amber-500 transition-colors"
+                class="h-8 w-full rounded-lg border border-[#c9cccf] bg-white px-2.5 text-[13px] text-[#202223] placeholder:text-[#8c9196] focus:border-[#005bd3] focus:ring-2 focus:ring-[#005bd3]/15 outline-none transition-colors"
                 required
               />
             </div>
 
-            <div class="flex flex-col gap-1.5">
-              <label class="text-xs font-semibold text-stone-300 uppercase tracking-wider">
-                Location
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-[#303030]">
+                Destination Folder
               </label>
               <div class="flex items-center gap-2">
                 <input
                   type="text"
                   value={parentDir()}
                   readOnly
-                  placeholder="Select destination folder..."
-                  class="flex-1 px-3 py-2 bg-stone-950 border border-stone-700 rounded-lg text-sm text-stone-300 placeholder:text-stone-600 truncate focus:outline-none"
+                  placeholder="Choose where to save site…"
+                  class="flex-1 h-8 rounded-lg border border-[#c9cccf] bg-[#f6f6f7] px-2.5 text-[13px] text-[#202223] placeholder:text-[#8c9196] truncate focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={handlePickParent}
-                  class="px-3 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium flex items-center gap-1.5 border border-stone-700 shrink-0 transition-colors"
+                  class={buttonSecondary}
                 >
                   <FolderIcon size={14} />
-                  <span>Choose...</span>
+                  <span>Choose…</span>
                 </button>
               </div>
             </div>
 
             <Show when={fullPath()}>
-              <div class="p-2.5 rounded-lg bg-stone-950/60 border border-stone-800 text-xs flex flex-col gap-1">
-                <span class="text-stone-500 font-medium text-[11px]">Will be created at:</span>
-                <span class="font-mono text-stone-300 break-all text-[11px]">{fullPath()}</span>
+              <div class="p-2.5 rounded-md bg-[#f6f6f7] border border-[#e1e3e5] text-xs flex flex-col gap-1">
+                <span class="text-[#6d7175] font-medium text-[11px]">Will be created at:</span>
+                <span class="font-mono text-[#202223] break-all text-[11.5px]">{fullPath()}</span>
               </div>
             </Show>
 
-            <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-stone-800">
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-[#e1e3e5]">
               <button
                 type="button"
                 onClick={props.onClose}
                 disabled={isSubmitting()}
-                class="px-4 py-2 rounded-lg text-xs font-medium text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
+                class={buttonSecondary}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting() || !parentDir()}
-                class="px-4 py-2 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-stone-950 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm flex items-center gap-1.5"
+                class={buttonPrimary}
               >
                 <Show when={isSubmitting()} fallback={<PlusIcon size={14} />}>
-                  <span class="w-3 h-3 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
+                  <span class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 </Show>
-                <span>{isSubmitting() ? 'Creating...' : 'Create & Open'}</span>
+                <span>{isSubmitting() ? 'Creating…' : 'Create Site'}</span>
               </button>
             </div>
           </form>

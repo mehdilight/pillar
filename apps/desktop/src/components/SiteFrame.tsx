@@ -48,16 +48,16 @@ export function SiteFrame(props: SiteFrameProps) {
   });
 
   return (
-    <div class="relative flex-1 w-full h-full bg-stone-950 overflow-hidden">
+    <div class="relative flex-1 w-full h-full bg-[#f6f6f7] overflow-hidden">
       {/* Loading Shimmer / Spinner */}
       <Show when={isLoading()}>
-        <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-stone-950/90 backdrop-blur-xs gap-3 select-none">
-          <div class="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+        <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#f6f6f7]/95 backdrop-blur-xs gap-3 select-none">
+          <div class="w-8 h-8 rounded-full border-2 border-[#005bd3] border-t-transparent animate-spin" />
           <div class="flex flex-col items-center gap-1">
-            <span class="text-sm font-semibold text-stone-200">
-              Starting {props.siteName || 'Pillar Site'}...
+            <span class="text-sm font-semibold text-[#202223]">
+              Starting {props.siteName || 'Pillar Site'}…
             </span>
-            <span class="text-xs text-stone-500 font-mono">
+            <span class="text-xs text-[#6d7175] font-mono">
               {props.url}
             </span>
           </div>
@@ -66,21 +66,21 @@ export function SiteFrame(props: SiteFrameProps) {
 
       {/* Error state */}
       <Show when={hasError()}>
-        <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-stone-950 p-6 text-center gap-4 select-none">
-          <div class="p-3 rounded-full bg-rose-950/60 border border-rose-800 text-rose-400">
-            <WarningCircleIcon size={32} />
+        <div class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#f6f6f7] p-6 text-center gap-4 select-none">
+          <div class="p-3 rounded-full bg-[rgba(216,44,13,0.08)] border border-[rgba(216,44,13,0.3)] text-[#d82c0d]">
+            <WarningCircleIcon size={28} />
           </div>
           <div class="flex flex-col gap-1 max-w-sm">
-            <h3 class="text-base font-semibold text-stone-100">
+            <h3 class="text-sm font-semibold text-[#202223]">
               Could not connect to site server
             </h3>
-            <p class="text-xs text-stone-400">
+            <p class="text-xs text-[#6d7175]">
               The local PHP server may still be initializing or the port was closed.
             </p>
           </div>
           <button
             onClick={retry}
-            class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 text-xs font-semibold flex items-center gap-2 transition-colors"
+            class="inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-[#005bd3] bg-[#005bd3] px-3 text-xs font-medium leading-none text-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] hover:border-[#004bb5] hover:bg-[#004bb5] transition-colors cursor-pointer"
           >
             <ArrowsClockwiseIcon size={14} />
             <span>Retry Connection</span>
@@ -94,7 +94,7 @@ export function SiteFrame(props: SiteFrameProps) {
         src={props.url}
         onLoad={handleIframeLoad}
         onError={handleIframeError}
-        class="w-full h-full border-0 bg-stone-950"
+        class="w-full h-full border-0 bg-white"
         allow="clipboard-read; clipboard-write; fullscreen"
         sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads"
       />

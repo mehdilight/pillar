@@ -139,7 +139,7 @@ export function App() {
   });
 
   return (
-    <div class="h-screen w-screen flex flex-col bg-stone-950 text-stone-100 overflow-hidden font-sans">
+    <div class="h-screen w-screen flex flex-col bg-[#f6f6f7] text-[#202223] overflow-hidden font-sans">
       <Header
         status={status()}
         onBackToLauncher={handleBackToLauncher}

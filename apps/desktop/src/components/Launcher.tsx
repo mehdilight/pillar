@@ -2,12 +2,8 @@ import { For, Show } from 'solid-js';
 import {
   FolderIcon,
   PlusIcon,
-  PlayIcon,
   TrashIcon,
-  PillarLogo,
-  CheckCircleIcon,
   WarningCircleIcon,
-  SparkleIcon,
 } from './Icons';
 import { api, type PhpInfo, type SiteInfo } from '../lib/api';
 
@@ -22,6 +18,11 @@ interface LauncherProps {
   isLoading: boolean;
   error: string | null;
 }
+
+const buttonBase =
+  'inline-flex h-8 shrink-0 items-center justify-center gap-1.5 rounded-lg border px-3 text-xs font-medium leading-none shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50';
+const buttonSecondary = `${buttonBase} border-[#c9cccf] bg-white text-[#202223] hover:border-[#6d7175] hover:bg-[#f1f2f4] cursor-pointer`;
+const buttonPrimary = `${buttonBase} border-[#005bd3] bg-[#005bd3] text-white hover:border-[#004bb5] hover:bg-[#004bb5] bg-[linear-gradient(rgba(0,0,0,0)_63%,rgba(255,255,255,0.12)_100%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] cursor-pointer`;
 
 export function Launcher(props: LauncherProps) {
   const formatTimeAgo = (timestamp: number) => {
@@ -44,197 +45,203 @@ export function Launcher(props: LauncherProps) {
   };
 
   return (
-    <div class="flex-1 overflow-y-auto bg-stone-950 text-stone-100 flex flex-col items-center p-8 select-none">
-      <div class="w-full max-w-2xl flex flex-col gap-8">
-        {/* Header / Hero */}
-        <div class="flex flex-col items-center text-center gap-3 pt-6">
-          <div class="p-3 rounded-2xl bg-stone-900 border border-stone-800 shadow-xl">
-            <PillarLogo class="w-12 h-12" />
-          </div>
-          <div class="flex flex-col gap-1">
-            <h1 class="text-2xl font-bold tracking-tight text-stone-100">
-              Pillar Desktop
+    <div class="flex-1 overflow-y-auto bg-[#f6f6f7] text-[#202223] py-8 px-6 select-none font-sans">
+      <div class="max-w-4xl mx-auto flex flex-col gap-6">
+        {/* Page Top Bar */}
+        <div class="flex items-center justify-between pb-5 border-b border-[#e1e3e5]">
+          <div class="flex flex-col gap-0.5">
+            <h1 class="text-xl font-semibold tracking-tight text-[#202223]">
+              Sites Overview
             </h1>
-            <p class="text-sm text-stone-400">
-              Local-first static site publishing with real-time visual editing
+            <p class="text-xs text-[#6d7175]">
+              Local Pillar projects and real-time visual editing
             </p>
           </div>
 
-          {/* PHP status badge */}
-          <Show when={props.phpInfo}>
-            {(info) => (
-              <div
-                class={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border ${
-                  info().available
-                    ? 'bg-stone-900/90 border-stone-800 text-stone-300'
-                    : 'bg-rose-950/40 border-rose-800/80 text-rose-300'
-                }`}
-              >
-                <Show
-                  when={info().available}
-                  fallback={
-                    <>
-                      <WarningCircleIcon size={14} class="text-rose-400" />
-                      <span>{info().error || 'PHP not found in PATH'}</span>
-                    </>
-                  }
-                >
-                  <CheckCircleIcon size={14} class="text-emerald-400" />
-                  <span class="text-stone-400">{info().version}</span>
-                </Show>
-              </div>
-            )}
-          </Show>
+          <div class="flex items-center gap-2">
+            <button
+              onClick={props.onPickFolder}
+              disabled={props.isLoading}
+              class={buttonSecondary}
+            >
+              <FolderIcon size={14} />
+              <span>Open Site Folder…</span>
+            </button>
+
+            <button
+              onClick={props.onCreateNew}
+              disabled={props.isLoading}
+              class={buttonPrimary}
+            >
+              <PlusIcon size={14} />
+              <span>Create New Site</span>
+            </button>
+          </div>
         </div>
 
-        {/* Global Error message */}
+        {/* Global Error Banner */}
         <Show when={props.error}>
-          <div class="p-4 rounded-xl bg-rose-950/50 border border-rose-800/80 text-rose-200 text-xs flex items-start gap-3">
-            <WarningCircleIcon size={18} class="text-rose-400 shrink-0 mt-0.5" />
-            <div class="flex-1 leading-relaxed">
-              <span class="font-semibold block mb-0.5">Unable to start site</span>
-              {props.error}
+          <div class="relative overflow-hidden rounded-lg bg-[rgba(216,44,13,0.08)] border border-[rgba(216,44,13,0.3)] text-[#d82c0d] px-4 py-3 pl-5 text-xs before:absolute before:inset-y-0 before:left-0 before:w-1 before:bg-[#d82c0d]">
+            <div class="flex items-start gap-2">
+              <WarningCircleIcon size={16} class="shrink-0 mt-0.5" />
+              <div class="leading-relaxed">
+                <span class="font-semibold block">Unable to start site</span>
+                {props.error}
+              </div>
             </div>
           </div>
         </Show>
 
-        {/* Action buttons */}
-        <div class="grid grid-cols-2 gap-3">
-          <button
-            onClick={props.onPickFolder}
-            disabled={props.isLoading}
-            class="flex items-center gap-3 p-4 rounded-xl bg-stone-900 hover:bg-stone-850 border border-stone-800 hover:border-stone-700 transition-all text-left group shadow-sm"
-          >
-            <div class="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
-              <FolderIcon size={22} />
+        {/* Diagnostic / Overview Tiles */}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+          {/* PHP Runtime Tile */}
+          <div class="min-w-0 rounded-lg border border-[#e1e3e5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            <p class="m-0 text-xs uppercase tracking-[.04em] text-[#6d7175] font-medium">
+              PHP Runtime
+            </p>
+            <div class="mt-2 flex items-center gap-2">
+              <Show
+                when={props.phpInfo?.available}
+                fallback={
+                  <div class="flex items-center gap-1.5 text-xs text-[#d82c0d] font-medium">
+                    <WarningCircleIcon size={16} />
+                    <span>PHP not found</span>
+                  </div>
+                }
+              >
+                <span class="w-2 h-2 rounded-full bg-[#008060]" />
+                <span class="text-xl font-normal leading-tight text-[#202223] truncate">
+                  {props.phpInfo?.version?.split(' ')?.[1] || 'Detected'}
+                </span>
+              </Show>
             </div>
-            <div class="flex flex-col">
-              <span class="text-sm font-semibold text-stone-100 group-hover:text-white">
-                Open Site Folder...
-              </span>
-              <span class="text-xs text-stone-400">
-                Open an existing Pillar project
-              </span>
-            </div>
-          </button>
+            <p class="mt-1.5 text-[11.5px] text-[#8c9196] truncate font-mono">
+              {props.phpInfo?.path || 'Install PHP 8.2+'}
+            </p>
+          </div>
 
-          <button
-            onClick={props.onCreateNew}
-            disabled={props.isLoading}
-            class="flex items-center gap-3 p-4 rounded-xl bg-stone-900 hover:bg-stone-850 border border-stone-800 hover:border-stone-700 transition-all text-left group shadow-sm"
-          >
-            <div class="p-2.5 rounded-lg bg-sky-500/10 text-sky-400 group-hover:bg-sky-500/20 transition-colors">
-              <PlusIcon size={22} />
+          {/* Recent Sites Count Tile */}
+          <div class="min-w-0 rounded-lg border border-[#e1e3e5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+            <p class="m-0 text-xs uppercase tracking-[.04em] text-[#6d7175] font-medium">
+              Saved Sites
+            </p>
+            <p class="mt-2 text-xl font-normal leading-tight text-[#202223]">
+              {props.recentSites.length} {props.recentSites.length === 1 ? 'Site' : 'Sites'}
+            </p>
+            <p class="mt-1.5 text-[11.5px] text-[#8c9196]">
+              {props.recentSites.length > 0 ? 'Ready to serve on localhost' : 'No saved sites'}
+            </p>
+          </div>
+
+          {/* Starter Project Tile */}
+          <div class="min-w-0 rounded-lg border border-[#e1e3e5] bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.05)] flex flex-col justify-between">
+            <div>
+              <p class="m-0 text-xs uppercase tracking-[.04em] text-[#6d7175] font-medium">
+                Example Site
+              </p>
+              <p class="mt-2 text-base font-medium leading-tight text-[#202223]">
+                Pillar Starter
+              </p>
             </div>
-            <div class="flex flex-col">
-              <span class="text-sm font-semibold text-stone-100 group-hover:text-white">
-                Create New Site
-              </span>
-              <span class="text-xs text-stone-400">
-                Scaffold a fresh site with layouts
-              </span>
+            <div class="mt-2 pt-2 border-t border-[#f1f2f4] flex items-center justify-between">
+              <span class="text-[11.5px] text-[#8c9196]">Includes SEO & layout</span>
+              <Show when={props.starterPath}>
+                {(path) => (
+                  <button
+                    onClick={() => props.onOpenSite(path())}
+                    disabled={props.isLoading}
+                    class="text-xs text-[#005bd3] font-medium hover:underline cursor-pointer"
+                  >
+                    Launch →
+                  </button>
+                )}
+              </Show>
             </div>
-          </button>
+          </div>
         </div>
 
-        {/* Starter example shortcut (in dev or repo) */}
-        <Show when={props.starterPath}>
-          {(path) => (
-            <div class="p-3.5 rounded-xl bg-stone-900/60 border border-stone-800/80 flex items-center justify-between text-xs">
-              <div class="flex items-center gap-2.5">
-                <div class="p-1 rounded-md bg-amber-400/10 text-amber-400">
-                  <SparkleIcon size={15} />
-                </div>
-                <div>
-                  <span class="font-medium text-stone-200">Explore Starter Site</span>
-                  <span class="text-stone-500 block text-[11px]">
-                    Includes sample layouts, articles, and SEO plugin
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => props.onOpenSite(path())}
-                disabled={props.isLoading}
-                class="px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium transition-colors"
-              >
-                Launch Starter
-              </button>
-            </div>
-          )}
-        </Show>
-
-        {/* Recent Sites list */}
-        <div class="flex flex-col gap-3">
-          <div class="flex items-center justify-between px-1">
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-400">
+        {/* Postbox: Recent Sites */}
+        <section class="min-w-0 rounded-lg border border-[#e1e3e5] bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+          <header class="flex items-center justify-between border-b border-[#e1e3e5] px-4 py-3">
+            <h2 class="text-[13px] font-semibold leading-[1.4] text-[#202223]">
               Recent Sites
             </h2>
-            <Show when={props.recentSites.length > 0}>
-              <span class="text-xs text-stone-500">
-                {props.recentSites.length} {props.recentSites.length === 1 ? 'site' : 'sites'}
-              </span>
-            </Show>
-          </div>
+            <span class="text-xs text-[#6d7175]">
+              {props.recentSites.length} {props.recentSites.length === 1 ? 'project' : 'projects'}
+            </span>
+          </header>
 
-          <div class="flex flex-col gap-1.5">
+          <div class="p-0">
             <Show
               when={props.recentSites.length > 0}
               fallback={
-                <div class="p-8 rounded-xl border border-dashed border-stone-800 text-center flex flex-col items-center gap-2">
-                  <FolderIcon size={28} class="text-stone-600" />
-                  <span class="text-xs text-stone-400">
-                    No recent sites. Open a folder or create a new site to get started.
-                  </span>
+                <div class="p-10 text-center flex flex-col items-center gap-2">
+                  <div class="p-3 rounded-full bg-[#f1f2f4] text-[#8c9196]">
+                    <FolderIcon size={24} />
+                  </div>
+                  <p class="text-xs text-[#6d7175] max-w-xs leading-relaxed mt-1">
+                    No recent sites. Open an existing folder or click <strong>Create New Site</strong> to begin.
+                  </p>
                 </div>
               }
             >
-              <For each={props.recentSites}>
-                {(site) => (
-                  <div
-                    onClick={() => props.onOpenSite(site.path)}
-                    class="flex items-center justify-between p-3 rounded-xl bg-stone-900/70 hover:bg-stone-900 border border-stone-850 hover:border-stone-750 transition-all cursor-pointer group"
-                  >
-                    <div class="flex items-center gap-3 min-w-0 pr-3">
-                      <div class="p-2 rounded-lg bg-stone-800 text-stone-400 group-hover:text-amber-400 transition-colors shrink-0">
-                        <PlayIcon size={14} />
+              <ul class="divide-y divide-[#e1e3e5]">
+                <For each={props.recentSites}>
+                  {(site) => (
+                    <li
+                      onClick={() => props.onOpenSite(site.path)}
+                      class="flex items-center justify-between px-4 py-3 hover:bg-[#f1f2f4] transition-colors cursor-pointer group"
+                    >
+                      <div class="flex items-center gap-3 min-w-0 pr-4">
+                        <div class="p-2 rounded-md bg-[#f1f2f4] text-[#6d7175] group-hover:bg-[#e0f0ff] group-hover:text-[#005bd3] transition-colors shrink-0">
+                          <FolderIcon size={16} />
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <span class="font-medium text-[13px] text-[#202223] truncate">
+                            {site.name}
+                          </span>
+                          <span class="text-xs font-mono text-[#6d7175] truncate mt-0.5">
+                            {site.path}
+                          </span>
+                        </div>
                       </div>
-                      <div class="flex flex-col min-w-0">
-                        <span class="text-sm font-semibold text-stone-200 group-hover:text-white truncate">
-                          {site.name}
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-[11.5px] text-[#8c9196] mr-2">
+                          {formatTimeAgo(site.last_opened)}
                         </span>
-                        <span class="text-xs font-mono text-stone-500 truncate">
-                          {site.path}
-                        </span>
+
+                        <button
+                          onClick={(e) => handleRevealFinder(site.path, e)}
+                          class="h-7 px-2.5 rounded-md border border-[#c9cccf] bg-white text-[#202223] hover:bg-[#f1f2f4] text-xs font-medium transition-colors"
+                          title="Reveal site in Finder"
+                        >
+                          Finder
+                        </button>
+
+                        <button
+                          onClick={() => props.onOpenSite(site.path)}
+                          class="h-7 px-3 rounded-md bg-[#005bd3] text-white hover:bg-[#004bb5] text-xs font-medium transition-colors shadow-xs"
+                          title="Open in Editor"
+                        >
+                          Open
+                        </button>
+
+                        <button
+                          onClick={(e) => handleRemove(site.path, e)}
+                          class="p-1.5 rounded-md text-[#8c9196] hover:text-[#d82c0d] hover:bg-white transition-colors"
+                          title="Remove from recents"
+                        >
+                          <TrashIcon size={14} />
+                        </button>
                       </div>
-                    </div>
-
-                    <div class="flex items-center gap-2 shrink-0">
-                      <span class="text-[11px] text-stone-500 mr-1">
-                        {formatTimeAgo(site.last_opened)}
-                      </span>
-
-                      <button
-                        onClick={(e) => handleRevealFinder(site.path, e)}
-                        class="p-1.5 rounded hover:bg-stone-800 text-stone-400 hover:text-stone-200 transition-colors"
-                        title="Reveal in Finder"
-                      >
-                        <FolderIcon size={14} />
-                      </button>
-
-                      <button
-                        onClick={(e) => handleRemove(site.path, e)}
-                        class="p-1.5 rounded hover:bg-stone-800 text-stone-500 hover:text-rose-400 transition-colors"
-                        title="Remove from recents"
-                      >
-                        <TrashIcon size={14} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </For>
+                    </li>
+                  )}
+                </For>
+              </ul>
             </Show>
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );
