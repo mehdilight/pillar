@@ -31,7 +31,7 @@ final class Server {
 		$path = $this->pathOf( $request );
 
 		return match ( true ) {
-			str_starts_with( $path, '/api/' )     => ( new Api( $this->root, new LocalGit( $this->root ) ) )
+			str_starts_with( $path, '/api/' )     => ( new Api( $this->root, \Phpmystic\Pillar\Git\GitFactory::create( $this->root ) ) )
 				->handle( $request, substr( $path, 4 ) ),
 			str_starts_with( $path, '/preview' )  => $this->preview( $request, substr( $path, 8 ) ),
 			str_starts_with( $path, '/assets/' )  => $this->asset( substr( $path, 8 ), (int) $request->query->get( 'w', 0 ) ),

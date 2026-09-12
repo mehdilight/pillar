@@ -286,15 +286,66 @@ export const api = {
       return { message: t("publish.committed", { count }) };
     }),
 
-  discard: (): Promise<void> =>
-    request('/discard', { method: 'POST' }, () => {
-      store.pages = structuredClone(fixtures.pages);
-      store.layout = structuredClone(fixtures.layout);
-      store.settings = structuredClone(fixtures.settingsData);
-      store.menus = structuredClone(fixtures.menus);
-      store.content = structuredClone(fixtures.content);
-      store.dirty.clear();
+  discard: (path?: string): Promise<void> =>
+    request('/discard', { method: 'POST', body: JSON.stringify({ path }) }, () => {
+      if (path) {
+        store.dirty.delete(path);
+      } else {
+        store.pages = structuredClone(fixtures.pages);
+        store.layout = structuredClone(fixtures.layout);
+        store.settings = structuredClone(fixtures.settingsData);
+        store.menus = structuredClone(fixtures.menus);
+        store.content = structuredClone(fixtures.content);
+        store.dirty.clear();
+      }
     }),
+
+  branches: (): Promise<{ current: string; branches: string[]; provider: string }> =>
+    request('/git/branches', undefined, () => ({
+      current: 'main',
+      branches: ['main', 'drafts'],
+      provider: 'local',
+    })),
+
+  createBranch: (name: string, from?: string): Promise<{ ok: boolean; message: string }> =>
+    request('/git/branches', { method: 'POST', body: JSON.stringify({ name, from }) }, () => ({
+      ok: true,
+      message: `Created branch ${name}`,
+    })),
+
+  switchBranch: (name: string): Promise<{ ok: boolean; message: string }> =>
+    request('/git/branches/switch', { method: 'POST', body: JSON.stringify({ name }) }, () => ({
+      ok: true,
+      message: `Switched to branch ${name}`,
+    })),
+
+  deleteBranch: (name: string): Promise<{ ok: boolean; message: string }> =>
+    request('/git/branches/delete', { method: 'POST', body: JSON.stringify({ name }) }, () => ({
+      ok: true,
+      message: `Deleted branch ${name}`,
+    })),
+
+  createPullRequest: (
+    title: string,
+    body = '',
+    head?: string,
+    base = 'main'
+  ): Promise<{ ok: boolean; message: string; url?: string; number?: number }> =>
+    request('/git/pull-request', { method: 'POST', body: JSON.stringify({ title, body, head, base }) }, () => ({
+      ok: true,
+      message: 'Pull request created',
+      url: 'https://github.com',
+    })),
+
+  mergeBranch: (source: string, message?: string): Promise<{ ok: boolean; message: string }> =>
+    request('/git/merge', { method: 'POST', body: JSON.stringify({ source, message }) }, () => ({
+      ok: true,
+      message: `Merged ${source}`,
+    })),
+
+  diff: (path?: string): Promise<{ diff: string }> =>
+    request(`/git/diff${path ? `?path=${encodeURIComponent(path)}` : ''}`, undefined, () => ({ diff: '' })),
+
 
   /** Rendered by the site's own converter, so the preview matches the build. */
   markdown: (body: string): Promise<{ html: string }> =>

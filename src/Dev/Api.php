@@ -9,6 +9,7 @@ use Phpmystic\Pillar\Content\ContentType;
 use Phpmystic\Pillar\Content\FrontmatterWriter;
 use Phpmystic\Pillar\Content\MarkdownFile;
 use Phpmystic\Pillar\Content\MenuStore;
+use Phpmystic\Pillar\Git\GitProviderInterface;
 use Phpmystic\Pillar\Git\LocalGit;
 use Phpmystic\Pillar\Pillar;
 use Phpmystic\Pillar\PillarException;
@@ -35,7 +36,7 @@ final class Api {
 
 	public function __construct(
 		private readonly string $root,
-		private readonly LocalGit $git,
+		private readonly GitProviderInterface $git,
 	) {}
 
 	public function handle( Request $request, string $path ): Response {
@@ -91,9 +92,27 @@ final class Api {
 				),
 
 				[ 'status' ] === $segments => $this->json( $this->status() ),
-				[ 'history' ] === $segments => $this->json( $this->git->history() ),
+				[ 'history' ] === $segments => $this->json( $this->git->history(
+					(int) $request->query->get( 'limit', 30 ),
+					$request->query->get( 'path' ) ? (string) $request->query->get( 'path' ) : null
+				) ),
 				[ 'publish' ] === $segments && 'POST' === $method => $this->publish( $this->body( $request ) ),
-				[ 'discard' ] === $segments && 'POST' === $method => $this->discard(),
+				[ 'discard' ] === $segments && 'POST' === $method => $this->discard( $this->body( $request ) ),
+
+				[ 'git', 'branches' ] === $segments && 'GET' === $method => $this->json( [
+					'current'  => $this->git->branch(),
+					'branches' => $this->git->branches(),
+					'provider' => $this->git->providerName(),
+				] ),
+				[ 'git', 'branches' ] === $segments && 'POST' === $method => $this->createBranch( $this->body( $request ) ),
+				[ 'git', 'branches', 'switch' ] === $segments && 'POST' === $method => $this->switchBranch( $this->body( $request ) ),
+				[ 'git', 'branches', 'delete' ] === $segments && 'POST' === $method => $this->deleteBranch( $this->body( $request ) ),
+				[ 'git', 'pull-request' ] === $segments && 'POST' === $method => $this->createPullRequest( $this->body( $request ) ),
+				[ 'git', 'merge' ] === $segments && 'POST' === $method => $this->mergeBranch( $this->body( $request ) ),
+				[ 'git', 'diff' ] === $segments && 'GET' === $method => $this->json( [
+					'diff' => $this->git->diff( $request->query->get( 'path' ) ? (string) $request->query->get( 'path' ) : null ),
+				] ),
+
 				[ 'build' ] === $segments && 'POST' === $method => $this->json( $this->build() ),
 				[ 'markdown' ] === $segments && 'POST' === $method
 					=> $this->json( [ 'html' => $this->markdown( (string) ( $this->body( $request )['body'] ?? '' ) ) ] ),
@@ -279,7 +298,7 @@ final class Api {
 			$paginateCollection = (string) ( $existing['paginate']['collection'] ?? '' );
 
 			foreach ( $sections as $section ) {
-				$settings = (array) ( $section['settings'] ?? [] );
+				$settings = (array) $section['settings'];
 				$source   = (string) ( $settings['source'] ?? 'posts' );
 
 				if ( $source === $paginateCollection && isset( $settings['limit'] ) && is_numeric( $settings['limit'] ) ) {
@@ -600,7 +619,14 @@ final class Api {
 		if ( ! $this->git->isRepository() ) {
 			// Not a repository is a normal state for a new site, not an error:
 			// the dashboard simply has nothing to publish.
-			return [ 'count' => 0, 'files' => [], 'has_remote' => false, 'branch' => 'no repository' ];
+			return [
+				'count'      => 0,
+				'files'      => [],
+				'has_remote' => false,
+				'branch'     => 'no repository',
+				'branches'   => [],
+				'provider'   => $this->git->providerName(),
+			];
 		}
 
 		$files = $this->git->changedFiles();
@@ -610,6 +636,8 @@ final class Api {
 			'files'      => $files,
 			'has_remote' => $this->git->hasRemote(),
 			'branch'     => $this->git->branch(),
+			'branches'   => $this->git->branches(),
+			'provider'   => $this->git->providerName(),
 		];
 	}
 
@@ -623,21 +651,78 @@ final class Api {
 		// it first, or because there is no connection.
 		$result = $this->git->commit(
 			(string) ( $body['message'] ?? 'Update site content' ),
-			push: filter_var( $body['push'] ?? true, FILTER_VALIDATE_BOOL )
+			push: filter_var( $body['push'] ?? true, FILTER_VALIDATE_BOOL ),
+			author: isset( $body['author'] ) && '' !== trim( (string) $body['author'] ) ? (string) $body['author'] : null
 		);
 
 		return $this->json( [ 'message' => $result['message'] ], $result['ok'] ? 200 : 422 );
 	}
 
-	private function discard(): Response {
+	/** @param array<string, mixed> $body */
+	private function discard( array $body = [] ): Response {
 		if ( ! $this->git->isRepository() ) {
 			return $this->json( [ 'error' => 'This site is not a git repository, so there is nothing to discard to.' ], 422 );
 		}
 
-		$this->git->discard();
+		$path = isset( $body['path'] ) && '' !== trim( (string) $body['path'] )
+			? trim( (string) $body['path'] )
+			: null;
+
+		$this->git->discard( $path );
 
 		return $this->json( [ 'ok' => true ] );
 	}
+
+	/** @param array<string, mixed> $body */
+	private function createBranch( array $body ): Response {
+		$name = (string) ( $body['name'] ?? '' );
+		$from = isset( $body['from'] ) && '' !== trim( (string) $body['from'] ) ? (string) $body['from'] : null;
+
+		$result = $this->git->createBranch( $name, $from );
+
+		return $this->json( $result, $result['ok'] ? 200 : 422 );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function switchBranch( array $body ): Response {
+		$name = (string) ( $body['name'] ?? '' );
+
+		$result = $this->git->switchBranch( $name );
+
+		return $this->json( $result, $result['ok'] ? 200 : 422 );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function deleteBranch( array $body ): Response {
+		$name = (string) ( $body['name'] ?? '' );
+
+		$result = $this->git->deleteBranch( $name );
+
+		return $this->json( $result, $result['ok'] ? 200 : 422 );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function mergeBranch( array $body ): Response {
+		$source  = (string) ( $body['source'] ?? '' );
+		$message = isset( $body['message'] ) && '' !== trim( (string) $body['message'] ) ? (string) $body['message'] : null;
+
+		$result = $this->git->mergeBranch( $source, $message );
+
+		return $this->json( $result, $result['ok'] ? 200 : 422 );
+	}
+
+	/** @param array<string, mixed> $body */
+	private function createPullRequest( array $body ): Response {
+		$title = (string) ( $body['title'] ?? 'Content updates' );
+		$head  = (string) ( $body['head'] ?? $this->git->branch() );
+		$base  = (string) ( $body['base'] ?? 'main' );
+		$msg   = (string) ( $body['body'] ?? '' );
+
+		$result = $this->git->createPullRequest( $title, $msg, $head, $base );
+
+		return $this->json( $result, $result['ok'] ? 200 : 422 );
+	}
+
 
 	/**
 	 * Markdown, rendered for the editor's preview.

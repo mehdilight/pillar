@@ -191,6 +191,51 @@ final class DevApiTest extends SiteTestCase {
 		self::assertStringContainsString( '© Fixture', $html, 'the rest of the page still renders' );
 	}
 
+	public function test_git_branch_endpoints(): void {
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' init -q -b main' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' config user.email pillar@example.test' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' config user.name Pillar' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' add -A' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' commit -q -m Initial' );
+
+		$branches = $this->json( 'GET', '/api/git/branches' );
+		self::assertSame( 'local', $branches['provider'] );
+		self::assertIsArray( $branches['branches'] );
+
+		// Create branch
+		$createRes = $this->request( 'POST', '/api/git/branches', [ 'name' => 'editorial/review-1' ] );
+		self::assertSame( 200, $createRes->getStatusCode() );
+
+		// List branches includes new branch
+		$updated = $this->json( 'GET', '/api/git/branches' );
+		self::assertContains( 'editorial/review-1', $updated['branches'] );
+		self::assertSame( 'editorial/review-1', $updated['current'] );
+
+		// Switch back
+		$switchRes = $this->request( 'POST', '/api/git/branches/switch', [ 'name' => 'main' ] );
+		self::assertSame( 200, $switchRes->getStatusCode() );
+
+		// Delete branch
+		$deleteRes = $this->request( 'POST', '/api/git/branches/delete', [ 'name' => 'editorial/review-1' ] );
+		self::assertSame( 200, $deleteRes->getStatusCode() );
+	}
+
+	public function test_git_diff_endpoint(): void {
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' init -q -b main' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' config user.email pillar@example.test' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' config user.name Pillar' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' add -A' );
+		exec( 'git -C ' . escapeshellarg( $this->root ) . ' commit -q -m Initial' );
+
+		file_put_contents( $this->root . '/content/posts/api-diff.md', "---\ntitle: Diff\n---\nInitial\n" );
+		$this->request( 'POST', '/api/publish', [ 'message' => 'Diff base' ] );
+
+		file_put_contents( $this->root . '/content/posts/api-diff.md', "---\ntitle: Diff\n---\nUpdated\n" );
+
+		$diff = $this->json( 'GET', '/api/git/diff?path=content/posts/api-diff.md' );
+		self::assertStringContainsString( 'Updated', $diff['diff'] );
+	}
+
 	public function test_site_assets_are_served_with_their_real_content_type(): void {
 		$response = $this->request( 'GET', '/assets/base.css' );
 

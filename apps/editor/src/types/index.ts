@@ -201,7 +201,23 @@ export interface DraftStatus {
   /** Whether a remote is configured — publishing pushes when one is. */
   has_remote: boolean;
   branch: string;
+  branches?: string[];
+  provider?: string;
 }
+
+export interface GitBranchInfo {
+  current: string;
+  branches: string[];
+  provider: string;
+}
+
+export interface PullRequestResult {
+  ok: boolean;
+  message: string;
+  url?: string;
+  number?: number;
+}
+
 
 export interface HistoryEntry {
   hash: string;
