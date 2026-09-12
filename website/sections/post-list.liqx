@@ -1,0 +1,48 @@
+---
+const source = section.settings.source || 'posts';
+const entries = paginate ? paginate.items : (collections[source]?.items ?? []).slice(0, section.settings.limit);
+---
+<div class="wrap posts-section">
+  <div class="section-label">↓ Changelog and releases</div>
+  <div class="posts-list">
+    {entries.map((post) =>
+      <article class="post-item">
+        <time datetime={post.date} class="post-meta">
+          {post.date | date('%B %e, %Y')}
+        </time>
+        <h3 class="post-title">
+          <a href={post.url}>{post.title}</a>
+        </h3>
+        <if {section.settings.show_excerpt && post.excerpt}>
+          <p class="post-excerpt">{post.excerpt}</p>
+        </if>
+      </article>
+    )}
+  </div>
+  <if {paginate}>
+    <nav class="docs-pager" aria-label="Pagination">
+      <if {paginate.previous}>
+        <a class="docs-pager-link" href={paginate.previous}>
+          <span class="pager-hint">← Newer</span>
+        </a>
+      </if>
+      <if {paginate.next}>
+        <a class="docs-pager-link docs-pager-next" href={paginate.next}>
+          <span class="pager-hint">Older →</span>
+        </a>
+      </if>
+    </nav>
+  </if>
+</div>
+<schema>
+{
+  "name": "Post list",
+  "description": "Entries from a content collection.",
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "Changelog" },
+    { "id": "source", "type": "collection", "label": "Collection", "default": "posts" },
+    { "id": "limit", "type": "number", "label": "How many", "default": 5, "min": 1, "max": 50 },
+    { "id": "show_excerpt", "type": "checkbox", "label": "Show excerpts", "default": true }
+  ]
+}
+</schema>

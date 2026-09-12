@@ -3,7 +3,7 @@
   "sections": {
     "intro": {
       "section_type": "rich-text",
-      "settings": { "body": "## Changelog\n\nWhat changed in Pillar, newest first." },
+      "settings": { "body": "# Changelog\n\nWhat changed in Pillar, newest first." },
       "order": 0
     },
     "list": {

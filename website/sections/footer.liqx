@@ -1,16 +1,18 @@
 <footer class="site-footer">
-  <div class="wrap footer">
+  <div class="wrap footer-content">
     <div class="footer-brand">
-      <a class="brand" href="/"><span class="brand-mark" aria-hidden="true">P</span>{site.title}</a>
-      <if {section.settings.note}><p class="note">{section.settings.note}</p></if>
+      <a class="brand" href="/">{site.title}</a>
+      <p class="footer-tagline">A static site generator with a CMS and visual editor built in. Your site is files in Git.</p>
+      <div class="footer-meta">
+        <span>Open source · MIT</span>
+      </div>
     </div>
-    <p class="footer-meta">Open source · MIT licensed<br><a href="https://github.com/mehdilight/pillar">View source on GitHub ↗</a></p>
     <if {section.blocks.length}>
-      <nav class="footer-cols" aria-label="Footer" style={`--footer-columns:${section.blocks.length}`}>
+      <nav class="footer-cols" aria-label="Footer Navigation">
         {section.blocks.map((block) =>
           <div class="footer-col">
-            <h4>{block.settings.heading || menus[block.settings.menu]?.title}</h4>
-            <ul>
+            <div class="footer-col-title">{block.settings.heading || menus[block.settings.menu]?.title}</div>
+            <ul class="footer-link-list">
               {(menus[block.settings.menu]?.items ?? []).map((link) =>
                 <li>
                   <a href={link.url}>{link.title}</a>
@@ -27,28 +29,28 @@
       </nav>
     </if>
   </div>
+  <div class="wrap footer-bottom-bar">
+    <span class="copyright">{section.settings.note || 'Pillar — local-first static site generator.'}</span>
+    <div class="bottom-nav">
+      <a href="/docs/introduction/">Docs</a>
+      <a href="/docs/liqx-templates/">Liqx syntax</a>
+      <a href="/blog/">Changelog</a>
+      <a href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </div>
+  </div>
 </footer>
 <schema>
 {
   "name": "Footer",
-  "description": "The site name, a note, and up to four columns of links.",
+  "description": "The site footer.",
   "max_blocks": 4,
   "settings": [
-    { "id": "note", "type": "text", "label": "Footer note", "default": "© Pillar" },
-    { "id": "columns_note", "type": "paragraph",
-      "content": "Each column is a block showing one link list. Add, reorder or remove columns in the page tree; edit their links under Navigation." }
+    { "id": "note", "type": "text", "label": "Footer note", "default": "Pillar — local-first static site generator." }
   ],
   "blocks": [
     { "type": "link_column", "name": "Link column", "settings": [
       { "id": "menu", "type": "menu", "label": "Link list", "default": "footer" },
       { "id": "heading", "type": "text", "label": "Heading", "info": "Leave empty to use the link list's title." }
-    ] }
-  ],
-  "presets": [
-    { "name": "Footer", "blocks": [
-      { "type": "link_column", "settings": { "menu": "products", "heading": "Products" } },
-      { "type": "link_column", "settings": { "menu": "company", "heading": "Company" } },
-      { "type": "link_column", "settings": { "menu": "footer", "heading": "Resources" } }
     ] }
   ]
 }

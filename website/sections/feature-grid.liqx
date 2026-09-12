@@ -1,0 +1,28 @@
+<div class="wrap features-section">
+  <div class="section-label">Architecture and capabilities</div>
+  <div class="features-grid">
+    {section.blocks.map((block, idx) =>
+      <div class="feature-item">
+        <span class="feature-num">0{idx + 1}</span>
+        <h3 class="feature-title">{block.settings.title}</h3>
+        <p class="feature-body">{block.settings.body}</p>
+      </div>
+    )}
+  </div>
+</div>
+<schema>
+{
+  "name": "Feature grid",
+  "description": "Editorial grid with Thomas Vimare style reference.",
+  "max_blocks": 9,
+  "settings": [
+    { "id": "heading", "type": "text", "label": "Heading", "default": "Architecture and capabilities" }
+  ],
+  "blocks": [
+    { "type": "feature", "name": "Feature", "settings": [
+      { "id": "title", "type": "text", "label": "Title", "default": "Title" },
+      { "id": "body", "type": "textarea", "label": "Body", "default": "Description" }
+    ] }
+  ]
+}
+</schema>

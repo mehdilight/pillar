@@ -8,61 +8,92 @@ const at = urls.indexOf(current);
 const previous = at > 0 ? docs[at - 1] : null;
 const next = at >= 0 && at < docs.length - 1 ? docs[at + 1] : null;
 const loose = docs.filter((entry) => !keys.includes(entry.section));
+const activeGroup = groups.find((g) => g.key === page.section)?.title ?? '';
 ---
 <div class="wrap docs">
-  <aside class="docs-nav" aria-label="Documentation">
-    {groups.filter((group) => docs.some((entry) => entry.section === group.key)).map((group) =>
-      <div class="docs-group">
-        <p class="docs-nav-title">{group.title}</p>
-        <ul>
-          {docs.filter((entry) => entry.section === group.key).map((entry) =>
-            <li><a href={entry.url} class:current={entry.url === current}>{entry.title}</a></li>
-          )}
-        </ul>
-      </div>
-    )}
-    <if {loose.length}>
-      <div class="docs-group">
-        <p class="docs-nav-title">{section.settings.heading}</p>
-        <ul>
-          {loose.map((entry) => <li><a href={entry.url} class:current={entry.url === current}>{entry.title}</a></li>)}
-        </ul>
-      </div>
-    </if>
-  </aside>
-  <article class="prose docs-body">
-    <h1>{page.title}</h1>
-    <if {page.summary}><p class="docs-summary">{page.summary}</p></if>
+  <details class="docs-navigation" open>
+    <summary class="docs-nav-toggle">
+      <span>↓ Index — {page.title}</span>
+    </summary>
+    <aside class="docs-nav" aria-label="Documentation">
+      {groups.filter((group) => docs.some((entry) => entry.section === group.key)).map((group) =>
+        <div class="docs-group">
+          <div class="docs-group-title">{group.title}</div>
+          <ul>
+            {docs.filter((entry) => entry.section === group.key).map((entry) =>
+              <li>
+                <a href={entry.url} class:current={entry.url === current}>{entry.title}</a>
+              </li>
+            )}
+          </ul>
+        </div>
+      )}
+      <if {loose.length}>
+        <div class="docs-group">
+          <div class="docs-group-title">{section.settings.heading}</div>
+          <ul>
+            {loose.map((entry) =>
+              <li>
+                <a href={entry.url} class:current={entry.url === current}>{entry.title}</a>
+              </li>
+            )}
+          </ul>
+        </div>
+      </if>
+    </aside>
+  </details>
+  <article class="prose docs-body doc-content">
+    <div class="doc-header">
+      <nav class="doc-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Pillar</a>
+        <span class="sep">/</span>
+        <a href="/docs/introduction/">Docs</a>
+        <if {activeGroup}>
+          <span class="sep">/</span>
+          <span>{activeGroup}</span>
+        </if>
+        <span class="sep">/</span>
+        <span class="current-crumb">{page.title}</span>
+      </nav>
+      <h1>{page.title}</h1>
+      <if {page.summary}><p class="docs-summary">{page.summary}</p></if>
+    </div>
     {page.content}
     <nav class="docs-pager" aria-label="Previous and next">
-      <if {previous}><a class="docs-pager-link" href={previous.url}><span>Previous</span>{previous.title}</a></if>
-      <if {next}><a class="docs-pager-link docs-pager-next" href={next.url}><span>Next</span>{next.title}</a></if>
+      <if {previous}>
+        <a class="docs-pager-link" href={previous.url}>
+          <span class="pager-hint">← Previous</span>
+          <span class="pager-title">{previous.title}</span>
+        </a>
+      </if>
+      <if {next}>
+        <a class="docs-pager-link docs-pager-next" href={next.url}>
+          <span class="pager-hint">Next →</span>
+          <span class="pager-title">{next.title}</span>
+        </a>
+      </if>
     </nav>
   </article>
+  <aside class="docs-outline-aside" aria-label="Table of contents">
+    <div class="docs-outline">
+      <div class="docs-outline-title">On this page</div>
+      <nav data-page-outline aria-label="Page sections"></nav>
+      <div class="docs-outline-footer">
+        <a class="edit-link" href="https://github.com/mehdilight/pillar" target="_blank" rel="noopener noreferrer">
+          GitHub ↗
+        </a>
+      </div>
+    </div>
+  </aside>
 </div>
-<style>
-  .docs-group + .docs-group { margin-top: 28px; }
-  .docs-group .docs-nav-title { margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; font-size: 11px; }
-  .docs-nav a { padding: 6px 12px; }
-  .docs-summary { font-size: 1.125rem; color: var(--color-stone-gray); margin: -0.25rem 0 2rem; }
-  .docs-body table { width: 100%; border-collapse: collapse; margin: 0 0 1.35em; font-size: 14px; }
-  .docs-body th, .docs-body td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--edge-soft); vertical-align: top; }
-  .docs-body th { font-weight: 500; }
-  .docs-body td code { white-space: nowrap; }
-  .docs-pager { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--edge-soft); }
-  .docs-pager-link { display: grid; gap: 4px; padding: 16px 18px; border-radius: 14px; background: var(--color-frost-wash); text-decoration: none !important; font-weight: 500; }
-  .docs-pager-link span { font-size: var(--text-caption); font-weight: 400; color: var(--color-stone-gray); }
-  .docs-pager-next { grid-column: 2; text-align: right; }
-</style>
 <schema>
 {
   "name": "Docs page",
-  "description": "A documentation page: a sidebar of the docs collection in groups, the entry, and links to the pages before and after it.",
+  "description": "A documentation page.",
   "enabled_on": ["doc"],
   "settings": [
     { "id": "heading", "type": "text", "label": "Heading for ungrouped pages", "default": "More" },
     { "id": "groups", "type": "repeater", "label": "Sidebar groups",
-      "info": "Each docs entry picks one of these with its Sidebar group field.",
       "fields": [
         { "id": "key", "type": "text", "label": "Key" },
         { "id": "title", "type": "text", "label": "Title" }
