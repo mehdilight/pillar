@@ -41,9 +41,8 @@ export function Header(props: HeaderProps) {
           fallback={
             <div class="flex items-center gap-2" data-tauri-drag-region>
               <span class="font-semibold text-base tracking-tight text-white">Pillar</span>
-              <span class="text-gray-500 text-sm">/</span>
+              <span class="h-4 w-px bg-[#3e4045] mx-1" aria-hidden="true" />
               <span class="text-gray-400 text-[13px] font-medium">Desktop</span>
-              <span class="text-gray-500 text-xs ml-1">v0.2.0</span>
             </div>
           }
         >
@@ -75,6 +74,9 @@ export function Header(props: HeaderProps) {
       </div>
 
       <div class="flex items-center gap-1.5">
+        <Show when={!isSiteActive()}>
+          <span class="text-gray-500 text-xs tabular-nums">v0.2.0</span>
+        </Show>
         <Show when={isSiteActive()}>
           <button
             onClick={handleRevealFinder}

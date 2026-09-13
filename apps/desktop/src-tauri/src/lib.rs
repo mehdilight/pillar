@@ -748,19 +748,32 @@ pub fn run() {
                 #[cfg(target_os = "macos")]
                 {
                     use cocoa::appkit::{NSColor, NSWindow};
-                    use cocoa::base::id;
+                    use cocoa::base::{id, nil, YES};
+                    use cocoa::foundation::NSString;
+                    use objc::{class, msg_send, sel, sel_impl};
+
                     if let Ok(ns_win) = window.ns_window() {
                         let ns_window = ns_win as id;
                         unsafe {
                             let color = NSColor::colorWithRed_green_blue_alpha_(
-                                cocoa::base::nil,
+                                nil,
                                 26.0 / 255.0,
                                 26.0 / 255.0,
                                 26.0 / 255.0,
                                 1.0,
                             );
                             ns_window.setBackgroundColor_(color);
-                            ns_window.setTitlebarAppearsTransparent_(cocoa::base::YES);
+                            // Pair this with titleBarStyle: Transparent in tauri.conf.json.
+                            // The default Visible style enables full-size content, which
+                            // places the web header behind the native controls here.
+                            ns_window.setTitlebarAppearsTransparent_(YES);
+
+                            // Force DarkAqua appearance so title text is white/light
+                            let dark_name = NSString::alloc(nil).init_str("NSAppearanceNameDarkAqua");
+                            let appearance: id = msg_send![class!(NSAppearance), appearanceNamed: dark_name];
+                            if appearance != nil {
+                                let () = msg_send![ns_window, setAppearance: appearance];
+                            }
                         }
                     }
                 }

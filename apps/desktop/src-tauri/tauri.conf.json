@@ -18,7 +18,8 @@
         "minHeight": 640,
         "resizable": true,
         "fullscreen": false,
-        "theme": "Dark"
+        "theme": "Dark",
+        "titleBarStyle": "Transparent"
       }
     ],
     "security": {
