@@ -5,6 +5,7 @@ import { Badge, Button, Input, Textarea, Label, Loading, Notice, Postbox, Sideba
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import CustomSelect from '../../components/ui/CustomSelect';
 import Modal from '../../components/ui/Modal';
+import DiffComparison from '../../components/DiffComparison';
 import { showToast } from '../../components/ui/Toast';
 import { api } from '../../api/client';
 import { loadCollections } from '../../store/content';
@@ -53,6 +54,8 @@ export default function Publish() {
   const [diffTitle, setDiffTitle] = createSignal('');
   const [diffContent, setDiffContent] = createSignal('');
   const [diffLoading, setDiffLoading] = createSignal(false);
+  const [diffError, setDiffError] = createSignal('');
+  let diffRequest = 0;
 
   const files = () => status()?.files ?? [];
   const currentBranch = () => status()?.branch ?? 'main';
@@ -178,16 +181,19 @@ export default function Publish() {
 
   const showDiff = async (path?: string) => {
     setDiffTitle(path ? t("Diff: {{v0}}", { v0: path }) : t("Working Tree Diff"));
+    const request = ++diffRequest;
+    setDiffContent('');
+    setDiffError('');
     setDiffLoading(true);
     setDiffModal(true);
 
     try {
       const result = await api.diff(path);
-      setDiffContent(result.diff || '');
+      if (request === diffRequest) setDiffContent(result.diff || '');
     } catch (error) {
-      setDiffContent(error instanceof Error ? error.message : t("Failed to load diff"));
+      if (request === diffRequest) setDiffError(error instanceof Error ? error.message : t("Failed to load diff"));
     } finally {
-      setDiffLoading(false);
+      if (request === diffRequest) setDiffLoading(false);
     }
   };
 
@@ -555,38 +561,17 @@ export default function Publish() {
           </div>
         }
       >
-        <div class="p-4 max-h-[70vh] overflow-y-auto">
+        <div class="max-h-[70vh] overflow-y-auto">
           <Show when={!diffLoading()} fallback={<Loading />}>
-            <Show
-              when={diffContent().trim().length > 0}
-              fallback={
-                <p class="text-xs text-text-faint">{t("No differences in this file or working tree.")}</p>
-              }
-            >
-              <pre class="font-mono text-xs leading-5 bg-[#141414] text-gray-200 p-4 rounded-md overflow-x-auto whitespace-pre select-text">
-                <For each={diffContent().split('\n')}>
-                  {(line) => {
-                    const isAdd = line.startsWith('+') && !line.startsWith('+++');
-                    const isDel = line.startsWith('-') && !line.startsWith('---');
-                    const isHeader = line.startsWith('@@');
-                    const isMeta = line.startsWith('diff ') || line.startsWith('index ');
-
-                    return (
-                      <div
-                        class="px-1 -mx-1"
-                        classList={{
-                          'bg-emerald-950/60 text-emerald-300': isAdd,
-                          'bg-rose-950/60 text-rose-300': isDel,
-                          'text-cyan-400 font-semibold': isHeader,
-                          'text-gray-500 font-semibold': isMeta,
-                        }}
-                      >
-                        {line || ' '}
-                      </div>
-                    );
-                  }}
-                </For>
-              </pre>
+            <Show when={!diffError()} fallback={<Notice type="warning">{diffError()}</Notice>}>
+              <Show
+                when={diffContent().trim().length > 0}
+                fallback={
+                  <p class="text-xs text-text-faint">{t("No differences in this file or working tree.")}</p>
+                }
+              >
+                <DiffComparison patch={diffContent()} />
+              </Show>
             </Show>
           </Show>
         </div>

@@ -633,5 +633,19 @@
   "Entries already saved keep their value under “{{id}}” until they are edited.": "Entries already saved keep their value under “{{id}}” until they are edited.",
   "field.select": "Select",
   "MB": "MB",
-  "KB": "KB"
+  "KB": "KB",
+  "No corresponding text": "No corresponding text",
+  "Added text": "Added text",
+  "Removed text": "Removed text",
+  "Exact file text with line numbers. Only changed sections and nearby lines are shown.": "Exact file text with line numbers. Only changed sections and nearby lines are shown.",
+  "Compare the previously saved text with your current changes. Highlighted text was removed or added. Only changed sections are shown, not a page preview.": "Compare the previously saved text with your current changes. Highlighted text was removed or added. Only changed sections are shown, not a page preview.",
+  "Comparison view": "Comparison view",
+  "Technical": "Technical",
+  "Reading view": "Reading view",
+  "Changed file": "Changed file",
+  "This change has no text comparison, for example a binary file or a rename.": "This change has no text comparison, for example a binary file or a rename.",
+  "Before": "Before",
+  "After": "After",
+  "Changed section {{number}}": "Changed section {{number}}",
+  "No text comparison is available.": "No text comparison is available."
 }

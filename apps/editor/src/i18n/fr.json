@@ -633,5 +633,19 @@
   "Entries already saved keep their value under “{{id}}” until they are edited.": "Les entrées déjà enregistrées conservent leur valeur sous « {{id}} » jusqu’à leur prochaine modification.",
   "field.select": "Liste déroulante",
   "MB": "Mo",
-  "KB": "Ko"
+  "KB": "Ko",
+  "No corresponding text": "Aucun texte correspondant",
+  "Added text": "Texte ajouté",
+  "Removed text": "Texte supprimé",
+  "Exact file text with line numbers. Only changed sections and nearby lines are shown.": "Texte exact du fichier avec les numéros de ligne. Seules les sections modifiées et les lignes voisines sont affichées.",
+  "Compare the previously saved text with your current changes. Highlighted text was removed or added. Only changed sections are shown, not a page preview.": "Comparez le texte enregistré avec vos modifications actuelles. Le texte surligné a été supprimé ou ajouté. Seules les sections modifiées sont affichées, pas un aperçu de la page.",
+  "Comparison view": "Vue de comparaison",
+  "Technical": "Technique",
+  "Reading view": "Lecture",
+  "Changed file": "Fichier modifié",
+  "This change has no text comparison, for example a binary file or a rename.": "Cette modification ne contient pas de comparaison textuelle, par exemple un fichier binaire ou un renommage.",
+  "Before": "Avant",
+  "After": "Après",
+  "Changed section {{number}}": "Section modifiée {{number}}",
+  "No text comparison is available.": "Aucune comparaison textuelle disponible."
 }
